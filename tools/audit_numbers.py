@@ -32,9 +32,9 @@ CHECKS = [
     ("docs/eval_external.json", "ece_after", 0.029, "docs/EVAL_REAL.md", "0.0290"),
     ("docs/eval_external.json", "alert_precision", 0.893, "docs/EVAL_REAL.md", "0.893"),
     ("docs/eval_external.json", "n", 60, "docs/EVAL_REAL.md", "n=60 unique"),
-    ("backend/cache/calibration_holdout.json", "profiles.hybrid-fit.ece_after", 0.0166,
+    ("docs/measurements/calibration_holdout.json", "profiles.hybrid-fit.ece_after", 0.0166,
      "docs/CALIBRATION.md", "0.0166"),
-    ("backend/cache/activity_calibration.json", "threshold", 0.2, "docs/FRONTIER.md", "0.20"),
+    ("docs/measurements/activity_calibration.json", "threshold", 0.2, "docs/FRONTIER.md", "0.20"),
     ("docs/eval_external.json", "accuracy", 0.90, "README.md", "90%"),
 ]
 

@@ -1,0 +1,76 @@
+{
+ "n_real": 50,
+ "n_fit": 30,
+ "n_val": 20,
+ "profiles": {
+  "synthetic": {
+   "fit_rows": 180,
+   "n": 20,
+   "claimed": 18,
+   "ece_before": 0.1285,
+   "ece_after": 0.0423,
+   "ece_claimed_after": 0.0469,
+   "operating_threshold": 0.25,
+   "accepted": 18,
+   "accepted_precision": 0.944,
+   "decisions": {
+    "alert": 9,
+    "explain": 0,
+    "silent": 11
+   },
+   "wrong_alerts": 1,
+   "alert_precision": 0.889,
+   "operating_point": {
+    "threshold": 0.25,
+    "precision": 0.958,
+    "accepted": 71
+   }
+  },
+  "real-fit": {
+   "fit_rows": 30,
+   "n": 20,
+   "claimed": 18,
+   "ece_before": 0.1285,
+   "ece_after": 0.0251,
+   "ece_claimed_after": 0.0223,
+   "operating_threshold": 0.23,
+   "accepted": 18,
+   "accepted_precision": 0.944,
+   "decisions": {
+    "alert": 9,
+    "explain": 0,
+    "silent": 11
+   },
+   "wrong_alerts": 1,
+   "alert_precision": 0.889,
+   "operating_point": {
+    "threshold": 0.23,
+    "precision": 0.967,
+    "accepted": 30
+   }
+  },
+  "hybrid-fit": {
+   "fit_rows": 210,
+   "n": 20,
+   "claimed": 18,
+   "ece_before": 0.1285,
+   "ece_after": 0.0166,
+   "ece_claimed_after": 0.0183,
+   "operating_threshold": 0.23,
+   "accepted": 18,
+   "accepted_precision": 0.944,
+   "decisions": {
+    "alert": 9,
+    "explain": 0,
+    "silent": 11
+   },
+   "wrong_alerts": 1,
+   "alert_precision": 0.889,
+   "operating_point": {
+    "threshold": 0.23,
+    "precision": 0.96,
+    "accepted": 101
+   }
+  }
+ }
+}

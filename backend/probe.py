@@ -119,12 +119,14 @@ def analyze_probe(recording: np.ndarray, fs: int = FS) -> dict:
 
 # --------------------------------------------------------------------- store
 def _activity_threshold() -> float:
-    """Calibrated threshold for the activity score (tools_calibrate_activity.py)."""
-    try:
-        data = json.loads((STATE_PATH.parent / "activity_calibration.json").read_text())
-        return float(data.get("threshold", 0.45))
-    except Exception:
-        return 0.45
+    """Calibrated threshold for the activity score (committed measurement, else default)."""
+    for path in (STATE_PATH.parent / "activity_calibration.json",
+                 Path(__file__).parent.parent / "docs" / "measurements" / "activity_calibration.json"):
+        try:
+            return float(json.loads(path.read_text()).get("threshold", 0.45))
+        except Exception:
+            continue
+    return 0.45
 
 
 def _load_state() -> dict:

@@ -162,6 +162,7 @@ def decide(event_conf: float, room_conf: float, snr_db: float, params: dict | No
 
 # --------------------------------------------------------------------- parameter store
 PROFILE_DIR = PARAMS_PATH.parent
+MEASUREMENTS_DIR = Path(__file__).parent.parent / "docs" / "measurements"
 
 
 def profile_path(profile: str) -> Path:
@@ -170,15 +171,21 @@ def profile_path(profile: str) -> Path:
     return PROFILE_DIR / f"calibration_{profile}.json"
 
 
+def _profile_candidates(profile: str) -> list[Path]:
+    name = "synthetic" if profile in ("synthetic", "default") else profile
+    return [PROFILE_DIR / f"calibration_{name}.json",
+            MEASUREMENTS_DIR / f"calibration_{name}.json"]
+
+
 def load_params(profile: str | None = None) -> dict | None:
     profile = profile or os.environ.get("CALIBRATION_PROFILE", "synthetic")
-    path = profile_path(profile)
-    if path.exists():
-        try:
-            return json.loads(path.read_text())
-        except Exception:
-            return None
-    return load_params_raw() if path != PARAMS_PATH else None
+    for path in _profile_candidates(profile):
+        if path.exists():
+            try:
+                return json.loads(path.read_text())
+            except Exception:
+                continue
+    return load_params_raw() if profile in ("synthetic", "default") else None
 
 
 def load_params_raw() -> dict | None:

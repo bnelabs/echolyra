@@ -1,0 +1,18 @@
+{
+ "probe_rir_templates_train": {
+  "acc": 0.5,
+  "uncertain": 0.352
+ },
+ "probe_rir_templates_val": {
+  "acc": 0.458,
+  "uncertain": 0.319
+ },
+ "true_rir_templates_val": {
+  "acc": 0.458,
+  "uncertain": 0.111
+ },
+ "current_metric_val": {
+  "acc": 0.458,
+  "uncertain": 0.333
+ }
+}

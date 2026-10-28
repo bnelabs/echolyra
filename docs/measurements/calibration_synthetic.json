@@ -1,0 +1,67 @@
+{
+ "version": 1,
+ "profile": "synthetic",
+ "binning": {
+  "edges": [
+   0.0,
+   0.1,
+   0.2,
+   0.3,
+   0.4,
+   0.5,
+   0.6,
+   0.7,
+   0.8,
+   0.9,
+   1.0
+  ],
+  "values": [
+   0.0011,
+   0.15,
+   0.4868,
+   0.6389,
+   0.6389,
+   0.75,
+   0.8056,
+   0.9405,
+   0.9405,
+   0.9976
+  ],
+  "counts": [
+   109,
+   0,
+   7,
+   2,
+   0,
+   2,
+   2,
+   8,
+   0,
+   50
+  ]
+ },
+ "operating_point": {
+  "threshold": 0.25,
+  "precision": 0.958,
+  "accepted": 71
+ },
+ "operating_points_by_label": {
+  "unknown": {
+   "threshold": 0.25,
+   "precision": 0.958,
+   "accepted": 71
+  }
+ },
+ "conformal": {
+  "alpha": 0.1,
+  "threshold": 0.28,
+  "n": 71,
+  "predicted": 66,
+  "precision_at_threshold": 1.0
+ },
+ "ece_before": 0.0394,
+ "ece_after": 0.0162,
+ "n_samples": 180,
+ "claimed_rows": 71,
+ "created_at": 1793197827.8205702
+}

@@ -1,0 +1,32 @@
+{
+ "knocks": {
+  "accuracy": 0.5,
+  "uncertain": 0.685,
+  "confidence": 0.657,
+  "n": 54
+ },
+ "v0_current": {
+  "accuracy": 0.37,
+  "uncertain": 0.5,
+  "confidence": 0.742,
+  "n": 54
+ },
+ "v1_3seeds": {
+  "accuracy": 0.315,
+  "uncertain": 0.37,
+  "confidence": 0.733,
+  "n": 54
+ },
+ "v2_3seeds_level": {
+  "accuracy": 0.315,
+  "uncertain": 0.37,
+  "confidence": 0.733,
+  "n": 54
+ },
+ "v3_weighted": {
+  "accuracy": 0.333,
+  "uncertain": 0.407,
+  "confidence": 0.668,
+  "n": 54
+ }
+}

@@ -252,7 +252,7 @@ docs and README updated honestly. Device still unavailable (17th round).
 ## Increment 18 — number audit + release refresh (round 18)
 
 - Added `tools/audit_numbers.py`: cross-checks every quoted headline figure against the cached
-  measurement JSONs, rejects retracted claims (the round-16 `0.833`/`0.0345` figures), and
+  measurement JSONs, rejects retracted claims (the pre-correction round-16 figures), and
   requires the verifier evidence in `docs/VERIFY.md`. It caught stale figures in the round-16
   note; those are corrected. Verifier now includes the audit as a 10th check.
 - Water-class behaviour documented precisely (Apple labels `tick`/`tick_tock` for drop-like

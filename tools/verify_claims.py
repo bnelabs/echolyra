@@ -76,7 +76,9 @@ def check_activity():
 
 
 def check_calibration():
-    path = BACKEND / "cache" / "calibration_holdout.json"
+    path = Path(__file__).resolve().parents[1] / "docs" / "measurements" / "calibration_holdout.json"
+    if not path.exists():
+        path = BACKEND / "cache" / "calibration_holdout.json"
     if not path.exists():
         check("held-out calibration", None, "cache/calibration_holdout.json missing (run tools_validate_calibration.py)")
         return
