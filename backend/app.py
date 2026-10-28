@@ -288,14 +288,17 @@ async def probe_enroll(room_id: str = Form(...), room_name: str = Form(...),
         out = probe.enroll(room_id, room_name, recs)
     except Exception as e:  # noqa: BLE001
         return JSONResponse(status_code=400, content={"error": str(e)})
-    linked = SESSION.set_probe_baseline(room_id, out["room"].get("rt60_mid_s"), out["room"].get("rt60_mid_s"))
+    # Seed the room signature from the measured RIR *before* attaching the probe baseline
+    # (set_probe_baseline creates the room record, so order matters here).
     seeded = None
     rir = probe.load_rir(room_id)
-    if rir is not None and room_id not in SESSION.state.get("rooms", {}):
+    existing = SESSION.state.get("rooms", {}).get(room_id, {})
+    if rir is not None and "rvec" not in existing:
         try:
             seeded = SESSION.enroll_from_probe(room_id, room_name, rir, probe.FS)
         except Exception:
             seeded = None
+    linked = SESSION.set_probe_baseline(room_id, out["room"].get("rt60_mid_s"), out["room"].get("rt60_mid_s"))
     return {"probe": out, "linked_session": linked, "seeded_room": seeded}
 
 
