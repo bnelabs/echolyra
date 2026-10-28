@@ -449,6 +449,21 @@ class Session:
         _save_state(self.state)
         return room
 
+    def set_probe_baseline(self, room_id: str, t30_mid_s: float | None,
+                           rt60_mid_s: float | None) -> dict:
+        """Attach the active-probe measurement to a room (source-independent decay truth)."""
+        room = self.state["rooms"].get(room_id)
+        if room is None:
+            room = {"id": room_id, "name": room_id, "n": 0}
+        if t30_mid_s is not None:
+            room["probe_t30"] = float(t30_mid_s)
+        if rt60_mid_s is not None:
+            room["probe_rt60"] = float(rt60_mid_s)
+        self.state["rooms"][room_id] = room
+        _save_state(self.state)
+        return {"room_id": room_id, "probe_t30": room.get("probe_t30"),
+                "probe_rt60": room.get("probe_rt60")}
+
     def teach(self, label: str, clips: list[bytes]) -> dict:
         self.state["templates"].setdefault(label, [])
         for raw in clips:
@@ -481,8 +496,10 @@ class Session:
         ev_br = float(f["brightness_db"])
         ev_mf = np.array(f["mfcc"], dtype=float)
         d = []
-        for rv in R:
-            r_dec = float(rv[13] * 60.0)
+        for idx, rv in enumerate(R):
+            rid = ids[idx]
+            probe_t30 = self.state["rooms"].get(rid, {}).get("probe_t30")
+            r_dec = float(probe_t30) if probe_t30 else float(rv[13] * 60.0)
             r_br = float(rv[14] * 10.0)
             r_mf = rv[:13]
             cos = float(np.dot(ev_mf, r_mf) /

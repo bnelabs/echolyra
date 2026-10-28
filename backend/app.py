@@ -28,6 +28,7 @@ from scipy.signal import resample_poly
 
 import acoustics as ac
 import awareness as aw
+import probe
 import meta_models as mm
 
 ROOT = Path(__file__).parent
@@ -219,6 +220,47 @@ async def detect(audio: UploadFile = File(...), node_room: str = Form(""),
                "sensor_room": None, "heard": rec.get("heard", [])}
     payload["situation"] = mm.situation_report(payload)
     return payload
+
+
+# ------------------------------------------------------------------ active acoustic probe
+@app.post("/api/probe/enroll")
+async def probe_enroll(room_id: str = Form(...), room_name: str = Form(...),
+                       audio: list[UploadFile] | None = File(None)):
+    recs = []
+    for f in (audio or [])[:3]:
+        raw = await f.read()
+        x, fs = read_wav_mono(raw)          # 16 kHz mono float
+        if fs != probe.FS:
+            x = resample(x, fs, probe.FS)
+        recs.append(x)
+    if not recs:
+        return JSONResponse(status_code=400, content={"error": "no probe recordings"})
+    try:
+        out = probe.enroll(room_id, room_name, recs)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse(status_code=400, content={"error": str(e)})
+    linked = SESSION.set_probe_baseline(room_id, out["room"].get("rt60_mid_s"), out["room"].get("rt60_mid_s"))
+    return {"probe": out, "linked_session": linked}
+
+
+@app.post("/api/probe/check")
+async def probe_check(room_id: str = Form(...), audio: UploadFile = File(...)):
+    raw = await audio.read()
+    x, fs = read_wav_mono(raw)
+    if fs != probe.FS:
+        x = resample(x, fs, probe.FS)
+    try:
+        out = probe.check(room_id, x)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse(status_code=400, content={"error": str(e)})
+    if out.get("current", {}).get("rt60_mid_s") is not None:
+        SESSION.set_probe_baseline(room_id, out["current"]["rt60_mid_s"], out["current"]["rt60_mid_s"])
+    return out
+
+
+@app.get("/api/probe/status")
+def probe_status():
+    return probe.status()
 
 
 @app.get("/", response_class=HTMLResponse)

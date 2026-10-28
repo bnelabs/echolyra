@@ -42,7 +42,8 @@ guess. Full methodology, numbers and the frontier roadmap: [`docs/SIGNAL_SCIENCE
 ## How it works
 
 ```
-ENROLL  knocks in each room → phone hears them → per-room transfer signature
+ENROLL  quiet sweep in each room → phone measures the true RIR → ISO-3382 room fingerprint
+        (plus knocks for the fast event-path signature)
 TEACH   optional: 2–3 labelled examples per event class
 DETECT  onset + features → event classifier (rules + k-NN) → room attribution → Muse Spark report
 ```
@@ -56,7 +57,10 @@ Only **numeric features** are persisted. Audio is never stored.
 | `POST /api/reset` | clear rooms/templates/events |
 | `POST /api/enroll` | `room_id`, `room_name`, `audio` (1–3 clips of a knock in that room) |
 | `POST /api/teach` | `label`, `audio` (2–3 examples per event class) |
-| `POST /api/detect` | `audio` (2.5 s clip) → event label/confidence + room/confidence + situation |
+| `POST /api/detect` | `audio` (2.5 s clip) + optional `sound_labels` (Apple on-device labels) → event + room + situation |
+| `POST /api/probe/enroll` | `room_id`, `room_name`, `audio` (recording of the inaudible probe sweep) → measured RT60/EDT + room fingerprint |
+| `POST /api/probe/check` | `room_id`, `audio` → change detection ("did the room change?") |
+| `GET /api/probe/status` | learned room fingerprints and measured reverberation |
 | `GET /api/session` | enrolled rooms, templates, recent events |
 
 ```bash
