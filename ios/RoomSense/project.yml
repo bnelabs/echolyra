@@ -21,6 +21,7 @@ targets:
         excludes:
           - project.yml
           - Info.plist
+          - "*.xcodeproj"
           - build
           - build-sim
           - build-device
@@ -39,8 +40,8 @@ targets:
           RoomSense listens for knocks and household sounds to learn each room's
           acoustic signature.
         NSLocalNetworkUsageDescription: >-
-          RoomSense sends numeric acoustic features to your own backend on the
-          local network.
+          RoomSense sends recorded audio to your configured backend on the
+          local network for acoustic analysis.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
     settings:

@@ -12,6 +12,9 @@ struct ContentView: View {
             DetectView()
                 .tabItem { Label("Listen", systemImage: "ear.badge.waveform") }
                 .tag(1)
+            GeometryView()
+                .tabItem { Label("3D Room", systemImage: "cube.transparent.fill") }
+                .tag(3)
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape.fill") }
                 .tag(2)
@@ -20,7 +23,9 @@ struct ContentView: View {
         .task {
             await model.refresh()
 #if DEBUG
-            if ProcessInfo.processInfo.arguments.contains("-sampleResult") {
+            if ProcessInfo.processInfo.arguments.contains("-geometryDemo") {
+                selectedTab = 3
+            } else if ProcessInfo.processInfo.arguments.contains("-sampleResult") {
                 model.loadSampleResult()
                 selectedTab = 1
             } else if ProcessInfo.processInfo.arguments.contains("-tabListen") {

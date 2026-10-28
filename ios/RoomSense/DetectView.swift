@@ -24,7 +24,7 @@ struct DetectView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
-                    .disabled(recorder.isRecording)
+                    .disabled(recorder.isRecording || model.busy)
 
                     Text("Make the sound while it listens — a knock, a dropped spoon, a clap.")
                         .font(.caption)

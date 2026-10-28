@@ -21,7 +21,7 @@ struct RoomsView: View {
                                  : "Knock once and record")
                         }
                     }
-                    .disabled(recorder.isRecording || roomName.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(recorder.isRecording || model.busy || roomName.trimmingCharacters(in: .whitespaces).isEmpty)
                     Button {
                         Task { await model.probe(roomName: roomName.trimmingCharacters(in: .whitespaces)) }
                     } label: {
@@ -71,7 +71,7 @@ struct RoomsView: View {
                 }
 
                 Section {
-                    Text("RoomSense keeps no audio. Only numeric acoustic features are sent to your own backend.")
+                    Text("Apple recognizes events on-device. Recordings are also sent to your configured backend for acoustic analysis; normal awareness storage keeps derived features. Debug capture can retain clips.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

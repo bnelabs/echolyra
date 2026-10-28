@@ -317,6 +317,34 @@ Device verification finally ran on the connected iPhone 12 Pro Max:
   timing, and node rooms are now first-class localization candidates.
 - Numbers written to `docs/EVAL_REAL.md` (phone-in-room table). Device connected throughout.
 
+## Increment 23 — experimental sound-only 3D room (external contribution, reviewed)
+
+A frontier-worker contribution added a **sound-only rectangular-room estimate**: matched-filter
+echoes from repeated probes → repeatability clustering → bounded search over opposing-wall pairs
+and perpendicular second-order arrivals → 3D shell preview. No camera, LiDAR, supplied
+dimensions, or LLM-generated geometry; refusal is an ordinary result. Backend modules
+`geometry.py`, `geometry_advisor.py`, `geometry_upload.py`, routes `/api/geometry/{reconstruct,demo,review}`,
+35+ unit tests, and an iOS **3D Room** tab.
+
+Verification performed in this review:
+
+- **Unit tests: 37/37 pass** (solver recovery, ambiguity, missing walls, dense clutter, API
+  transience, advisor sanitization/no-key/error redaction, upload limits).
+- **Synthetic demo**: recovers **5.699 × 4.298 × 2.898 m** from 21 echoes (fit 0.037 ms,
+  support 1.0) — controlled implementation check, explicitly labelled synthetic.
+- **Real device probes** (3 iPhone living-room sweeps): **insufficient_evidence** — honest
+  refusal with 42 repeatable echoes; no invented dimensions, matching the doc's claim.
+- **Found and fixed a wiring gap**: `geometry_upload.GeometryUploadLimit` existed but was never
+  registered, so a 12 MB non-audio form field was parsed normally; now the ASGI limiter is
+  wired (12 MB body → **413**, other routes unaffected) with an integration test.
+- **Privacy consistency**: corrected stale "audio never leaves the phone / no audio uploaded"
+  claims across README, storyboard, video/voiceover docs, SUBMISSION, SIGNAL_SCIENCE and
+  HACKATHON — recordings go only to the user's own backend; no audio is sent to Meta.
+
+Limits: no real-room dimensional accuracy is established; a single position cannot resolve
+orientation/mirrors; phone speaker/mic separation biases delays; optional Meta review sends
+only allowlisted numeric diagnostics and cannot alter the fit.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

@@ -50,6 +50,16 @@ probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
 
+## Experimental: sound-only 3D room
+
+New **3D Room** tab estimates a rectangular shell from repeated probe echoes — no camera,
+LiDAR, supplied dimensions, or model-generated geometry. Backend `/api/geometry/*` routes never
+persist captures or change enrollment; optional Meta review sends allowlisted numeric
+diagnostics only. Verified: synthetic demo recovers 5.699 × 4.298 × 2.898 m from 21 echoes
+(fit 0.037 ms); real iPhone living-room sweeps correctly return **insufficient_evidence** instead
+of inventing dimensions. 37 unit tests pass; total geometry upload body cap wired and tested.
+Real-room dimensional accuracy is **not** established.
+
 ## On-device verification (iPhone 12 Pro Max, iOS 27.0.1)
 
 - **Active probe**: 3-sweep enrollment measured Living **RT60 0.239 s** (2–8 kHz usable bands);

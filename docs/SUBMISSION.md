@@ -19,7 +19,7 @@ and can be re-probed to detect change (door, furniture, movement). On-device App
 silent with temporal confirmation, so weak signals are never dressed up as certainty. Muse Spark
 1.3 Contributor turns detections into situation reports. On real-world recordings event
 recognition is 92% (vs 16% for hand-written rules) and calibrated alerts reach 1.00 precision
-for critical events. No cameras. No cloud audio.
+for critical events. No cameras. No audio sent to Meta.
 
 ## Meta models in the live path (evidence)
 
@@ -46,6 +46,13 @@ practice, so the "ears" are Apple's on-device 303-class classifier and Meta hand
 | Oct 28 | Real-world evaluation (ESC-50): 92% vs 16%; held-out calibration ECE 0.0166 |
 | Oct 28 | Judge-facing browser demo (`/static/demo.html`) with synthetic demo rooms |
 | Oct 29–Nov 3 | Device verification (pending iPhone reconnection), video, submission |
+
+## Experimental addition: sound-only 3D room
+
+A **3D Room** tab estimates a rectangular room shell from repeated probe echoes, with no camera
+or LiDAR. Synthetic demonstration recovers 5.70 × 4.30 × 2.90 m from 21 echoes; real-room
+recordings currently return an honest "couldn't map this room yet" rather than invented
+dimensions. See `docs/ACOUSTIC_RECONSTRUCTION.md` for assumptions and limits.
 
 ## On-device verified
 

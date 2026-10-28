@@ -57,7 +57,7 @@ but every non-transcription prompt (identify/describe/classify) came back with
 *"no audio provided"*, for both Spark 1.3/1.3-contributor and 1.2, across inline
 `input_audio`, `audio_url`, `input_file` and Files-API `file_id` delivery. Conclusion: use
 Apple's on-device classifier for acoustic event understanding, Meta Spark for reasoning —
-this is also the better privacy story (audio never leaves the phone for classification).
+this is also the better privacy story: classification runs on the phone, and recordings go only to the user's own backend for acoustic processing.
 
 **Capture bug found and fixed:** the app initially recorded digital silence (peak −39 dBFS,
 RMS −66 dBFS, all zeros) because the microphone permission prompt had never been accepted

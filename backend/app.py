@@ -21,7 +21,7 @@ import pathlib
 from pathlib import Path
 
 import numpy as np
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import FastAPI, File, Form, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pathlib import Path
@@ -34,6 +34,9 @@ import calibration
 import fusion
 import probe
 import meta_models as mm
+import geometry
+import geometry_advisor
+import geometry_upload
 
 ROOT = Path(__file__).parent
 OUT = ROOT / "static" / "out"
@@ -41,6 +44,8 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title="RoomTwin", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# Bound geometry uploads before the multipart parser buffers/spools an unbounded body.
+app.add_middleware(geometry_upload.GeometryUploadLimit)
 app.mount("/static", StaticFiles(directory=str(ROOT / "static")), name="static")
 
 DEMO_CACHE: dict[str, dict] = {}
@@ -332,6 +337,79 @@ async def probe_check(room_id: str = Form(...), audio: UploadFile = File(...)):
 @app.get("/api/probe/status")
 def probe_status():
     return probe.status()
+
+
+# -------------------------------------------------------- experimental acoustic geometry
+# Geometry capture is deliberately independent of enrollment, debugging capture and
+# household state. Uploaded audio is decoded transiently, never written by these routes.
+GEOMETRY_MAX_FILE_BYTES = 2_000_000
+GEOMETRY_MAX_REVIEW_BYTES = 64_000
+GEOMETRY_WORKERS = asyncio.Semaphore(1)
+
+
+def decode_geometry_recording(raw: bytes) -> np.ndarray:
+    import soundfile as sf
+    try:
+        with sf.SoundFile(io.BytesIO(raw)) as recording:
+            if recording.format not in {"WAV", "WAVEX"}:
+                raise ValueError("Use a WAV recording of the RoomSense probe.")
+            if not 32_000 <= recording.samplerate <= 96_000 or recording.channels not in (1, 2):
+                raise ValueError("Use a mono or stereo WAV at 32–96 kHz.")
+            duration = len(recording) / recording.samplerate
+            if not 3.3 <= duration <= 7.0:
+                raise ValueError("Each probe recording must be 3.3–7 seconds long.")
+            fs = recording.samplerate
+            samples = recording.read(dtype="float64", always_2d=True).mean(axis=1)
+    except ValueError:
+        raise
+    except Exception:
+        raise ValueError("Could not decode the probe WAV.") from None
+    if not np.isfinite(samples).all():
+        raise ValueError("The recording contains invalid samples.")
+    return resample(samples, fs, probe.FS)
+
+
+@app.post("/api/geometry/reconstruct")
+async def geometry_reconstruct(audio: list[UploadFile] | None = File(None)):
+    if not audio or not 1 <= len(audio) <= 3:
+        return JSONResponse(status_code=400, content={"error": "Send one to three probe WAV recordings from the same stationary position."})
+    recordings = []
+    for upload in audio:
+        raw = await upload.read(GEOMETRY_MAX_FILE_BYTES + 1)
+        if len(raw) > GEOMETRY_MAX_FILE_BYTES:
+            return JSONResponse(status_code=413, content={"error": "Each probe WAV must be smaller than 2 MB."})
+        try:
+            recordings.append(decode_geometry_recording(raw))
+        except ValueError as error:
+            return JSONResponse(status_code=400, content={"error": str(error)})
+    async with GEOMETRY_WORKERS:
+        return await asyncio.to_thread(geometry.reconstruct, recordings, probe.FS)
+
+
+@app.get("/api/geometry/demo")
+async def geometry_demo():
+    async with GEOMETRY_WORKERS:
+        if "geometry" not in DEMO_CACHE:
+            DEMO_CACHE["geometry"] = await asyncio.to_thread(geometry.demo)
+        return DEMO_CACHE["geometry"]
+
+
+@app.post("/api/geometry/review")
+async def geometry_review(request: Request):
+    # Review is a separate, user-triggered operation. No audio field is accepted.
+    chunks, size = [], 0
+    async for chunk in request.stream():
+        size += len(chunk)
+        if size > GEOMETRY_MAX_REVIEW_BYTES:
+            return JSONResponse(status_code=413, content={"error": "Geometry review exceeds 64 KB."})
+        chunks.append(chunk)
+    try:
+        result = json.loads(b"".join(chunks))
+        if not isinstance(result, dict):
+            raise ValueError
+    except (ValueError, UnicodeError):
+        return JSONResponse(status_code=400, content={"error": "Send a geometry result as JSON."})
+    return await asyncio.to_thread(geometry_advisor.review, result)
 
 
 # ------------------------------------------------------------------ calibration + fusion

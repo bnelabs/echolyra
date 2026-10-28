@@ -17,7 +17,7 @@
 | 0:35–1:05 | knock in kitchen → "Knock — Kitchen 91%"; floorplan highlights kitchen | "It doesn't just hear a sound. It knows which room." |
 | 1:05–1:35 | glass in bedroom → "Glass impact — Bedroom"; Spark situation card | "Muse Spark turns detection into a situation report." |
 | 1:35–2:05 | cry in nursery → "Infant cry — Nursery"; voice rule | "Tell it what matters, in your own voice." |
-| 2:05–2:30 | Privacy card: no audio stored, no camera; architecture | "No cameras. No cloud recordings. It hears, then forgets." |
+| 2:05–2:30 | Privacy card: no camera, no audio to Meta; classification on-device, recordings only to your own backend | "No cameras. No audio sent to Meta. It hears, then forgets." |
 | 2:30–3:00 | Repo URL + honest accuracy line + mesh roadmap | "Built in six days with Meta's models." |
 
 ## Checklist

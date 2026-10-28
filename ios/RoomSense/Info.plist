@@ -26,7 +26,7 @@
 		<true/>
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>RoomSense sends numeric acoustic features to your own backend on the local network.</string>
+	<string>RoomSense sends recorded audio to your configured backend on the local network for acoustic analysis.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>RoomSense listens for knocks and household sounds to learn each room's acoustic signature.</string>
 	<key>UILaunchScreen</key>

@@ -3,7 +3,29 @@
 **Meta Global AI Developer Hackathon · Indie Developer · "Push the Frontier"**
 
 A phone that **measures each room's acoustic fingerprint**, hears what happens in it, says which
-room it happened in — and **knows when it doesn't know**. No cameras. No audio stored or uploaded.
+room it happened in — with explicit uncertainty. No camera is needed. Recordings are
+uploaded to your configured backend for acoustic processing; event classification also runs
+on the phone. See the privacy section below for cloud and debug-capture behavior.
+
+## Experimental sound-only 3D room
+
+Open the **3D Room** tab → **Measure with 3 sweeps**, holding the phone stationary in a quiet
+room. The backend searches repeatable echo arrival times for possible rectangular layouts;
+the app shows an interactive 3D shell when an estimated layout fits the acoustic model. No
+camera, LiDAR, room dimensions, or language-model geometry generation is used.
+
+![3D room demo](docs/screenshots/geometry_demo.png)
+
+This is an experimental feature: it may say **Couldn’t map this room yet** or show more than
+one possible layout. Axes are arbitrary; it does not identify furniture, the floor direction, or an
+arbitrary room layout. Fit error is not calibrated confidence. Actual-room dimension
+accuracy has not been established. **Explore synthetic example** runs the same pipeline on
+simulated probe recordings and labels that scene as synthetic.
+
+**Ask Meta to review** is optional and requires an explicit confirmation. It sends only
+bounded numeric echo/shape diagnostics, never the recording, to the server-configured
+model. Contributor mode permits training use. Model suggestions cannot change or validate
+the fitted geometry. See [capture protocol, assumptions, and tests](docs/ACOUSTIC_RECONSTRUCTION.md).
 
 **Try it in 30 seconds:** open `/static/demo.html` on the backend (three demo rooms + probe
 baselines, recorded clips through the full pipeline) — no phone or install needed.
@@ -38,7 +60,7 @@ Demo video cards: [`docs/media/`](docs/media/).
    immediate). A knock is ambiguous: **EXPLAIN · needs_confirmation**, escalating to **ALERT**
    on a second agreeing detection. Muse Spark writes the situation (urgency, explanation,
    what to check, false-alarm check).
-4. **Privacy + multi-node** — no camera, no cloud audio; a laptop with `/static/node.html`
+4. **Privacy + multi-node** — no camera, no audio sent to Meta; recordings go only to your own backend. A laptop with `/static/node.html`
    joins as a second sensor and fusion reports **Living 0.81 / Kitchen 0.19**.
 
 ## Meta models in the live path
@@ -46,7 +68,7 @@ Demo video cards: [`docs/media/`](docs/media/).
 | Model | Role |
 |---|---|
 | `muse-spark-1.3-contributor` | Situation report: urgency, explanation, what to check (from event JSON) |
-| Apple `SoundAnalysis` (on-device, 303 classes) | Acoustic event recognition: knock, glass_breaking, baby_crying, door_slam, alarm, speech, water — runs on the phone, no audio leaves it |
+| Apple `SoundAnalysis` (on-device, 303 classes) | Acoustic event recognition runs on the phone; recordings are also uploaded to the configured backend for feature extraction |
 | `sam-3.1` | Room photos → surface/object context for the floorplan |
 | `muse-voice-transcribe-1.0` | Voice rules / hands-free commands |
 | `muse-image-1.0` | Optional "what to check" visual |
@@ -88,10 +110,13 @@ labelled set; it stays silent under noise. See [`docs/CALIBRATION.md`](docs/CALI
 
 ## Privacy
 
-No cameras, and no audio is stored or uploaded for classification: Apple's SoundAnalysis
-classifier runs on-device, and only compact features (SNR, decay, fingerprint, labels) leave
-the phone. Muse Spark receives event/room/context, never the raw recording. Active probes make
-room identity measurable without recording everyday life; `cache/` and `.env` stay gitignored.
+Apple's SoundAnalysis classifier runs on-device. The app also uploads recordings to the
+configured backend for acoustic processing. Awareness/probe routes normally persist derived
+features and impulse responses; `DEBUG_CAPTURE=1` explicitly saves audio recordings. Legacy
+analysis routes generate audio previews. The new geometry routes do not persist captures or
+change enrolled rooms. Muse Spark receives event context (and optional numeric geometry
+review), rather than raw recordings, through these workflows. Contributor mode permits Meta
+to use submitted context and responses for training. `.env` and `cache/` stay gitignored.
 
 ## Signal science (SNR, noise, reverberation)
 
@@ -110,12 +135,16 @@ TEACH   optional: 2–3 labelled examples per event class
 DETECT  onset + features → event classifier (rules + k-NN) → room attribution → Muse Spark report
 ```
 
-Only **numeric features** are persisted. Audio is never stored.
+Awareness state stores derived features. Debug capture and legacy audio previews are separate
+recording paths; see Privacy above.
 
 ## API
 
 | Endpoint | Purpose |
 |---|---|
+| `POST /api/geometry/reconstruct` | 1–3 stationary probe WAVs → estimated layouts, or guidance to try another recording |
+| `GET /api/geometry/demo` | same reconstruction pipeline on synthetic acoustic recordings |
+| `POST /api/geometry/review` | explicit optional Meta review of allowlisted numeric diagnostics; no audio |
 | `POST /api/reset` | clear rooms/templates/events |
 | `POST /api/enroll` | `room_id`, `room_name`, `audio` (1–3 clips of a knock in that room) |
 | `POST /api/teach` | `label`, `audio` (2–3 examples per event class) |

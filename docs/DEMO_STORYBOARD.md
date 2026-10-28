@@ -20,7 +20,7 @@ for exact numbers is acceptable; real device preferred). Fallback at any point: 
 | 3 | 0:40–1:00 | Open a door / move a rug, then **Re-probe**. Room row shows **"Room drifting — ΔT30 max 11.8% (conf 71%)"**; then a bigger change: **"Room changed — ΔT30 max 22.3% (conf 72%)"**. | **Days later, it tells you the room itself changed.** |
 | 4 | 1:00–1:25 | Tap Listen, play glass clink: result card → **glass_impact**, room **Kitchen**, chip **ALERT · calibrated 96%**, SNR 34 dB. | **On-device 303-class understanding + calibrated decision.** |
 | 5 | 1:25–1:55 | Knock once: **EXPLAIN · needs_confirmation**; knock a second time within 10 s: **ALERT**. Muse Spark card appears: "Possible glass impact in Kitchen…" | **Ambiguous events wait for confirmation; Muse Spark explains the situation.** |
-| 6 | 1:55–2:20 | Privacy card + laptop `node.html` listening; press **Fuse**: **glass_impact — Kitchen**, posteriors **Kitchen 0.75 / Living 0.22 / Bedroom 0.03**. | **No cloud audio. Every spare device can be a sensor.** |
+| 6 | 1:55–2:20 | Privacy card + laptop `node.html` listening; press **Fuse**: **glass_impact — Kitchen**, posteriors **Kitchen 0.75 / Living 0.22 / Bedroom 0.03**. | **No audio sent to Meta. Every spare device can be a sensor.** |
 | 7 | 2:20–2:45 | Number cards, large type: **92%** real-world events (vs **16%** rules), **0.1285 → 0.0166** held-out calibration error, **0.80→0.80 s** RT60 recovery, **0.4% vs 39–60%** change detection. | **Measured on real audio, not simulation.** |
 | 8 | 2:45–3:00 | Repo URL + browser demo URL; small Meta model ids: muse-spark-1.3-contributor, sam-3.1, muse-voice-transcribe-1.0. | **Built during the hackathon. It knows when it doesn't know.** |
 
