@@ -57,6 +57,14 @@ probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
 
+## Experimental: sound-only 3D room (low-confidence tier)
+
+Real-room recordings that fail the strict shoebox fit now return a **clearly-labelled
+low-confidence estimate** (or several) instead of only "couldn't map this room yet". A clutter
+guard keeps dense random echoes and noise rejected; the UI shows an orange "verify the
+dimensions" warning, and estimates remain unverified (e.g. saved iPhone living-room captures:
+3 low-confidence layouts, ≈4.99–6.49 m × 2.16–4.99 m × 1.87–2.16 m, 57 % echo coverage).
+
 ## Experimental: sound-only 3D room (rich presentation)
 
 Richer 3D scene: measured shell + **distance-only acoustic object candidates** (cyan rings) +

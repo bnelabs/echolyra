@@ -20,8 +20,9 @@ dimensions or geometry generation is used.
 ![3D room demo](docs/screenshots/geometry_demo.png)
 ![Staged 3D scene](docs/screenshots/geometry_staged.png)
 
-This is an experimental feature: it may say **Couldn’t map this room yet** or show more than
-one possible layout. Axes are arbitrary; acoustic object candidates carry only a distance
+This is an experimental feature: it may say **Couldn’t map this room yet**, show a
+**low-confidence shell** you should verify with a tape measure, or show more than one possible
+layout. Axes are arbitrary; acoustic object candidates carry only a distance
 (direction, identity, size and shape are unresolved), and staged furniture is illustrative, not
 detected. Fit error is not calibrated confidence. Actual-room dimension accuracy has not been
 established. **Explore synthetic example** runs the same pipeline on simulated probe recordings

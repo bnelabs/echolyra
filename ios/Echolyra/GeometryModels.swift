@@ -43,6 +43,7 @@ struct GeometryResult: Codable {
     var echoes: [GeometryEcho]
     var diagnostics: GeometryDiagnostics
     var objects: [GeometryObject]?
+    var confidence: String?
 
     var isSynthetic: Bool { source == "synthetic_demo" }
 }
@@ -57,6 +58,8 @@ struct GeometryCandidate: Codable, Identifiable {
     var support_fraction: Double
     var vertices: [[Double]]
     var faces: [[Int]]
+    var confidence: String?
+    var tier: String?
 
     var hasValidScene: Bool {
         dimensions_m.count == 3 && sensor_position_m.count == 3 &&

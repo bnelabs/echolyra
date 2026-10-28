@@ -133,8 +133,11 @@ def _scene(first: list[tuple[float, float]]) -> tuple[list[float],list[float],li
 def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
     """Bounded search over opposing-wall pairs and perpendicular second echoes.
 
-    Public for measurement tests. Inputs contain only arrival time and relative
-    amplitude, not room dimensions, labelled walls, or oracle echo assignments.
+    Two tiers: a strict shoebox fit (all six first-order and all second-order
+    relationships resolved), and a clearly-marked low-confidence tier used only when
+    no strict fit exists. The relaxed tier still requires coherent timing geometry
+    and most observed early energy; it is reported as an estimate to verify, never
+    as a measured room. Public for measurement tests.
     """
     valid=[]
     for p in echoes:
@@ -142,7 +145,6 @@ def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
         if math.isfinite(t) and math.isfinite(s) and 2<=t<=80 and s>0:
             valid.append({"delay_ms":t,"strength":s})
     valid=sorted(sorted(valid,key=lambda p:-p["strength"])[:MAX_ECHOES],key=lambda p:p["delay_ms"])
-    # Merge indistinguishable arrivals; they cannot independently support walls.
     dedup=[]
     for p in valid:
         if not dedup or p['delay_ms']-dedup[-1]['delay_ms']>TIMING_TOLERANCE_MS:
@@ -155,9 +157,6 @@ def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
         return [],diag
     times=np.array([p['delay_ms'] for p in valid])
     strength=np.array([p['strength'] for p in valid])
-    # Resolve only first echoes within ordinary room-size bounds; select strongest
-    # evidence without relying on their chronological ordering (second echoes can
-    # precede a distant first reflection).
     eligible=np.where(times<2*MAX_ROOM_M/SOUND_SPEED*1000)[0]
     pool=eligible[np.argsort(-strength[eligible])[:MAX_FIRST_ECHOES]]
     pairs=[]
@@ -170,15 +169,17 @@ def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
             pairs.append((int(i),int(j),float(strength[i]+strength[j]),int(where[0])))
     pairs=sorted(pairs,key=lambda p:-p[2])[:MAX_PAIRS]
     diag['opposing_pair_candidates']=len(pairs)
-    accepted=[]
+    strict=[]; relaxed=[]
+    best={"cross_matches":0,"unique_peaks":0,"support":0.0,"fit_ms":None,
+          "parallel_sums_present":0,"triplets_checked":0}
     for triplet in combinations(pairs,3):
+        best["triplets_checked"]+=1
         first_indices=[i for pair in triplet for i in pair[:2]]
         if len(set(first_indices))!=6:
             continue
         diag['hypotheses_tested']+=1
-        # All six first-order and three opposing second-order arrivals must be
-        # independently resolved; collisions make a one-position inversion unsafe.
         parallel=[p[3] for p in triplet]
+        best["parallel_sums_present"]=max(best["parallel_sums_present"], len(set(parallel)))
         if len(set(first_indices+parallel))<9:
             continue
         cross=[]
@@ -186,40 +187,51 @@ def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
             cross.extend(math.hypot(times[i],times[j]) for i in a[:2] for j in b[:2])
         err,idx=_nearest(times,np.array(cross))
         cross_ok=err<=TIMING_TOLERANCE_MS
-        # At least 11/12 independently predicted perpendicular echoes. A weakly
-        # supported best guess is deliberately not a 3D scene.
-        if int(cross_ok.sum())<11:
-            continue
+        cross_count=int(cross_ok.sum())
+        best["cross_matches"]=max(best["cross_matches"], cross_count)
         predictions=np.array([times[i] for i in first_indices]+[times[p[0]]+times[p[1]] for p in triplet]+cross)
         errors,matched=_nearest(times,predictions)
         good=errors<=TIMING_TOLERANCE_MS
-        # Count unique peaks: one observed arrival cannot support several walls.
         unique=len(set(matched[good].tolist()))
-        if unique<19:
-            continue
+        best["unique_peaks"]=max(best["unique_peaks"], unique)
         support=float(good.mean())
         seen=set(matched[good].tolist())
         explained=float(strength[list(seen)].sum()/strength.sum())
-        fit=float(np.sqrt(np.mean(errors[good]**2)))
+        fit=float(np.sqrt(np.mean(errors[good]**2))) if good.any() else float("inf")
+        best["support"]=max(best["support"], support)
+        if best["fit_ms"] is None or fit<best["fit_ms"]:
+            best["fit_ms"]=fit
         score=.75*support+.25*explained-fit*.15
         dims,sensor,vertices,faces=_scene([(times[p[0]],times[p[1]]) for p in triplet])
         candidate={"id":"", "dimensions_m":dims,"sensor_position_m":sensor,
                    "fit_error_ms":round(fit,4),"matched_echoes":unique,
                    "total_predicted_echoes":len(predictions),"support_fraction":round(support,4),
                    "vertices":vertices,"faces":faces}
-        accepted.append((score,candidate,seen))
-    accepted.sort(key=lambda row:-row[0])
-    distinct=[]
-    for score,c,seen in accepted:
-        if any(max(abs(a-b) for a,b in zip(c['dimensions_m'],prev[1]['dimensions_m']))<.12 for prev in distinct):
-            continue
-        c['id']=f"candidate-{len(distinct)+1}"
-        distinct.append((score,c,seen))
-        if len(distinct)>=3:
-            break
-    diag['distinct_supported_hypotheses']=len(distinct)
-    diag['leading_score_gap']=round(distinct[0][0]-distinct[1][0],4) if len(distinct)>1 else None
-    if distinct:
+        row=(score,candidate,seen)
+        if cross_count>=11 and unique>=19:
+            strict.append(row)
+        elif cross_count>=10 and unique>=12 and support>=0.55 and fit<=1.0:
+            relaxed.append(row)
+    diag['strict_candidates']=len(strict)
+    diag['relaxed_candidates']=len(relaxed)
+    diag['best_relaxed_stats']={k:(round(v,3) if isinstance(v,float) else v)
+                                for k,v in best.items()}
+
+    def finalize(rows, tier, min_coverage, joint_coverage):
+        rows=sorted(rows,key=lambda row:-row[0])
+        distinct=[]
+        for score,c,seen in rows:
+            if any(max(abs(a-b) for a,b in zip(c['dimensions_m'],prev[1]['dimensions_m']))<.12
+                   for prev in distinct):
+                continue
+            c['id']=f"candidate-{len(distinct)+1}"
+            c['confidence']="high" if tier=="strict" else "low"
+            c['tier']=tier
+            distinct.append((score,c,seen))
+            if len(distinct)>=3:
+                break
+        if not distinct:
+            return []
         cutoff=distinct[0][0]-.055
         distinct=[row for row in distinct if row[0]>=cutoff]
         explained=[float(strength[list(row[2])].sum()/strength.sum()) for row in distinct]
@@ -227,16 +239,37 @@ def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
         combined=float(strength[list(union)].sum()/strength.sum())
         diag['observed_echo_coverage']=round(max(explained),4)
         diag['combined_echo_coverage']=round(combined,4)
-        # Searching many assignments in dense clutter creates accidental timing
-        # matches. A layout must also account for most of the observed early
-        # signal, rather than cherry-pick 21 arrivals among unrelated peaks.
-        # Two complete competing layouts may jointly cover a mixed observation;
-        # keep that as ambiguity, never collapse it into a unique estimate.
-        if max(explained)<.72 and not (len(distinct)>=2 and combined>=.92):
+        if max(explained)<min_coverage and not (len(distinct)>=2 and combined>=joint_coverage):
             diag['rejection_reason']='unexplained_early_echoes'
-            return [],diag
-    return [row[1] for row in distinct],diag
+            return []
+        return [row[1] for row in distinct]
 
+    def clutter_guard_ok() -> bool:
+        """Real reflections spread out and decay; dense uniform clutter does not."""
+        if len(valid) < 12:
+            return False
+        spacing = float(np.median(np.diff(times)))
+        corr = float(np.corrcoef(times, strength)[0, 1]) if len(valid) > 3 else 0.0
+        diag['clutter_median_spacing_ms'] = round(spacing, 3)
+        diag['strength_delay_correlation'] = round(corr, 3)
+        return spacing >= 0.45 and corr <= -0.15
+
+    strict_out=finalize(strict,"strict",.72,.92)
+    diag['fit_tier']="strict" if strict_out else None
+    if strict_out:
+        diag['distinct_supported_hypotheses']=len(strict_out)
+        diag['leading_score_gap']=None
+        return strict_out,diag
+    if relaxed and not clutter_guard_ok():
+        diag['rejection_reason']='unexplained_early_echoes'
+        relaxed=[]
+    relaxed_out=finalize(relaxed,"relaxed",.55,.78)
+    if relaxed_out:
+        diag['fit_tier']="relaxed"
+        diag['distinct_supported_hypotheses']=len(relaxed_out)
+        return relaxed_out,diag
+    diag['distinct_supported_hypotheses']=0
+    return [],diag
 
 
 def _candidate_wall_delays(candidate: dict) -> np.ndarray:
@@ -319,11 +352,19 @@ def reconstruct(recordings: list[np.ndarray], fs: int = probe.FS) -> dict:
         cand['objects']=object_candidates(echoes, cand)
     out['objects']=candidates[0]['objects'] if candidates else []
     out['candidates']=candidates
+    low_confidence = bool(candidates) and all(c.get('tier')=='relaxed' for c in candidates)
+    out['confidence']='low' if low_confidence else ('high' if candidates else None)
     if not candidates:
         out['message']='Couldn’t map this room yet. Keep the phone still, away from nearby objects, and try another recording.'
+    elif len(candidates)>1 and low_confidence:
+        out['status']='ambiguous'
+        out['message']='Low-confidence: several experimental layouts fit these echoes. The room is too cluttered for a precise fit; compare the estimates or try a quieter recording.'
     elif len(candidates)>1:
         out['status']='ambiguous'
         out['message']='More than one rectangular layout fits these echoes. Compare the estimates or try another recording.'
+    elif low_confidence:
+        out['status']='candidate'
+        out['message']='Low-confidence experimental estimate. The fit explains most repeated echoes, but this room is cluttered enough that the dimensions need verification.'
     else:
         out['status']='candidate'
         out['message']='An estimated rectangular room layout fits the repeated echoes. Its dimensions and orientation still need checking.'

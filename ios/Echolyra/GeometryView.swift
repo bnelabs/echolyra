@@ -143,6 +143,11 @@ struct GeometryView: View {
             }
             Label(statusTitle(result.status), systemImage: result.status == "insufficient_evidence" ? "questionmark.diamond" : "cube")
                 .font(.headline)
+            if result.confidence == "low" || candidate?.confidence == "low" {
+                Label("Low-confidence estimate — verify the dimensions before trusting them",
+                      systemImage: "exclamationmark.triangle.fill")
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(.orange)
+            }
             Text(result.message).font(.subheadline)
             if result.status == "insufficient_evidence" {
                 Text("Try another recording in a quieter room, with the phone away from soft surfaces. Keep it still for all three sweeps. Some rooms may not produce clear enough echoes to map.")
@@ -167,10 +172,17 @@ struct GeometryView: View {
                     .font(.caption).foregroundStyle(.orange)
             }
             HStack(spacing: 8) {
-                Label("Measured shell", systemImage: "ruler")
-                    .font(.caption2.weight(.semibold))
-                    .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(Color.cyan.opacity(0.14), in: Capsule())
+                if candidate.confidence == "low" {
+                    Label("Low-confidence shell", systemImage: "exclamationmark.triangle")
+                        .font(.caption2.weight(.semibold))
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Color.orange.opacity(0.18), in: Capsule())
+                } else {
+                    Label("Measured shell", systemImage: "ruler")
+                        .font(.caption2.weight(.semibold))
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Color.cyan.opacity(0.14), in: Capsule())
+                }
                 if staging?.isIllustrative == true {
                     Label("Illustrative staging · not measured", systemImage: "paintpalette")
                         .font(.caption2.weight(.semibold))
@@ -199,9 +211,14 @@ struct GeometryView: View {
             }
             Text("Cutaway orientation and finishes are illustrative. Styled objects are a generated illustration, not measured furniture. The acoustic shell itself is the only measured geometry.")
                 .font(.caption).foregroundStyle(.secondary)
-            Text(String(format: "Echo fit error %.3f ms · %d/%d predicted echoes matched", candidate.fit_error_ms,
-                        candidate.matched_echoes, candidate.total_predicted_echoes))
-                .font(.caption.monospacedDigit())
+            if candidate.confidence == "low" {
+                Text("Low-confidence experimental fit · support \(Int(candidate.support_fraction * 100))% · \(candidate.matched_echoes)/\(candidate.total_predicted_echoes) echoes matched. Verify with a tape measure.")
+                    .font(.caption).foregroundStyle(.orange)
+            } else {
+                Text(String(format: "Echo fit error %.3f ms · %d/%d predicted echoes matched", candidate.fit_error_ms,
+                            candidate.matched_echoes, candidate.total_predicted_echoes))
+                    .font(.caption.monospacedDigit())
+            }
             Text("Echo match quality measures how well this layout explains the recording. It does not confirm the room’s actual dimensions.")
                 .font(.caption).foregroundStyle(.secondary)
         }

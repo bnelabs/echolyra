@@ -366,6 +366,21 @@ Built on the external geometry contribution after review:
   distance-only. Measured object mapping requires multi-position/IMU or receiver-array capture —
   the next frontier step.
 
+## Increment 25 — real-room low-confidence tier (round 25)
+
+Real iPhone recordings (42 repeatable echoes, 78–81 dB probe match) always failed the strict
+shoebox solver and the app showed "couldn't map this room yet". Root cause measured: strict tier
+requires 19/21 peaks and 11/12 perpendicular predictions; real clutter peaks at 15/21 unique
+matches → no candidate.
+
+Added a **labelled low-confidence tier**: clutter-guarded relaxed fit (median echo spacing
+≥0.45 ms, decaying strength–delay correlation ≤−0.15, ≥10/12 cross matches, ≥12/21 unique,
+support ≥0.55, fit ≤1 ms, coverage ≥55 %/78 % joint). Dense random clutter still rejected by the
+guard (unit-tested). Same saved room recordings now return **3 low-confidence layouts**
+(≈4.99×2.16×1.87, ≈6.49×2.16×1.87, ≈6.03×4.99×2.16 m; 57 % coverage) with an orange
+"verify dimensions" warning instead of a dead end; iOS candidate model/UI updated; app installed
+on the iPhone 12 Pro Max. 46/46 geometry tests pass.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
