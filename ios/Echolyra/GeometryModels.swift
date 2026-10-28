@@ -48,6 +48,42 @@ struct GeometryResult: Codable {
     var isSynthetic: Bool { source == "synthetic_demo" }
 }
 
+
+struct ScanPose: Codable {
+    var x: Double
+    var y: Double
+    var yaw: Double
+}
+
+struct ReflectionPoint: Codable, Identifiable {
+    var id: String
+    var x: Double
+    var y: Double
+    var distance_from_start_m: Double
+    var support: Int
+    var poses: Int
+    var score: Double
+    var type: String
+    var note: String
+}
+
+struct ReflectionDiagnostics: Codable {
+    var recordings: Int?
+    var usable_poses: Int?
+    var support_needed: Int?
+    var grid_step_m: Double?
+    var assumed_spacing_m: Double?
+}
+
+struct ReflectionScan: Codable {
+    var status: String
+    var message: String
+    var assumptions: [String]
+    var poses: [ScanPose]
+    var reflectors: [ReflectionPoint]
+    var diagnostics: ReflectionDiagnostics
+}
+
 struct GeometryCandidate: Codable, Identifiable {
     var id: String
     var dimensions_m: [Double]
@@ -97,6 +133,24 @@ extension APIClient {
         let (data, response) = try await URLSession.shared.data(for: upload)
         try Self.check(response, data)
         return try JSONDecoder().decode(GeometryResult.self, from: data)
+    }
+
+    func scanGeometry(clips: [Data], poses: [ScanPose]) async throws -> ReflectionScan {
+        let encoded = try JSONEncoder().encode(poses)
+        let posesJSON = String(data: encoded, encoding: .utf8) ?? "[]"
+        let body = Self.multipart(
+            fields: ["poses": posesJSON],
+            files: clips.enumerated().map { (name: "audio", filename: "walk\($0.offset).wav",
+                                              mime: "audio/wav", data: $0.element) }
+        )
+        var upload = URLRequest(url: baseURL.appendingPathComponent("api/geometry/scan"))
+        upload.httpMethod = "POST"
+        upload.timeoutInterval = 120
+        upload.setValue("multipart/form-data; boundary=\(Self.boundary)", forHTTPHeaderField: "Content-Type")
+        upload.httpBody = body
+        let (data, response) = try await URLSession.shared.data(for: upload)
+        try Self.check(response, data)
+        return try JSONDecoder().decode(ReflectionScan.self, from: data)
     }
 
     func geometryDemo() async throws -> GeometryResult {

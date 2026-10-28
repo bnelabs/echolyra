@@ -9,7 +9,11 @@ on the phone. See the privacy section below for cloud and debug-capture behavior
 
 ## Experimental sound-only 3D room
 
-Open the **3D Room** tab → **Measure with 3 sweeps**, holding the phone stationary in a quiet
+Open the **Walk scan** in the same tab moves the phone over an approximate L-path to localize reflective
+surfaces as a **reflection-candidate map** (persistent = repeated at every stop; unstable =
+possible movement), rendered as a 3D point map. It is not object identification.
+
+**3D Room** tab → **Measure with 3 sweeps**, holding the phone stationary in a quiet
 room. The backend searches repeatable echo arrival times for possible rectangular layouts,
 reports strong echoes the shell cannot explain as **distance-only object candidates**, and shows
 an interactive 3D scene: the measured shell, cyan distance rings for acoustic candidates, and an

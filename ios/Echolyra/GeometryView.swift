@@ -12,6 +12,8 @@ struct GeometryView: View {
     @State private var progress = ""
     @State private var review: GeometryReview?
     @State private var staging: GeometryStaging?
+    @State private var scan: ReflectionScan?
+    @State private var walkProgress = ""
     @State private var reviewConsent = false
     @State private var stagingConsent = false
     @State private var work: Task<Void, Never>?
@@ -25,6 +27,11 @@ struct GeometryView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+#if DEBUG
+                    if ProcessInfo.processInfo.arguments.contains("-geometryWalkSample"), let scan {
+                        reflectionCard(scan)
+                    }
+#endif
                     if result == nil {
                         intro
                         captureActions
@@ -58,6 +65,8 @@ struct GeometryView: View {
                         ContentUnavailableView("Start with the echoes", systemImage: "waveform.path",
                             description: Text("Measure a stationary phone’s probe echoes, or explore the synthetic example. The room appears here when the recordings support an estimate."))
                     }
+                    walkScanSection
+                    if let scan { reflectionCard(scan) }
                 }
                 .padding()
             }
@@ -72,6 +81,9 @@ struct GeometryView: View {
                 if (ProcessInfo.processInfo.arguments.contains("-geometryStage")
                     || env["ECHOLYRA_GEOMETRY_STAGE"] == "1"), staging == nil {
                     await askStage()
+                }
+                if ProcessInfo.processInfo.arguments.contains("-geometryWalkSample"), scan == nil {
+                    scan = sampleScan()
                 }
 #endif
             }
@@ -357,6 +369,91 @@ struct GeometryView: View {
         candidate.dimensions_m.map { String(format: "%.2f", $0) }.joined(separator: ", ")
     }
 
+    private var walkScanSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Walk scan · reflections from objects", systemImage: "figure.walk")
+                .font(.headline)
+            Text("Put the phone down and start. Move in an L, one sweep at each of four stops: start → step right ~0.6 m → step forward ~0.6 m → step right ~0.6 m. Keep the same height and facing. About 20 seconds.")
+                .font(.subheadline)
+            Button { work = Task { await walkScan() } } label: {
+                Label("Start walk scan (4 sweeps)", systemImage: "waveform.path.ecg")
+                    .frame(maxWidth: .infinity).padding(.vertical, 6)
+            }
+            .buttonStyle(.bordered)
+            .disabled(model.busy)
+            if !walkProgress.isEmpty {
+                HStack { ProgressView(); Text(walkProgress).font(.subheadline) }
+            }
+            Text("The 0.6 m spacing is assumed, not measured. Reflections from furniture, walls and people are localized as candidates — not identified objects. Move slowly and avoid soft furnishings for clearer results.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
+        .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func reflectionCard(_ scan: ReflectionScan) -> some View {
+        let persistent = scan.reflectors.filter { $0.type == "persistent" }.count
+        let unstable = scan.reflectors.count - persistent
+        return VStack(alignment: .leading, spacing: 10) {
+            Label("Acoustic reflection map · experimental", systemImage: "dot.radiowaves.left.and.right")
+                .font(.headline)
+            Text(scan.message).font(.subheadline)
+            ReflectionScene(scan: scan).frame(height: 340)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .accessibilityLabel("Reflection candidates in a top-down 3D view")
+            Text("\(persistent) persistent reflection candidates · \(unstable) unstable (possible movement/occlusion)")
+                .font(.caption).foregroundStyle(.secondary)
+            ForEach(scan.reflectors.prefix(5)) { point in
+                HStack {
+                    Text(point.type == "persistent" ? "Persistent" : "Unstable")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(point.type == "persistent" ? .cyan : .orange)
+                    Spacer()
+                    Text(String(format: "≈ %.1f m from start · %d/%d poses", point.distance_from_start_m,
+                                point.support, point.poses))
+                        .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                }
+            }
+            Text("These are reflective surfaces, not identified furniture or people. A person walking through during the scan usually appears as an unstable or missing candidate; repeat the walk to distinguish persistent objects from movement.")
+                .font(.caption).foregroundStyle(.secondary)
+            DisclosureGroup("Scan assumptions") {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(Array(scan.assumptions.enumerated()), id: \.offset) { _, text in
+                        Text(text).font(.caption).frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }.padding(.top, 6)
+            }
+        }
+        .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    @MainActor private func walkScan() async {
+        guard !model.busy else { return }
+        model.busy = true
+        scan = nil
+        defer { model.busy = false; walkProgress = "" }
+        let poses = [ScanPose(x: 0, y: 0, yaw: 0),
+                     ScanPose(x: 0.6, y: 0, yaw: 0),
+                     ScanPose(x: 0.6, y: 0.6, yaw: 0),
+                     ScanPose(x: 1.2, y: 0.6, yaw: 0)]
+        do {
+            let recorder = ProbeRecorder()
+            var clips: [Data] = []
+            for (index, label) in ["start", "right 0.6 m", "forward 0.6 m", "right 0.6 m"].enumerated() {
+                try Task.checkCancellation()
+                walkProgress = "Spot \(index + 1) of 4 · \(label) — hold still…"
+                clips.append(try await recorder.measure())
+            }
+            try Task.checkCancellation()
+            walkProgress = "Localizing reflections across the walk…"
+            scan = try await model.client.scanGeometry(clips: clips, poses: poses)
+#if DEBUG
+            print("ECHOLYRA_WALK status=\(scan?.status ?? "nil") reflectors=\(scan?.reflectors.count ?? -1)")
+            fflush(stdout)
+#endif
+        } catch is CancellationError {
+        } catch { if !Task.isCancelled { model.errorText = error.localizedDescription } }
+    }
+
     @MainActor private func measure() async {
         guard !model.busy else { return }
         model.busy = true
@@ -408,6 +505,33 @@ struct GeometryView: View {
     }
 
 #if DEBUG
+    private func sampleScan() -> ReflectionScan {
+        let poses = [ScanPose(x: 0, y: 0, yaw: 0), ScanPose(x: 0.6, y: 0, yaw: 0),
+                     ScanPose(x: 0.6, y: 0.6, yaw: 0), ScanPose(x: 1.2, y: 0.6, yaw: 0)]
+        let reflectors = [
+            ReflectionPoint(id: "reflector-1", x: 2.12, y: 1.08, distance_from_start_m: 2.38,
+                            support: 4, poses: 4, score: 2.4, type: "persistent",
+                            note: "Acoustic reflection candidate; not an identified object."),
+            ReflectionPoint(id: "reflector-2", x: 3.52, y: 2.48, distance_from_start_m: 4.31,
+                            support: 4, poses: 4, score: 2.2, type: "persistent",
+                            note: "Acoustic reflection candidate; not an identified object."),
+            ReflectionPoint(id: "reflector-3", x: 1.48, y: 2.72, distance_from_start_m: 3.10,
+                            support: 4, poses: 4, score: 2.0, type: "persistent",
+                            note: "Acoustic reflection candidate; not an identified object."),
+            ReflectionPoint(id: "reflector-4", x: 0.9, y: 2.1, distance_from_start_m: 2.28,
+                            support: 3, poses: 4, score: 1.6, type: "unstable",
+                            note: "Possible movement/occlusion; unstable candidate."),
+        ]
+        return ReflectionScan(status: "reflectors",
+                              message: "Reflection candidates localized. These are surfaces that reflected the probe, not identified furniture; moving things can appear as unstable candidates.",
+                              assumptions: ["Phone moved along an approximate L-path with 0.6 m hand spacing (user instruction; not measured).",
+                                            "Reflectors are localized on a 2D horizontal plane; true height and identity are unknown."],
+                              poses: poses, reflectors: reflectors,
+                              diagnostics: ReflectionDiagnostics(recordings: 4, usable_poses: 4,
+                                                                 support_needed: 3, grid_step_m: 0.08,
+                                                                 assumed_spacing_m: 0.6))
+    }
+
     private func sampleStaging() -> GeometryStaging {
         GeometryStaging(available: true, source: "procedural", model: nil, training_use: false,
                         style: "Warm minimal (sample)", palette: ["#d8c3a5", "#8d7b68"],
@@ -865,5 +989,178 @@ private struct AcousticRoomScene: UIViewRepresentable {
         node.position = position
         node.constraints = [SCNBillboardConstraint()]
         parent.addChildNode(node)
+    }
+}
+
+private struct ReflectionScene: UIViewRepresentable {
+    let scan: ReflectionScan
+
+    final class Coordinator {
+        var key = ""
+        var camera: SCNNode?
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> SCNView {
+        let view = SCNView()
+        view.backgroundColor = UIColor(red: 0.08, green: 0.10, blue: 0.13, alpha: 1)
+        view.allowsCameraControl = true
+        view.antialiasingMode = .multisampling4X
+        view.autoenablesDefaultLighting = false
+        return view
+    }
+
+    func updateUIView(_ view: SCNView, context: Context) {
+        let key = scan.status + scan.reflectors.map { "\($0.id)\($0.x)\($0.y)\($0.type)" }.joined()
+        guard context.coordinator.key != key else { return }
+        context.coordinator.key = key
+        buildScene(view, coordinator: context.coordinator)
+    }
+
+    private func buildScene(_ view: SCNView, coordinator: Coordinator) {
+        let scene = SCNScene()
+        let xs = scan.poses.map(\.x) + scan.reflectors.map(\.x)
+        let ys = scan.poses.map(\.y) + scan.reflectors.map(\.y)
+        let minX = xs.min() ?? -1, maxX = xs.max() ?? 3
+        let minY = ys.min() ?? -1, maxY = ys.max() ?? 3
+        let span = max(max(maxX - minX, maxY - minY), 2.0)
+        let cx = (minX + maxX) / 2, cy = (minY + maxY) / 2
+        let extent = max(span, 2.5)
+
+        let gridMaterial = SCNMaterial()
+        gridMaterial.lightingModel = .constant
+        gridMaterial.diffuse.contents = UIColor(white: 0.55, alpha: 0.28)
+        let half = extent * 0.8
+        var line = floor((cx - half) / 0.5) * 0.5
+        while line <= cx + half {
+            let vertical = SCNBox(width: 0.008, height: 0.004, length: CGFloat(half * 2),
+                                  chamferRadius: 0)
+            vertical.materials = [gridMaterial]
+            let node = SCNNode(geometry: vertical)
+            node.position = SCNVector3(Float(line - cx), 0, 0)
+            scene.rootNode.addChildNode(node)
+            let horizontal = SCNBox(width: CGFloat(half * 2), height: 0.004, length: 0.008,
+                                    chamferRadius: 0)
+            horizontal.materials = [gridMaterial]
+            let hnode = SCNNode(geometry: horizontal)
+            hnode.position = SCNVector3(0, 0, Float(line - cy))
+            scene.rootNode.addChildNode(hnode)
+            line += 0.5
+        }
+
+        let pathMaterial = SCNMaterial()
+        pathMaterial.lightingModel = .constant
+        pathMaterial.diffuse.contents = UIColor(red: 0.44, green: 0.62, blue: 0.95, alpha: 1)
+        for index in 0..<max(0, scan.poses.count - 1) {
+            let a = scan.poses[index], b = scan.poses[index + 1]
+            let dx = b.x - a.x, dz = b.y - a.y
+            let length = max(hypot(dx, dz), 0.01)
+            let segment = SCNBox(width: CGFloat(length), height: 0.01, length: 0.02, chamferRadius: 0)
+            segment.materials = [pathMaterial]
+            let node = SCNNode(geometry: segment)
+            node.position = SCNVector3(Float((a.x + b.x) / 2 - cx), 0.012, Float((a.y + b.y) / 2 - cy))
+            node.eulerAngles.y = Float(-atan2(dz, dx))
+            scene.rootNode.addChildNode(node)
+        }
+        for (index, pose) in scan.poses.enumerated() {
+            let marker = SCNSphere(radius: 0.07)
+            let material = SCNMaterial()
+            material.lightingModel = .constant
+            material.diffuse.contents = UIColor(red: 0.44, green: 0.62, blue: 0.95, alpha: 1)
+            marker.materials = [material]
+            let node = SCNNode(geometry: marker)
+            node.position = SCNVector3(Float(pose.x - cx), 0.07, Float(pose.y - cy))
+            scene.rootNode.addChildNode(node)
+            if let label = labelNode("\(index + 1)", size: 0.12,
+                                     color: UIColor(red: 0.55, green: 0.72, blue: 1, alpha: 1)) {
+                label.position = SCNVector3(Float(pose.x - cx), 0.20, Float(pose.y - cy))
+                scene.rootNode.addChildNode(label)
+            }
+        }
+
+        for reflector in scan.reflectors {
+            let persistent = reflector.type == "persistent"
+            let color = persistent
+                ? UIColor(red: 0.30, green: 0.86, blue: 0.94, alpha: 1)
+                : UIColor(red: 0.96, green: 0.66, blue: 0.30, alpha: 1)
+            let sphere = SCNSphere(radius: 0.11)
+            let material = SCNMaterial()
+            material.lightingModel = .constant
+            material.diffuse.contents = color.withAlphaComponent(0.9)
+            sphere.materials = [material]
+            let node = SCNNode(geometry: sphere)
+            node.position = SCNVector3(Float(reflector.x - cx), 0.42, Float(reflector.y - cy))
+            scene.rootNode.addChildNode(node)
+            let ring = SCNTorus(ringRadius: 0.16, pipeRadius: 0.008)
+            let ringMaterial = SCNMaterial()
+            ringMaterial.lightingModel = .constant
+            ringMaterial.diffuse.contents = color.withAlphaComponent(0.7)
+            ring.materials = [ringMaterial]
+            let ringNode = SCNNode(geometry: ring)
+            ringNode.eulerAngles.x = -.pi / 2
+            ringNode.position = SCNVector3(Float(reflector.x - cx), 0.01, Float(reflector.y - cy))
+            scene.rootNode.addChildNode(ringNode)
+            if let label = labelNode(String(format: "≈ %.1f m", reflector.distance_from_start_m),
+                                     size: 0.11, color: color) {
+                label.position = SCNVector3(Float(reflector.x - cx), 0.62, Float(reflector.y - cy))
+                scene.rootNode.addChildNode(label)
+            }
+        }
+
+        if let banner = labelNode("REFLECTION CANDIDATES · NOT IDENTIFIED OBJECTS",
+                                  size: extent * 0.030,
+                                  color: UIColor(red: 0.95, green: 0.64, blue: 0.28, alpha: 1)) {
+            banner.position = SCNVector3(0, Float(extent * 0.55), 0)
+            scene.rootNode.addChildNode(banner)
+        }
+
+        let ambient = SCNNode()
+        ambient.light = SCNLight()
+        ambient.light?.type = .ambient
+        ambient.light?.intensity = 560
+        ambient.light?.color = UIColor(red: 0.82, green: 0.88, blue: 0.96, alpha: 1)
+        scene.rootNode.addChildNode(ambient)
+        let keyLight = SCNNode()
+        keyLight.light = SCNLight()
+        keyLight.light?.type = .directional
+        keyLight.light?.intensity = 900
+        keyLight.light?.temperature = 5800
+        keyLight.position = SCNVector3(Float(extent), Float(extent * 2), Float(extent))
+        scene.rootNode.addChildNode(keyLight)
+
+        let focus = SCNNode()
+        focus.position = SCNVector3(0, 0.3, 0)
+        scene.rootNode.addChildNode(focus)
+        let camera = SCNNode()
+        camera.camera = SCNCamera()
+        camera.camera?.fieldOfView = 45
+        camera.camera?.zNear = 0.01
+        camera.camera?.zFar = extent * 12
+        camera.camera?.wantsHDR = true
+        camera.position = SCNVector3(Float(extent * 0.9), Float(extent * 1.35), Float(extent * 1.05))
+        let look = SCNLookAtConstraint(target: focus)
+        look.isGimbalLockEnabled = true
+        camera.constraints = [look]
+        scene.rootNode.addChildNode(camera)
+
+        view.scene = scene
+        view.pointOfView = camera
+        view.defaultCameraController.target = focus.position
+        coordinator.camera = camera
+    }
+
+    private func labelNode(_ text: String, size: CGFloat, color: UIColor) -> SCNNode? {
+        let geometry = SCNText(string: text, extrusionDepth: 0)
+        geometry.font = UIFont.systemFont(ofSize: 1, weight: .semibold)
+        geometry.flatness = 0.02
+        let material = SCNMaterial()
+        material.lightingModel = .constant
+        material.diffuse.contents = color
+        geometry.materials = [material]
+        let node = SCNNode(geometry: geometry)
+        node.scale = SCNVector3(Float(size), Float(size), Float(size))
+        node.constraints = [SCNBillboardConstraint()]
+        return node
     }
 }

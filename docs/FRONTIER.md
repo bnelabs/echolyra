@@ -381,6 +381,21 @@ guard (unit-tested). Same saved room recordings now return **3 low-confidence la
 "verify dimensions" warning instead of a dead end; iOS candidate model/UI updated; app installed
 on the iPhone 12 Pro Max. 46/46 geometry tests pass.
 
+## Increment 26 — walk-scan reflection mapping (round 26)
+
+Added the multi-position capture needed for object-like mapping: **Walk scan** (four L-path
+stops, one probe each) votes echo-distance circles on a 2D floor grid; intersections across
+poses become **reflection candidates**. Persistent candidates (supported by all poses) are
+separated from unstable ones (some poses → possible people/movement/occlusion). Rendering: 3D
+grid, pose path 1–4, cyan persistent reflectors, orange unstable candidates, distances.
+
+Verified: 53 geometry tests pass including controlled recovery of three reflectors (<0.30 m),
+moving-reflector instability, clutter rejection; iOS walk-scan UI builds and renders (simulator
+sample); API route bounded and transient. Assumptions exposed in UI/docs: ~0.6 m spacing is
+instructed not measured, 2D plane, no identity/size/height; ghosts possible with few poses.
+Honest dead-end fix from round 25 remains: single-position real rooms now return low-confidence
+layouts instead of an error.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

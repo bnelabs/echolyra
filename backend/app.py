@@ -36,6 +36,7 @@ import probe
 import meta_models as mm
 import geometry
 import geometry_advisor
+import geometry_scan
 import geometry_stage
 import geometry_upload
 
@@ -393,6 +394,32 @@ async def geometry_demo():
         if "geometry" not in DEMO_CACHE:
             DEMO_CACHE["geometry"] = await asyncio.to_thread(geometry.demo)
         return DEMO_CACHE["geometry"]
+
+@app.post("/api/geometry/scan")
+async def geometry_scan_route(audio: list[UploadFile] | None = File(None),
+                              poses: str = Form("[]")):
+    if not audio or not 4 <= len(audio) <= 8:
+        return JSONResponse(status_code=400,
+                            content={"error": "Walk scan needs four to eight probe recordings."})
+    try:
+        parsed = json.loads(poses)
+        clean_poses = geometry_scan.sanitize_poses(parsed)
+    except (ValueError, TypeError):
+        clean_poses = None
+    if clean_poses is None or len(clean_poses) != len(audio):
+        return JSONResponse(status_code=400,
+                            content={"error": "Send one valid walk position per recording (4–8 separated positions)."})
+    recordings = []
+    for upload in audio:
+        raw = await upload.read(GEOMETRY_MAX_FILE_BYTES + 1)
+        if len(raw) > GEOMETRY_MAX_FILE_BYTES:
+            return JSONResponse(status_code=413, content={"error": "Each probe WAV must be smaller than 2 MB."})
+        try:
+            recordings.append(decode_geometry_recording(raw))
+        except ValueError as error:
+            return JSONResponse(status_code=400, content={"error": str(error)})
+    async with GEOMETRY_WORKERS:
+        return await asyncio.to_thread(geometry_scan.scan, recordings, clean_poses, probe.FS)
 
 
 @app.post("/api/geometry/stage")

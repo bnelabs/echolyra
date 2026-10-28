@@ -63,6 +63,20 @@ class GeometryAPITests(unittest.TestCase):
         self.assertEqual([], body["objects"]) if body["source"] == "none" else None
         self.assertEqual(self.client.post("/api/geometry/stage", content=b"not json").status_code, 400)
 
+    def test_walk_scan_requires_poses_and_transient_audio(self):
+        clip = wav()
+        files = [("audio", (f"p{i}.wav", clip, "audio/wav")) for i in range(4)]
+        poses = '[{"x":0,"y":0,"yaw":0},{"x":0.6,"y":0,"yaw":0},{"x":0.6,"y":0.6,"yaw":0},{"x":1.2,"y":0.6,"yaw":0}]'
+        before = json.dumps(api.SESSION.state, sort_keys=True)
+        response = self.client.post("/api/geometry/scan", files=files, data={"poses": poses})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertIn(response.json()["status"], {"reflectors", "insufficient_evidence"})
+        self.assertEqual(self.client.post("/api/geometry/scan", files=files,
+                                          data={"poses": "[]"}).status_code, 400)
+        self.assertEqual(self.client.post("/api/geometry/scan", files=files[:3],
+                                          data={"poses": poses}).status_code, 400)
+        self.assertEqual(json.dumps(api.SESSION.state, sort_keys=True), before)
+
     def test_review_is_separate_and_bounded(self):
         with patch.object(api.geometry_advisor, "review", return_value={
                 "available": False, "text": "Not configured", "training_use": False}) as review:

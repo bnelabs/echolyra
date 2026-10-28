@@ -57,6 +57,15 @@ probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
 
+## Experimental: walk-scan reflection map
+
+New **Walk scan** captures probes at four hand positions along an approximate L-path and
+localizes reflective surfaces by voting echo-distance circles on a floor grid. Persistent
+reflections (all poses) are separated from unstable ones (some poses → possible movement), and
+the app renders a 3D candidate map with the phone path. It is not object identification:
+spacing is instructed not measured, the plane is 2D, and height/identity are unknown. Backend
+only; no audio to Meta. 53 geometry tests pass.
+
 ## Experimental: sound-only 3D room (low-confidence tier)
 
 Real-room recordings that fail the strict shoebox fit now return a **clearly-labelled

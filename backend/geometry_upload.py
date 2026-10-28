@@ -36,7 +36,7 @@ class GeometryUploadLimit:
         # Mounted/root-path deployments may include the prefix in scope.path.
         if root and path.startswith(root + "/"):
             path = path[len(root):]
-        if scope["type"] != "http" or scope.get("method") != "POST" or path != "/api/geometry/reconstruct":
+        if scope["type"] != "http" or scope.get("method") != "POST" or path not in ("/api/geometry/reconstruct", "/api/geometry/scan"):
             await self.app(scope, receive, send)
             return
 

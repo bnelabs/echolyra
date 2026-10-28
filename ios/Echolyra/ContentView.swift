@@ -25,6 +25,7 @@ struct ContentView: View {
 #if DEBUG
             let debugEnv = ProcessInfo.processInfo.environment
             if ProcessInfo.processInfo.arguments.contains("-geometryDemo")
+                || ProcessInfo.processInfo.arguments.contains("-geometryWalkSample")
                 || debugEnv["ECHOLYRA_GEOMETRY_DEMO"] == "1"
                 || debugEnv["ECHOLYRA_GEOMETRY_STAGE"] == "1" {
                 selectedTab = 3
