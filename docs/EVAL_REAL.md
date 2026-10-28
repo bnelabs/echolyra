@@ -46,6 +46,19 @@ two-tier temporal policy:
 Raw (pre-temporal) alerts: 27 at **0.926 precision**. So: no false critical alerts, and the
 system is conservative about the ambiguous classes.
 
+## Held-out calibration (round 5)
+
+Splitting the real recordings 30 fit / 20 validation and fitting only on the 30:
+
+| profile | ECE before → after (held-out) | accepted precision |
+|---|---|---|
+| synthetic | 0.1285 → 0.0423 | 0.944 |
+| real-fit | 0.1285 → 0.0251 | 0.944 |
+| **hybrid** | 0.1285 → **0.0166** | 0.944 |
+
+Held-out decisions: 9 alerts at **0.889 precision** (one wrong), 11 silent. So the calibrated
+trust layer generalizes to recordings it never saw.
+
 ## Limitations (be honest in the demo)
 
 - This evaluates **event understanding only**; room attribution is not measurable on clips

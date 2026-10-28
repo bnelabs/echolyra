@@ -90,6 +90,23 @@ story demo-able without a second iPhone.
   decision → Muse Spark; browser fallback documented.
 - Device still unavailable (4th round): on-device verification of criteria 1/2/5/6 pending.
 
+## Increment 6 — probe drift/transient monitor + held-out validation (round 5)
+
+**Probe drift monitor** (`probe.py`): enrollment estimates each room's repeatability noise from
+pairwise probe distances; checks report `stable / drift / changed` with a confidence, plus a
+low-confidence `transient_change` flag when the room fluctuates and returns (door open/close,
+someone moving things). Verified:
+
+| scenario | ΔT30 (max band) | status | confidence |
+|---|---|---|---|
+| same room, new probe | 0.4% | stable | 0.96–0.97 |
+| mild change | 11.8% | drift | 0.71 |
+| moderate change | 22.3% | changed | 0.72 |
+| real changes | 53–60% | changed | 0.94–0.99 |
+
+**Held-out calibration validation**: 30/20 split of real recordings; hybrid profile reaches
+**ECE 0.0166** on unseen real audio at 0.944 accepted precision (see CALIBRATION.md §3.6).
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

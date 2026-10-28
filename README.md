@@ -31,6 +31,12 @@ audio stored, no cloud recordings.
 | `muse-voice-transcribe-1.0` | Voice rules / hands-free commands |
 | `muse-image-1.0` | Optional "what to check" visual |
 
+## Probe drift & change detection
+
+Re-probing a learned room returns `stable / drift / changed` with a calibrated confidence
+(measured: 0.4% ΔT30 → stable 0.96; 11.8% → drift 0.71; 22–60% → changed 0.72–0.99) and a
+`transient_change` flag for door-open / movement-like fluctuations.
+
 ## Real-world accuracy
 
 On 50 real ESC-50 recordings the on-device pretrained model scores **92%** event accuracy
@@ -71,7 +77,7 @@ Only **numeric features** are persisted. Audio is never stored.
 | `POST /api/teach` | `label`, `audio` (2–3 examples per event class) |
 | `POST /api/detect` | `audio` (2.5 s clip) + optional `sound_labels` (Apple on-device labels) → event + room + situation |
 | `POST /api/probe/enroll` | `room_id`, `room_name`, `audio` (recording of the inaudible probe sweep) → measured RT60/EDT + room fingerprint |
-| `POST /api/probe/check` | `room_id`, `audio` → change detection ("did the room change?") |
+| `POST /api/probe/check` | `room_id`, `audio` → `stable / drift / changed` + confidence + `transient_change` (door/movement fluctuation) + history |
 | `GET /api/probe/status` | learned room fingerprints and measured reverberation |
 | `POST /api/calibrate` / `GET /api/calibration` | rebuild/read the reliability calibration, operating point and conformal thresholds |
 | `POST /api/fuse` / `GET /api/fuse` | fuse recent detections from multiple sensor nodes into one event + room estimate |

@@ -66,23 +66,23 @@ be delayed. Policy in `backend/app.py`:
 Real-world check (ESC-50, see `EVAL_REAL.md`): immediate critical alerts precision **1.00**;
 deferred ambiguous detections precision **0.88** if confirmed.
 
-## 3.6 Real-data calibration profiles (round 4)
+## 3.6 Real-data calibration profiles (held-out validation, round 5)
 
-We fitted calibration profiles from real-world recordings (50 ESC-50 clips; see
-`EVAL_REAL.md`) and from the pooled synthetic+real set. Scored **on the real clips**:
+Real-world rows: 50 ESC-50 clips, split per class into **fit 30 / validation 20**. Profiles are
+fitted only on fit data; scored only on held-out recordings:
 
-| profile (fit data) | rows | ECE before → after (real) | operating point | accepted precision |
-|---|---|---|---|---|
-| synthetic only (default) | 180 synthetic | 0.205 → 0.099 | 0.25 | 0.958 |
-| real only | 50 real | 0.205 → 0.053 | 0.23 | 0.958 |
-| **hybrid (synthetic + real)** | 230 | **0.205 → 0.049** | 0.23 | 0.958 |
+| profile (fit data) | fit rows | ECE before | **ECE after (held-out)** | accepted/20 | precision |
+|---|---|---|---|---|---|
+| synthetic only | 180 | 0.1285 | **0.0423** | 18 | 0.944 |
+| real-fit only | 30 | 0.1285 | **0.0251** | 18 | 0.944 |
+| **hybrid (synthetic + real-fit)** | 210 | 0.1285 | **0.0166** | 18 | 0.944 |
 
-The hybrid profile is the best calibrated on real audio. Caveat: the real rows are also used
-in the hybrid fit (small n=50), so this is not a fully held-out estimate — the next real phone
-corpus will be split into fit/validation. Profiles are stored as
-`cache/calibration{synthetic,real,hybrid}.json`; select one with the `CALIBRATION_PROFILE`
-env var or read it via `GET /api/calibration?profile=hybrid`. Default remains `synthetic`
-until a larger real corpus exists.
+Decision behaviour on the held-out rows: 9 alerts (**precision 0.889**, one wrong alert),
+11 silent, 0 explain (single-shot, no temporal confirmation). The hybrid profile is the best
+calibrated and is what a real deployment should use; the synthetic profile stays the default
+for the synthetic-room demo. Profiles live in `cache/calibration{synthetic,real,hybrid}.json`
+and are selectable with `CALIBRATION_PROFILE` or `GET /api/calibration?profile=hybrid`.
+Reproduce with `backend/tools_validate_calibration.py`.
 
 ## 4. Limitations / next
 

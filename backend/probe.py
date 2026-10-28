@@ -142,10 +142,20 @@ def enroll(room_id: str, room_name: str, recordings: list[np.ndarray]) -> dict:
     mean_fp = np.mean(np.stack(fps), axis=0)
     t30s = np.array([a["t30_s"] for a in analyses], dtype=float)
     mid = np.nanmedian(t30s[:, 1:4]) if np.isfinite(t30s).any() else None
+    # Repeatability estimate: pairwise distance between the enrollment probes tells us how
+    # much this room's fingerprint naturally varies (noise floor for change detection).
+    noise_mean, noise_std = 0.0, 0.02
+    if len(fps) >= 2:
+        dists = [float(np.linalg.norm(fps[i] - fps[j]))
+                 for i in range(len(fps)) for j in range(i + 1, len(fps))]
+        noise_mean = float(np.mean(dists))
+        noise_std = max(float(np.std(dists)), 0.01)
     state = _load_state()
     room = {
         "id": room_id, "name": room_name,
         "fingerprint": mean_fp.tolist(),
+        "noise_mean": round(noise_mean, 4), "noise_std": round(noise_std, 4),
+        "history": [],
         "t30_mid_s": None if mid is None or not np.isfinite(mid) else round(float(mid), 3),
         "rt60_mid_s": analyses[0]["rt60_mid_s"],
         "t30_s": analyses[0]["t30_s"],
@@ -160,7 +170,13 @@ def enroll(room_id: str, room_name: str, recordings: list[np.ndarray]) -> dict:
 
 
 def check(room_id: str, recording: np.ndarray) -> dict:
-    """Compare a fresh probe against the stored baseline -> change detection."""
+    """Compare a fresh probe with the stored baseline -> stable / drift / changed.
+
+    The change statistic is a z-score of the fingerprint distance against the room's own
+    repeatability noise (measured from the enrollment probes), so thresholds adapt to the
+    room instead of being global guesses. Slowly accumulating history detects gradual drift;
+    alternating probes in a short window flag an activity anomaly (possible movement).
+    """
     state = _load_state()
     room = state["rooms"].get(room_id)
     if not room:
@@ -169,26 +185,66 @@ def check(room_id: str, recording: np.ndarray) -> dict:
     base = np.array(room["fingerprint"])
     cur = np.array(a["fingerprint"])
     dist = float(np.linalg.norm(cur - base))
-    # per-band T30 relative change (the physically meaningful cue)
+    noise_mean = float(room.get("noise_mean", 0.0))
+    noise_std = max(float(room.get("noise_std", 0.02)), 0.01)
+    z = (dist - noise_mean) / noise_std
+
     base_t30 = np.array([v if v is not None else np.nan for v in room.get("t30_s", [])], dtype=float)
     cur_t30 = np.array([v if v is not None else np.nan for v in a["t30_s"]], dtype=float)
     rel = np.abs(cur_t30 - base_t30) / np.maximum(base_t30, 0.05)
     max_rel = float(np.nanmax(rel)) if np.isfinite(rel).any() else 0.0
-    changed = bool(max_rel > 0.20 or dist > 0.35)
+
+    # Thresholds combine the physically meaningful per-band RT change with fingerprint
+    # distance. (Pure z-scores explode when the enrollment repeatability is very tight.)
+    # max_rel is a fraction; thresholds: >20% RT change = changed, 6-20% = drift.
+    if max_rel > 0.20 or dist > 0.35:
+        status = "changed"
+        confidence = min(0.99, 0.70 + 0.29 * min((max_rel - 0.20) / 0.40, 1.0))
+    elif max_rel > 0.06 or dist > 0.08:
+        status = "drift"
+        confidence = min(0.95, 0.55 + 0.40 * min((max_rel - 0.06) / 0.14, 1.0))
+    else:
+        status = "stable"
+        confidence = min(0.99, 0.60 + 0.39 * (1.0 - min(max_rel / 0.06, 1.0)))
+
+    history = room.get("history", [])
+    history.append({"ts": round(time.time(), 1), "distance": round(dist, 4), "z": round(z, 2),
+                    "max_t30_change_pct": round(100 * max_rel, 1), "status": status,
+                    "rt60_mid_s": a["rt60_mid_s"]})
+    room["history"] = history[-100:]
+
+    # transient change: the room fluctuated and returned (door opened/closed, someone moved
+    # something) -> useful as a low-confidence "activity" signal, not a room redesign.
+    recent = room["history"][-4:]
+    dists_recent = [h["distance"] for h in recent]
+    spread = (max(dists_recent) - min(dists_recent)) if dists_recent else 0.0
+    transient = bool(len(recent) >= 3 and len({h["status"] for h in recent}) > 1
+                     and spread > 0.10 and status != "changed")
+    room["last_status"] = status
+    room["last_checked_at"] = time.time()
+    _save_state(state)
+
     return {
         "room_id": room_id, "room_name": room["name"],
-        "change_detected": changed,
+        "change_detected": status == "changed",
+        "status": status, "confidence": round(confidence, 2), "z_score": round(z, 2),
+        "repeatability_noise": {"mean": round(noise_mean, 4), "std": round(noise_std, 4)},
         "fingerprint_distance": round(dist, 3),
         "max_t30_change_pct": round(100 * max_rel, 1),
         "delta_t30_s": [None if not (np.isfinite(c) and np.isfinite(b)) else round(float(c - b), 3)
                         for b, c in zip(base_t30, cur_t30)],
+        "transient_change": transient,
         "current": {k: v for k, v in a.items() if k != "rir"},
         "baseline_rt60_mid_s": room.get("rt60_mid_s"),
+        "history": room["history"][-8:],
     }
 
 
 def status() -> dict:
     state = _load_state()
     return {"rooms": [{"id": r["id"], "name": r["name"], "rt60_mid_s": r.get("rt60_mid_s"),
-                       "valid": r.get("valid"), "n_probes": r.get("n_probes")}
+                       "valid": r.get("valid"), "n_probes": r.get("n_probes"),
+                       "last_status": r.get("last_status"),
+                       "repeatability_std": r.get("noise_std"),
+                       "history_len": len(r.get("history", []))}
                       for r in state["rooms"].values()]}
