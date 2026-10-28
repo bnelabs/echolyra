@@ -418,6 +418,16 @@ cost). The useful cloud path was wired instead: geometry review now prefers **Mu
 (numeric allowlist only, no audio) and the live review correctly stated the 3 layouts are
 ambiguous and recommended a measured-distance repeat measurement.
 
+## Increment 29 — honest math audit + robust nonlinear refinement (round 29)
+
+Documented the actual mathematical pipeline (`docs/GEOMETRY_MATH.md`): FFT/Farina deconvolution,
+Hilbert-envelope echo detection with cross-sweep repeatability, image-source shoebox identities,
+bounded pair/triplet search, Hough voting for the walk scan — classical, not learned/SLAM SOTA.
+Added **robust nonlinear least-squares refinement** of accepted layouts (soft-L1, joint
+dimensions+sensor). Latest real capture improved layout 1 fit 0.089→0.076 ms; 53 tests pass.
+Clear gap analysis and SOTA upgrade path (learned echo detection on dEchorate, graph labeling,
+IMU factor-graph SLAM, directivity calibration, optional LiDAR) recorded.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

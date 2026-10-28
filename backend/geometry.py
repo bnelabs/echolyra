@@ -130,6 +130,86 @@ def _scene(first: list[tuple[float, float]]) -> tuple[list[float],list[float],li
     return dims,sensor,vertices,faces
 
 
+def _predict_from_params(params: np.ndarray) -> np.ndarray:
+    """First- and second-order path delays (ms) for a shoebox + sensor position."""
+    length, width, height, sx, sy, sz = (float(v) for v in params)
+    first = np.array([2 * sx, 2 * (length - sx), 2 * sy, 2 * (width - sy),
+                      2 * sz, 2 * (height - sz)], dtype=float) / SOUND_SPEED * 1000.0
+    second = [first[0] + first[1], first[2] + first[3], first[4] + first[5]]
+    for i in range(6):
+        for j in range(i + 1, 6):
+            second.append(math.hypot(first[i], first[j]))
+    return np.concatenate([first, np.asarray(second, dtype=float)])
+
+
+def _box_geometry(dims, sensor):
+    length, width, height = (float(v) for v in dims)
+    x, y, z = (float(v) for v in sensor)
+    vertices = [[0, 0, 0], [length, 0, 0], [length, width, 0], [0, width, 0],
+                [0, 0, height], [length, 0, height], [length, width, height], [0, width, height]]
+    faces = [[0, 3, 2, 1], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5],
+             [2, 3, 7, 6], [3, 0, 4, 7]]
+    return [round(float(v), 3) for v in dims], [round(float(v), 3) for v in sensor], vertices, faces
+
+
+def refine_candidate(candidate: dict, times: np.ndarray) -> dict:
+    """Robust nonlinear least-squares refinement of one accepted layout.
+
+    The combinatorial search gives a good basin; a soft-L1 fit then refines dimensions and
+    sensor position jointly, matching predictions to observed echo times. This is the classic
+    image-source inverse problem solved locally (no labels, no oracle echoes).
+    """
+    from scipy.optimize import least_squares
+    dims = np.asarray(candidate["dimensions_m"], dtype=float)
+    sensor = np.asarray(candidate["sensor_position_m"], dtype=float)
+    if dims.shape != (3,) or sensor.shape != (3,):
+        return candidate
+    x0 = np.concatenate([dims, sensor])
+    lower = np.array([1.5, 1.5, 1.5, 0.02, 0.02, 0.02])
+    upper = np.array([12.0, 12.0, 12.0, 11.98, 11.98, 11.98])
+
+    def residuals(params: np.ndarray) -> np.ndarray:
+        predicted = _predict_from_params(params)
+        errors, matched = _nearest(times, predicted)
+        keep = errors <= 1.2
+        if not keep.any():
+            return np.full(1, 10.0)
+        return predicted[keep] - times[matched[keep]]
+
+    try:
+        result = least_squares(residuals, x0, bounds=(lower, upper), loss="soft_l1",
+                               f_scale=0.05, max_nfev=300)
+        params = result.x
+    except Exception:
+        return candidate
+    new_dims = params[:3]
+    new_sensor = params[3:]
+    if any(new_sensor[k] >= new_dims[k] - 0.03 for k in range(3)):
+        return candidate
+    predicted = _predict_from_params(params)
+    errors, matched = _nearest(times, predicted)
+    good = errors <= TIMING_TOLERANCE_MS
+    if not good.any():
+        return candidate
+    fit = float(np.sqrt(np.mean(errors[good] ** 2)))
+    unique = len(set(matched[good].tolist()))
+    old_fit = float(candidate.get("fit_error_ms", 1e9))
+    if fit > max(old_fit * 1.15, old_fit + 0.01) or unique < max(8, int(0.6 * len(predicted))):
+        return candidate
+    dims_out, sensor_out, vertices, faces = _box_geometry(new_dims, new_sensor)
+    if any(v > 12.0 or v < 1.5 for v in dims_out):
+        return candidate
+    if any(sensor_out[k] >= dims_out[k] - 0.03 for k in range(3)):
+        return candidate
+    candidate.update({"dimensions_m": dims_out, "sensor_position_m": sensor_out,
+                      "vertices": vertices, "faces": faces,
+                      "fit_error_ms": round(fit, 4), "matched_echoes": unique,
+                      "support_fraction": round(float(good.mean()), 4),
+                      "total_predicted_echoes": int(len(predicted)),
+                      "refined": True})
+    return candidate
+
+
 def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
     """Bounded search over opposing-wall pairs and perpendicular second echoes.
 
@@ -257,6 +337,8 @@ def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
     strict_out=finalize(strict,"strict",.72,.92)
     diag['fit_tier']="strict" if strict_out else None
     if strict_out:
+        for candidate in strict_out:
+            refine_candidate(candidate, times)
         diag['distinct_supported_hypotheses']=len(strict_out)
         diag['leading_score_gap']=None
         return strict_out,diag
@@ -268,6 +350,8 @@ def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
     # guarded above, so the coverage floor is lower here.
     relaxed_out=finalize(relaxed,"relaxed",.48,.65)
     if relaxed_out:
+        for candidate in relaxed_out:
+            refine_candidate(candidate, times)
         diag['fit_tier']="relaxed"
         diag['distinct_supported_hypotheses']=len(relaxed_out)
         return relaxed_out,diag

@@ -106,6 +106,12 @@ probe/event recordings to Meta. Cloud assistance is used where it demonstrably w
 Wonder reviews the numeric geometry diagnostics** and explains what to measure next; Muse Spark
 writes situation reports.
 
+## What math runs the 3D scan?
+
+FFT deconvolution, image-source echo geometry, bounded search, Hough voting and now robust
+nonlinear least-squares refinement — a classical pipeline, not learned/SLAM SOTA. Details and gap
+analysis: [`docs/GEOMETRY_MATH.md`](docs/GEOMETRY_MATH.md).
+
 ## Research background
 
 The geometry feature is grounded in the acoustic room-inference literature (dEchorate annotated

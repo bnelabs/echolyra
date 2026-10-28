@@ -45,6 +45,10 @@ not product claims.
 
 ## 3. Changes made in this round (research → code)
 
+0. **Robust nonlinear refinement**: accepted layouts are now refined jointly over dimensions and
+   sensor position with a soft-L1 least-squares solve against all matched echoes (see
+   `docs/GEOMETRY_MATH.md`).
+
 1. **Latest real-room capture now maps instead of refusing**: stats showed support 90.5%, fit
    0.016–0.093 ms, 18/21 unique predictions, cross 10/12 — blocked only by a coverage floor of
    55%. Coverage in furnished rooms is naturally lower, so the clutter-guarded low-confidence
