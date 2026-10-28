@@ -220,6 +220,17 @@ def check(room_id: str, recording: np.ndarray) -> dict:
     spread = (max(dists_recent) - min(dists_recent)) if dists_recent else 0.0
     transient = bool(len(recent) >= 3 and len({h["status"] for h in recent}) > 1
                      and spread > 0.10 and status != "changed")
+
+    # activity score: how much more variable recent probes are than the room's own
+    # repeatability noise. 0 = as steady as an empty room; 1 = highly variable (movement).
+    window = room["history"][-6:]
+    if len(window) >= 3:
+        dvals = [h["distance"] for h in window]
+        variation = float(np.std(dvals))
+        activity_score = float(np.clip((variation / max(noise_std, 0.01) - 1.0) / 4.0, 0.0, 1.0))
+    else:
+        activity_score = 0.0
+    unusual_activity = bool(activity_score >= 0.45 and len(window) >= 3 and status != "changed")
     room["last_status"] = status
     room["last_checked_at"] = time.time()
     _save_state(state)
@@ -234,6 +245,8 @@ def check(room_id: str, recording: np.ndarray) -> dict:
         "delta_t30_s": [None if not (np.isfinite(c) and np.isfinite(b)) else round(float(c - b), 3)
                         for b, c in zip(base_t30, cur_t30)],
         "transient_change": transient,
+        "activity_score": round(activity_score, 2),
+        "unusual_activity": unusual_activity,
         "current": {k: v for k, v in a.items() if k != "rir"},
         "baseline_rt60_mid_s": room.get("rt60_mid_s"),
         "history": room["history"][-8:],

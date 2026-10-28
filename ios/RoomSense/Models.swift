@@ -132,8 +132,13 @@ struct ProbeEnrollResponse: Codable {
 
 struct ProbeCheckResponse: Codable {
     var change_detected: Bool?
+    var status: String?
+    var confidence: Double?
     var max_t30_change_pct: Double?
     var fingerprint_distance: Double?
     var baseline_rt60_mid_s: Double?
+    var transient_change: Bool?
+    var activity_score: Double?
+    var unusual_activity: Bool?
     var current: ProbeAnalysis?
 }

@@ -46,6 +46,11 @@ struct RoomsView: View {
                                 Spacer()
                                 Text("\(room.examples ?? 0) sample\(room.examples == 1 ? "" : "s")")
                                     .foregroundStyle(.secondary)
+                                if let status = model.probeStatusByRoom[room.name] {
+                                    Text(status)
+                                        .font(.caption2)
+                                        .foregroundStyle(status.contains("changed") || status.contains("unusual") ? .orange : .secondary)
+                                }
                                 Button("Re-probe") {
                                     Task { await model.probeCheck(roomName: room.name) }
                                 }

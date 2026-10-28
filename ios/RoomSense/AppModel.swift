@@ -80,6 +80,7 @@ final class AppModel: ObservableObject {
     }
 
     @Published var probeMessage: String?
+    @Published var probeStatusByRoom: [String: String] = [:]
 
     func probe(roomName: String) async {
         busy = true
@@ -106,11 +107,20 @@ final class AppModel: ObservableObject {
             let recorder = ProbeRecorder()
             let clip = try await recorder.measure()
             let resp = try await client.probeCheck(roomID: id, clip: clip)
-            if resp.change_detected == true {
-                probeMessage = String(format: "Room changed since enrollment (max ΔT30 %.0f%%)", resp.max_t30_change_pct ?? 0)
-            } else {
-                probeMessage = "Room unchanged (fingerprint matches baseline)"
+            let status = resp.status ?? (resp.change_detected == true ? "changed" : "stable")
+            let delta = resp.max_t30_change_pct ?? 0
+            let conf = Int((resp.confidence ?? 0) * 100)
+            var text: String
+            switch status {
+            case "changed": text = String(format: "Room changed — ΔT30 max %.0f%% (conf %d%%)", delta, conf)
+            case "drift": text = String(format: "Room drifting — ΔT30 max %.0f%% (conf %d%%)", delta, conf)
+            default: text = String(format: "Room stable — ΔT30 max %.0f%% (conf %d%%)", delta, conf)
             }
+            if resp.unusual_activity == true {
+                text += String(format: " · unusual activity (%.0f%%)", (resp.activity_score ?? 0) * 100)
+            }
+            probeMessage = text
+            probeStatusByRoom[roomName] = text
         } catch { errorText = error.localizedDescription }
     }
 

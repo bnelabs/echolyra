@@ -22,7 +22,9 @@ targets:
           - project.yml
           - Info.plist
           - build
+          - build-sim
           - build-device
+          - "build*"
           - "**/.DS_Store"
     info:
       path: Info.plist
