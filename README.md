@@ -2,26 +2,44 @@
 
 **Meta Global AI Developer Hackathon · Indie Developer · "Push the Frontier"**
 
-Your home hears things you don't. RoomSense learns the acoustic fingerprint of every room from
-three knocks, then tells you **what happened and which room it happened in** — no cameras, no
-audio stored, no cloud recordings.
+A phone that **measures each room's acoustic fingerprint**, hears what happens in it, says which
+room it happened in — and **knows when it doesn't know**. No cameras. No audio stored or uploaded.
 
-> Built during the hackathon (Oct 27 – Nov 4, 2026). Pre-hackathon research informed the design;
-> no product code existed before Oct 28. The table below maps every feature to the day it was built.
+**Try it in 30 seconds:** open `/static/demo.html` on the backend (three demo rooms + probe
+baselines, recorded clips through the full pipeline) — no phone or install needed.
 
-## Screenshots (running on the iOS 27 simulator)
+**Verify every claim:** `cd sprint/backend && ../../prototype/.venv/bin/python ../tools/verify_claims.py`
+→ 10/10 checks pass (probe RT60 recovery, change detection, calibration, fusion, real-world
+accuracy, documented numbers, repo hygiene). Details in [`docs/VERIFY.md`](docs/VERIFY.md).
 
-| Learn rooms | Detect + Muse Spark situation |
+**Headline numbers:** 92% event accuracy on 50 real recordings (**90% on 60 unseen clips**),
+held-out calibration **ECE 0.1285 → 0.0166**, probe RT60 recovery **0.80 → 0.80 s**, change
+detection **0.4% vs 39–60%**, two-node fusion **Living 0.81 / Kitchen 0.19**.
+
+## Screenshots (iOS 27 simulator)
+
+| Learn rooms with the active probe | Detection + calibrated decision + Muse Spark |
 |---|---|
-| ![Rooms](docs/screenshots/rooms.png)
-![Rooms with active probe](docs/screenshots/rooms_v2.png)
-![Detection result with calibrated alert](docs/screenshots/listen_v2.png) | ![Listen](docs/screenshots/listen.png) |
+| ![Rooms with active probe](docs/screenshots/rooms_v2.png) | ![Detection with calibrated alert](docs/screenshots/listen_v2.png) |
 
-## The 3-act demo
+Earlier UI: [rooms](docs/screenshots/rooms.png) · [listening](docs/screenshots/listen.png).
+Demo video cards: [`docs/media/`](docs/media/).
 
-1. **Learn** — phone docked in the living room; knock once in the kitchen, once in the bedroom → *"3 rooms learned."*
-2. **Detect** — a knock in the kitchen → **"Knock — Kitchen, 91%"** + floorplan highlight + Muse Spark situation card (*urgency, what to check*). Glass in the bedroom → **"Glass impact — Bedroom."**
-3. **Ask** — speak a rule: *"only alert me for the baby or glass"* → it becomes an alert rule (Muse Voice Transcribe).
+## What the demo shows (3 minutes)
+
+1. **Measure the room** — the phone plays a sweep you can barely hear and records it; the
+   backend deconvolves the true impulse response and reports RT60 per room
+   (0.46 / 0.22 / 0.71 s) and stores a fingerprint. No knocking in every room required
+   (probe-only enrollment: one RIR is enough).
+2. **Detect change** — open a door, re-probe: `drift — ΔT30 11.8% (conf 71%)`; a bigger change:
+   `changed — ΔT30 22.3% (conf 72%)`, with a calibrated confidence and activity flag.
+3. **Hear + decide** — glass clink: Apple's on-device 303-class model → `glass_breaking` →
+   `glass_impact`; room **Kitchen**; decision **ALERT · calibrated 96%** (critical class,
+   immediate). A knock is ambiguous: **EXPLAIN · needs_confirmation**, escalating to **ALERT**
+   on a second agreeing detection. Muse Spark writes the situation (urgency, explanation,
+   what to check, false-alarm check).
+4. **Privacy + multi-node** — no camera, no cloud audio; a laptop with `/static/node.html`
+   joins as a second sensor and fusion reports **Living 0.81 / Kitchen 0.19**.
 
 ## Meta models in the live path
 

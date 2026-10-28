@@ -273,6 +273,16 @@ docs and README updated honestly. Device still unavailable (17th round).
   video URL, demo hostname; zero once recorded).
 - Device still unavailable (19th round).
 
+## Increment 20 — doc link checker + judge-facing README (round 20)
+
+- Added `tools/check_links.py`: strips code fences, resolves every relative Markdown
+  link/image against the repo — **11 links across 17 docs, all resolve**.
+- README rewritten for a 60-second judge scan: one-liner, 30-second browser demo, one-command
+  verification, headline numbers, fixed screenshot grid (active-probe + result-card), and the
+  real 4-beat demo story (measure → change → hear/decide → privacy/multi-node). No unverified
+  features (the old "speak a rule" beat was removed).
+- Device still unavailable (20th round).
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
