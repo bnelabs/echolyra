@@ -47,6 +47,12 @@ practice, so the "ears" are Apple's on-device 303-class classifier and Meta hand
 | Oct 28 | Judge-facing browser demo (`/static/demo.html`) with synthetic demo rooms |
 | Oct 29–Nov 3 | Device verification (pending iPhone reconnection), video, submission |
 
+## On-device verified
+
+iPhone 12 Pro Max (iOS 27.0.1), real room: probe **RT60 0.239 s**; re-probes stable
+(0.241/0.242 s); door/window open → drift at **23σ**; knocks → Apple labels
+`hammer 80% / knock 72% / door 65%` → **EXPLAIN calibrated 0.94** → live Muse Spark.
+
 ## Numbers to put on screen
 
 - Event recognition: **92%** on 50 real recordings (rules: 16%)

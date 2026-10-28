@@ -50,6 +50,17 @@ probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
 
+## On-device verification (iPhone 12 Pro Max, iOS 27.0.1)
+
+- **Active probe**: 3-sweep enrollment measured Living **RT60 0.239 s** (2–8 kHz usable bands);
+  same-room re-probes **0.241 / 0.242 s → stable** (ΔT30 7.7% / 1.6%, conf 0.69 / 0.93);
+  opening a door/window produced **drift** (fingerprint distance 0.258 = **23σ**, conf 0.51).
+- **On-device hearing**: real knocks → Apple labels `hammer` 80% / `knock` 72% / `door` 65% →
+  event `knock` 0.72 → decision **EXPLAIN calibrated 0.94** (temporal: needs confirmation) →
+  live Muse Spark situation, SNR 14.4 dB.
+- **Protocol findings fixed**: 250/500 Hz and even 1 kHz are unusable on a phone speaker;
+  analysis now uses **2–8 kHz** only, with 3-sweep enrollment and measured-noise thresholds.
+
 ## External validation (60 unseen real clips, corrected round 17)
 
 - event accuracy **0.900** (glass/knock/alarm 1.00, baby 0.90, water 0.75)
