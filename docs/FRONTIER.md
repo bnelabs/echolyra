@@ -168,6 +168,16 @@ enrollment). Documentation corrected here and in README.
   calibration, probe recovery, change detection, fusion) for zero-title-work video editing.
 - Device still unavailable (10th round).
 
+## Increment 11 — screenshot + verified runsheet (round 11)
+
+- Simulator UI screenshot captured (`docs/screenshots/rooms_v2.png`) showing the **active probe**
+  action and learned rooms; verified headless via `simctl io screenshot`.
+- Full end-to-end dry run through the live API (`/api/demo/setup`, five `/api/detect` clips,
+  `/api/fuse`, `/api/probe/status`, `/api/calibration?profile=hybrid`), all static pages 200.
+  Verified outputs recorded in `docs/DEMO_RUNSHEET.md` (glass→ALERT 1.00, baby→ALERT, knock→
+  EXPLAIN, speech→SILENT, alarm→EXPLAIN; hybrid profile ECE 0.0162, op 0.23).
+- Device still unavailable (11th round).
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
