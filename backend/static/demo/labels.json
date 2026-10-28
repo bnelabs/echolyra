@@ -1,0 +1,20 @@
+{
+ "knock": [],
+ "glass": [],
+ "baby_cry": [],
+ "speech": [
+  {
+   "label": "speech",
+   "confidence": 0.907
+  },
+  {
+   "label": "insect",
+   "confidence": 0.541
+  },
+  {
+   "label": "mosquito_buzz",
+   "confidence": 0.407
+  }
+ ],
+ "alarm": []
+}

@@ -337,6 +337,47 @@ async def fuse_reports(reports: list[dict]):
     return fusion.fuse(reports)
 
 
+# ------------------------------------------------------------------ judge-facing demo setup
+@app.post("/api/demo/setup")
+def demo_setup():
+    """Enroll three synthetic rooms (events + active-probe baselines) so the browser demo
+    has a realistic session without any hardware."""
+    import wave as _wave
+    SESSION.reset()
+    probe.STATE_PATH.unlink(missing_ok=True)
+    rng = np.random.default_rng(7)
+    rooms = {"living": (0.45, 7000, 0.0), "kitchen": (0.22, 2500, -7.0), "bedroom": (0.70, 4500, -3.0)}
+    def make_transfer(rt, cutoff, gain, seed):
+        n = int(0.9 * 16000); t = np.arange(n) / 16000
+        r = np.random.default_rng(seed)
+        ir = r.normal(0, 1, n) * np.exp(-6.91 * t / rt)
+        from scipy.signal import butter, sosfiltfilt
+        ir = sosfiltfilt(butter(4, min(cutoff, 16000 / 2 * 0.95), "low", fs=16000, output="sos"), ir)
+        ir[0] += 1.0
+        return ir / np.max(np.abs(ir)) * (10 ** (gain / 20))
+    def knock(seed):
+        r = np.random.default_rng(seed)
+        x = r.normal(0, 1e-4, int(1.6 * 16000)); k = np.zeros(int(0.28 * 16000)); i = int(0.03 * 16000)
+        k[i:i+40] += np.hanning(40) * 0.8; t = np.arange(int(0.2 * 16000)) / 16000
+        k[i:i+len(t)] += 0.35 * np.sin(2 * np.pi * 180 * t) * np.exp(-t / 0.02) * 0.8
+        x[int(0.4 * 16000):int(0.4 * 16000)+len(k)] += k
+        return x
+    from math import gcd
+    from scipy.signal import resample_poly
+    for i, (room, (rt, cut, gain)) in enumerate(rooms.items()):
+        tr = make_transfer(rt, cut, gain, i)
+        for t in range(2):
+            y = np.convolve(knock(t), tr)[: int(2.4 * 16000)]
+            SESSION.enroll(room, room.capitalize(), [aw.wav_bytes(y)])
+        sweep = probe.probe_sweep()
+        rir = ac.simulate_treated_rir(ac.default_room(), {"predicted_rt60_s": rt}, rt, fs=probe.FS)
+        rec = np.convolve(rir, sweep)[: len(rir) + len(sweep)]
+        rec = rec / max(np.max(np.abs(rec)), 1e-9) * 0.5 + rng.normal(0, 2e-3, len(rec))
+        probe.enroll(room, room.capitalize(), [rec])
+        SESSION.set_probe_baseline(room, rt, rt)
+    return {"ok": True, "session": SESSION.summary(), "probe": probe.status()}
+
+
 @app.get("/", response_class=HTMLResponse)
 def index():
     page = ROOT / "static" / "index.html"

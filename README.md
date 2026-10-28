@@ -84,6 +84,14 @@ curl -X POST localhost:8080/api/enroll -F room_id=kitchen -F room_name=Kitchen \
 curl -X POST localhost:8080/api/detect -F "audio=@clips/unknown.wav;type=audio/wav"
 ```
 
+## Try the demo without hardware
+
+Open **`/static/demo.html`** (e.g. `http://<mac-ip>:8080/static/demo.html`):
+"Set up 3 demo rooms" enrolls synthetic room signatures + active-probe baselines, then the
+buttons run recorded clips through the full pipeline — on-device-class labels (where
+available), features, room attribution, calibrated `alert/explain/silent` decision and Muse
+Spark situation report. This is the judge-facing fallback if a phone isn't available.
+
 ## Open the app
 
 ```bash

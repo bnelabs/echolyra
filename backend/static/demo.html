@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RoomSense — live demo (no hardware needed)</title>
+<style>
+ :root{--bg:#0d0f14;--card:#161a22;--line:#262c38;--fg:#e8ecf4;--dim:#94a0b5;--accent:#5ad1a5;--warn:#f2b45c;--red:#f2777a}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif}
+ header{padding:20px 24px;border-bottom:1px solid var(--line)}
+ h1{font-size:18px;margin:0} h1 span{color:var(--accent)}
+ .sub{color:var(--dim);font-size:13px;margin-top:4px}
+ main{max-width:900px;margin:0 auto;padding:22px 24px 60px}
+ .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+ .row{display:flex;gap:10px;flex-wrap:wrap}
+ button{background:var(--accent);color:#06110c;border:0;border-radius:10px;padding:11px 15px;font-weight:650;cursor:pointer;font-size:14px}
+ button.secondary{background:transparent;color:var(--fg);border:1px solid var(--line)}
+ button:disabled{opacity:.5;cursor:default}
+ .clip{display:flex;gap:10px;align-items:center;margin:8px 0}
+ .dim{color:var(--dim);font-size:13px}
+ .big{font-size:26px;font-weight:700}
+ .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;background:#1f2a24;color:var(--accent);border:1px solid #29483a;margin-right:6px}
+ .pill.warn{background:#2a2318;color:var(--warn);border-color:#4a3a1f}
+ .pill.red{background:#2a1a1c;color:var(--red);border-color:#4a2a2d}
+ pre{white-space:pre-wrap;font-size:12px;color:var(--dim);background:#0b0e13;border:1px solid var(--line);border-radius:10px;padding:12px;max-height:300px;overflow:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>Room<span>Sense</span> — live demo</h1>
+  <div class="sub">Runs the full pipeline (on-device labels → features → room → calibrated decision → Muse Spark situation) on recorded clips. No iPhone needed.</div>
+</header>
+<main>
+  <section class="card">
+    <div class="row">
+      <button id="setup">Set up 3 demo rooms</button>
+      <button id="reset" class="secondary">Reset</button>
+      <span id="status" class="dim" style="align-self:center"></span>
+    </div>
+    <div class="dim" style="margin-top:10px">The setup enrolls synthetic living-room / kitchen / bedroom signatures (knocks + active probe baselines) so room attribution has something to compare against.</div>
+  </section>
+
+  <section class="card">
+    <div class="dim">Play a recorded event (simulated demo sounds)</div>
+    <div id="clips"></div>
+  </section>
+
+  <section class="card">
+    <div class="dim">Result</div>
+    <div id="label" class="big">—</div>
+    <div id="meta" style="margin-top:6px"></div>
+    <div id="situation" class="dim" style="margin-top:10px"></div>
+    <pre id="raw"></pre>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const BASE = location.origin;
+const CLIPS = ["knock","glass","baby_cry","speech","alarm"];
+let LABELS = {};
+fetch(BASE + "/static/demo/labels.json").then(r => r.json()).then(j => { LABELS = j; });
+const pretty = s => (s || "").replaceAll("_"," ").replace(/\b\w/g, c => c.toUpperCase());
+
+$("setup").onclick = async () => {
+  $("status").textContent = "setting up…"; $("setup").disabled = true;
+  const r = await fetch(BASE + "/api/demo/setup", {method:"POST"});
+  const d = await r.json();
+  $("status").textContent = `rooms: ${(d.session?.rooms||[]).map(x=>x.name).join(", ")} · probe RT60: ${(d.probe?.rooms||[]).map(x=>`${x.name} ${x.rt60_mid_s}s`).join(", ")}`;
+  $("setup").disabled = false;
+};
+$("reset").onclick = async () => { await fetch(BASE + "/api/reset", {method:"POST"}); $("status").textContent = "reset"; };
+
+for (const name of CLIPS) {
+  const div = document.createElement("div"); div.className = "clip";
+  const audio = document.createElement("audio");
+  audio.controls = true; audio.src = `${BASE}/static/demo/${name}.wav`; audio.style.width = "260px";
+  const btn = document.createElement("button");
+  btn.textContent = `Analyze "${pretty(name)}"`;
+  btn.onclick = async () => {
+    btn.disabled = true; $("label").textContent = "analyzing…";
+    try {
+      const blob = await (await fetch(audio.src)).blob();
+      const fd = new FormData();
+      fd.append("audio", blob, `${name}.wav`);
+      fd.append("node_id", "browser-demo");
+      fd.append("node_room", "Demo room");
+      fd.append("sound_labels", JSON.stringify(LABELS[name] || []));
+      const r = await fetch(BASE + "/api/detect", {method:"POST", body: fd});
+      const d = await r.json();
+      $("label").textContent = pretty(d.event?.label || d.event?.label);
+      const dec = d.decision?.decision || "—";
+      const decClass = dec === "alert" ? "" : dec === "explain" ? "warn" : "red";
+      $("meta").innerHTML =
+        `<span class="pill">event ${Math.round((d.event?.confidence||0)*100)}%</span>` +
+        `<span class="pill">room: ${d.room?.room_name ?? "?"} ${Math.round((d.room?.confidence||0)*100)}%</span>` +
+        `<span class="pill ${decClass}">${dec.toUpperCase()} ${Math.round((d.decision?.calibrated_confidence||0)*100)}%</span>` +
+        `<span class="pill">SNR ${d.event?.snr_db ?? d.features?.snr_db ?? "?"} dB</span>`;
+      $("situation").textContent = [d.situation?.headline, d.situation?.explanation, d.situation?.suggested_action].filter(Boolean).join(" — ");
+      $("raw").textContent = JSON.stringify({decision: d.decision, room: d.room, heard: d.heard, situation: d.situation}, null, 1).slice(0, 3000);
+      audio.play();
+    } catch (e) { $("label").textContent = "error"; $("raw").textContent = String(e); }
+    btn.disabled = false;
+  };
+  div.appendChild(btn); div.appendChild(audio);
+  $("clips").appendChild(div);
+}
+</script>
+</body>
+</html>
