@@ -458,6 +458,14 @@ cases, feasibility ratings and explicit do-not-claim items in
 SAM + Wonder), **home inventory/move-out** (LiDAR + vision), accessibility narration,
 independent-living check-in (non-medical). Safety decisions stay on-device.
 
+## Increment 33 — LiDAR callback fix (round 33)
+
+The hybrid LiDAR sheet could hang forever on “Processing the LiDAR model…”. Root cause: iOS 27
+RoomPlan delegate API changed from `captureView(_:didFinishWith:)` to
+`captureView(shouldPresent:error:) -> Bool` + `captureView(didPresent:error:)`; the old callback
+was never invoked. Implemented the current protocol, added a 30-second watchdog and explicit
+failure message, rebuilt/installed on device.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

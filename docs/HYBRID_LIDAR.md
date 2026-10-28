@@ -36,6 +36,14 @@ get the room" UX reliably, with true object geometry. Keeping both gives:
    visualization, or as **ground truth** to validate the acoustic map.
 3. **No silent uploads** — the LiDAR model never leaves the device.
 
+## Known issue fixed: iOS 27 RoomPlan callback
+
+The first hybrid build could sit on “Processing the LiDAR model…” indefinitely on iOS 27 because
+the RoomPlan delegate API changed: `captureView(_:didFinishWith:)` no longer exists; the view now
+calls `captureView(shouldPresent:error:)` and `captureView(didPresent:error:)`. The build now
+implements the current protocol and adds a 30-second watchdog/error message, so a failure can never
+leave the sheet stuck.
+
 ## Limits / honest notes
 
 - LiDAR scans require a LiDAR device (iPhone 12 Pro+ / iPad Pro). Simulator and non-LiDAR phones

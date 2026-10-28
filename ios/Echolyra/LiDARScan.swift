@@ -29,6 +29,7 @@ final class LiDARCaptureController: NSObject, ObservableObject, RoomCaptureViewD
     @Published var isRunning = false
     @Published var message = "Slowly walk around the room. The LiDAR map builds as you move."
     private weak var captureView: RoomCaptureView?
+    private var resultTimeout: Task<Void, Never>?
 
     override init() { super.init() }
 
@@ -56,20 +57,41 @@ final class LiDARCaptureController: NSObject, ObservableObject, RoomCaptureViewD
         captureView.captureSession.stop()
         isRunning = false
         message = "Processing the LiDAR model…"
-    }
-
-    nonisolated func captureView(_ view: RoomCaptureView, didFinishWith capturedRoom: CapturedRoom) {
-        Task { @MainActor in
-            self.finishedRoom = capturedRoom
+        // RoomPlan normally delivers the room in didPresent. Keep a watchdog so a failed
+        // callback can never leave the sheet stuck on "Processing".
+        resultTimeout?.cancel()
+        resultTimeout = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 30_000_000_000)
+            guard let self, !Task.isCancelled, self.finishedRoom == nil else { return }
+            self.message = "RoomPlan didn't return a result. Tap Cancel and try the scan again."
             self.isRunning = false
         }
     }
 
-    nonisolated func captureView(_ view: RoomCaptureView, didPresent result: CapturedRoom) {
-        Task { @MainActor in self.message = "LiDAR map ready." }
+    // iOS 27 RoomPlan delegate: `didFinishWith` no longer exists; the view asks whether to
+    // present the processed room and then delivers it here.
+    nonisolated func captureView(shouldPresent roomDataForProcessing: CapturedRoomData,
+                                 error: Error?) -> Bool {
+        if let error {
+            Task { @MainActor in self.message = "LiDAR processing failed: \(error.localizedDescription)" }
+            return false
+        }
+        return true
     }
 
-    nonisolated func captureView(_ view: RoomCaptureView, postProcessDeviceTransform deviceTransform: simd_float4x4) {}
+    nonisolated func captureView(didPresent processedResult: CapturedRoom, error: Error?) {
+        Task { @MainActor in
+            self.resultTimeout?.cancel()
+            if let error {
+                self.message = "LiDAR processing failed: \(error.localizedDescription)"
+                self.isRunning = false
+                return
+            }
+            self.finishedRoom = processedResult
+            self.isRunning = false
+            self.message = "LiDAR map ready."
+        }
+    }
 
     nonisolated func captureSession(_ session: RoomCaptureSession, didEndWith data: CapturedRoomData, error: Error?) {
         if let error {

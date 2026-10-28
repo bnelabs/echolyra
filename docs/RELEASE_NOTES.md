@@ -57,6 +57,13 @@ probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
 
+## Fix: LiDAR stuck on “Processing”
+
+iOS 27 RoomPlan changed its delegate callbacks (`didFinishWith` → `shouldPresent` +
+`didPresent`). The initial hybrid build never received the result and stayed on “Processing the
+LiDAR model…”. Fixed with the current delegate protocol plus a 30-second watchdog and explicit
+error message.
+
 ## Hybrid LiDAR precision scan (optional)
 
 New **Precision scan · LiDAR** uses Apple RoomPlan on LiDAR iPhones: one continuous walk-around
