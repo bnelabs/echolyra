@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import random
 import time
 from pathlib import Path
@@ -160,7 +161,27 @@ def decide(event_conf: float, room_conf: float, snr_db: float, params: dict | No
 
 
 # --------------------------------------------------------------------- parameter store
-def load_params() -> dict | None:
+PROFILE_DIR = PARAMS_PATH.parent
+
+
+def profile_path(profile: str) -> Path:
+    if profile in ("synthetic", "default"):
+        return PARAMS_PATH
+    return PROFILE_DIR / f"calibration_{profile}.json"
+
+
+def load_params(profile: str | None = None) -> dict | None:
+    profile = profile or os.environ.get("CALIBRATION_PROFILE", "synthetic")
+    path = profile_path(profile)
+    if path.exists():
+        try:
+            return json.loads(path.read_text())
+        except Exception:
+            return None
+    return load_params_raw() if path != PARAMS_PATH else None
+
+
+def load_params_raw() -> dict | None:
     if PARAMS_PATH.exists():
         try:
             return json.loads(PARAMS_PATH.read_text())
@@ -169,9 +190,59 @@ def load_params() -> dict | None:
     return None
 
 
-def save_params(params: dict):
-    PARAMS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    PARAMS_PATH.write_text(json.dumps(params, indent=1))
+def save_params(params: dict, profile: str = "synthetic"):
+    PROFILE_DIR.mkdir(parents=True, exist_ok=True)
+    profile_path(profile).write_text(json.dumps(params, indent=1))
+
+
+def fit_profile(rows: list[dict], name: str = "hybrid", alpha: float = ALPHA) -> dict:
+    """Fit a calibration profile from arbitrary labelled rows.
+
+    Each row: {event_conf, event_correct, event_claimed, event_label}. Used to pool synthetic
+    data with real recordings and to ship a real-data profile.
+    """
+    confs = [r["event_conf"] for r in rows]
+    corrects = [r["event_correct"] for r in rows]
+    claimed = [r for r in rows if r.get("event_claimed")]
+    c_confs = [r["event_conf"] for r in claimed]
+    c_correct = [r["event_correct"] for r in claimed]
+    binning = fit_binning(confs, corrects)
+    calibrated = [apply_binning(c, binning) for c in confs]
+    operating = fit_operating_point(c_confs, c_correct, target_precision=0.90, min_n=10)
+    by_label = fit_operating_points_by_label(claimed, target_precision=0.90, min_n=5)
+    params = {
+        "version": 1, "profile": name, "binning": binning,
+        "operating_point": operating, "operating_points_by_label": by_label,
+        "conformal": fit_conformal(c_confs, c_correct, alpha=alpha),
+        "ece_before": round(expected_calibration_error(confs, corrects), 4),
+        "ece_after": round(expected_calibration_error(calibrated, corrects), 4),
+        "n_samples": len(rows), "claimed_rows": len(claimed),
+        "created_at": time.time(),
+    }
+    return params
+
+
+def evaluate_profile(params: dict, rows: list[dict]) -> dict:
+    """Score an existing profile on a held-out (e.g. real) row set."""
+    confs = [r["event_conf"] for r in rows]
+    corrects = [r["event_correct"] for r in rows]
+    claimed = [r for r in rows if r.get("event_claimed")]
+    c_confs = [r["event_conf"] for r in claimed]
+    c_correct = [r["event_correct"] for r in claimed]
+    calibrated = [apply_binning(c, params["binning"]) for c in confs]
+    op = params.get("operating_point") or {}
+    thr = float(op.get("threshold", 0.75))
+    accepted = [ok for c, ok in zip(confs, corrects) if apply_binning(c, params["binning"]) >= thr]
+    return {
+        "n": len(rows), "claimed": len(claimed),
+        "ece_before": round(expected_calibration_error(confs, corrects), 4),
+        "ece_after": round(expected_calibration_error(calibrated, corrects), 4),
+        "ece_claimed_after": round(expected_calibration_error(
+            [apply_binning(c, params["binning"]) for c in c_confs], c_correct), 4),
+        "operating_threshold": thr,
+        "accepted": len(accepted),
+        "accepted_precision": round(sum(accepted) / len(accepted), 3) if accepted else None,
+    }
 
 
 # --------------------------------------------------------------------- labelled data

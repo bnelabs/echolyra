@@ -76,6 +76,20 @@ story demo-able without a second iPhone.
   all software-side work continues.
 - Still queued: probe-informed fusion weighting, real-data calibration profile.
 
+## Increment 5 — probe-informed fusion + real calibration profiles (round 4)
+
+- **Probe-informed fusion**: node reports now carry the event's early decay, and `fusion.py`
+  matches it against each room's active-probe RT60 (expected decay ≈ 60/RT60 dB/s), weighting
+  by level, room confidence and decay consistency. Verified: ambiguous level-only case
+  (Kitchen 0.50 vs Living 0.41) becomes **Kitchen 0.75 vs Living 0.22** with probe info.
+- **Calibration profiles**: synthetic / real / hybrid profiles fitted and stored; hybrid
+  cuts real-world calibration error from **0.205 → 0.049** ECE at 0.958 accepted precision
+  (see CALIBRATION.md §3.6). Select via `CALIBRATION_PROFILE` or
+  `GET /api/calibration?profile=hybrid`.
+- Demo script finalized around active probing → change detection → live event → calibrated
+  decision → Muse Spark; browser fallback documented.
+- Device still unavailable (4th round): on-device verification of criteria 1/2/5/6 pending.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

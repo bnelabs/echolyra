@@ -263,6 +263,7 @@ async def detect(audio: UploadFile = File(...), node_room: str = Form(""),
         "event_confidence": rec["event"].get("confidence", 0.0),
         "level_db": float(level_db) if level_db is not None else float(rec["features"].get("peak_db", -60.0)),
         "snr_db": float(rec["features"].get("snr_db", 0.0)),
+        "event_decay": rec["features"].get("early_decay_db_s"),
         "ts": time.time(),
     })
     del NODE_REPORTS[:-40]
@@ -313,9 +314,12 @@ def probe_status():
 
 # ------------------------------------------------------------------ calibration + fusion
 @app.get("/api/calibration")
-def calibration_status():
-    params = calibration.load_params()
-    return params or {"calibrated": False}
+def calibration_status(profile: str = "synthetic"):
+    params = calibration.load_params(profile)
+    if not params:
+        return {"calibrated": False, "profile": profile,
+                "available": ["synthetic", "real", "hybrid"]}
+    return {**params, "active_profile": profile}
 
 
 @app.post("/api/calibrate")
@@ -329,12 +333,24 @@ async def calibrate():
 
 @app.get("/api/fuse")
 def fuse_recent():
-    return fusion.fuse(NODE_REPORTS)
+    room_probe = {}
+    try:
+        for r in probe.status().get("rooms", []):
+            if r.get("rt60_mid_s"):
+                room_probe[r["name"]] = float(r["rt60_mid_s"])
+    except Exception:
+        pass
+    return fusion.fuse(NODE_REPORTS, room_probe=room_probe)
 
 
 @app.post("/api/fuse")
 async def fuse_reports(reports: list[dict]):
-    return fusion.fuse(reports)
+    try:
+        room_probe = {r["name"]: float(r["rt60_mid_s"]) for r in probe.status().get("rooms", [])
+                      if r.get("rt60_mid_s")}
+    except Exception:
+        room_probe = None
+    return fusion.fuse(reports, room_probe=room_probe)
 
 
 # ------------------------------------------------------------------ judge-facing demo setup

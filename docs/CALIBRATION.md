@@ -66,6 +66,24 @@ be delayed. Policy in `backend/app.py`:
 Real-world check (ESC-50, see `EVAL_REAL.md`): immediate critical alerts precision **1.00**;
 deferred ambiguous detections precision **0.88** if confirmed.
 
+## 3.6 Real-data calibration profiles (round 4)
+
+We fitted calibration profiles from real-world recordings (50 ESC-50 clips; see
+`EVAL_REAL.md`) and from the pooled synthetic+real set. Scored **on the real clips**:
+
+| profile (fit data) | rows | ECE before → after (real) | operating point | accepted precision |
+|---|---|---|---|---|
+| synthetic only (default) | 180 synthetic | 0.205 → 0.099 | 0.25 | 0.958 |
+| real only | 50 real | 0.205 → 0.053 | 0.23 | 0.958 |
+| **hybrid (synthetic + real)** | 230 | **0.205 → 0.049** | 0.23 | 0.958 |
+
+The hybrid profile is the best calibrated on real audio. Caveat: the real rows are also used
+in the hybrid fit (small n=50), so this is not a fully held-out estimate — the next real phone
+corpus will be split into fit/validation. Profiles are stored as
+`cache/calibration{synthetic,real,hybrid}.json`; select one with the `CALIBRATION_PROFILE`
+env var or read it via `GET /api/calibration?profile=hybrid`. Default remains `synthetic`
+until a larger real corpus exists.
+
 ## 4. Limitations / next
 
 - The calibration set is **synthetic**. Rebuild it on real device data as soon as the iPhone
