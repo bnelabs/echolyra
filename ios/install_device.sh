@@ -47,6 +47,8 @@ APP="build-device/Build/Products/Debug-iphoneos/RoomSense.app"
 [ -d "$APP" ] || { echo "build product missing" >&2; exit 3; }
 echo "installing…"
 xcrun devicectl device install app --device "$DEVICE_ID" "$APP"
-echo "launching…"
-xcrun devicectl device process launch --device "$DEVICE_ID" com.bnelabs.roomsense || true
+LAN_IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo 127.0.0.1)"
+echo "launching with backend http://$LAN_IP:8080 …"
+xcrun devicectl device process launch --device "$DEVICE_ID" \
+  -e "{\"ROOMSENSE_BACKEND\":\"http://$LAN_IP:8080\"}" com.bnelabs.roomsense || true
 echo "done. On the phone: Settings tab → backend URL → Test connection → Rooms → knock → Listen."
