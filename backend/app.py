@@ -353,6 +353,11 @@ async def calibrate():
             "decisions_by_snr": params["decisions_by_snr"]}
 
 
+@app.get("/api/debug/nodes")
+def debug_nodes():
+    return {"reports": NODE_REPORTS[-10:]}
+
+
 @app.get("/api/fuse")
 def fuse_recent():
     room_probe = {}

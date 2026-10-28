@@ -58,6 +58,11 @@ two-node fusion             glass_impact · Living, posteriors Living 1.00
 - **On-device hearing**: real knocks → Apple labels `hammer` 80% / `knock` 72% / `door` 65% →
   event `knock` 0.72 → decision **EXPLAIN calibrated 0.94** (temporal: needs confirmation) →
   live Muse Spark situation, SNR 14.4 dB.
+- **Glass path**: `glass_clink` 46% → `glass_impact` → **EXPLAIN calibrated 0.64** → live Muse
+  Spark (below the critical immediate-alert bar; correct behaviour).
+- **Browser sensor node (Mac)**: real knock posted as `mac-node / Kitchen / knock 1.0 /
+  SNR 46.3 dB`; fusion localized Kitchen 1.0. The page now explains the secure-context mic rule
+  (use `http://localhost:8080/static/node.html`).
 - **Protocol findings fixed**: 250/500 Hz and even 1 kHz are unusable on a phone speaker;
   analysis now uses **2–8 kHz** only, with 3-sweep enrollment and measured-noise thresholds.
 

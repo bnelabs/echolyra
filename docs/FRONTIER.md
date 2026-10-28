@@ -308,7 +308,14 @@ Device verification finally ran on the connected iPhone 12 Pro Max:
   uses **2–8 kHz** only. Single-sweep enrollment gave 9–13% spread; **3-sweep enrollment** with
   per-band repeatability stats + 30 ms tolerance floors makes same-room probes stable.
 - iOS probe UI now records 3 sweeps (~15 s) like the CLI autoprobe; device build installed.
-- Numbers written to `docs/EVAL_REAL.md` (phone-in-room table). Device still connected.
+- **Glass path on device**: `glass_clink` 46% → `glass_impact` 0.46 → **EXPLAIN calibrated 0.64**
+  (correctly below the critical immediate-alert bar) → live Muse Spark.
+- **Browser sensor node verified for real**: Mac `node.html` (localhost) recorded a knock and
+  posted `mac-node / Kitchen / knock 1.0 / level −25.3 dB / SNR 46.3`; fusion localized Kitchen
+  1.0. Learned and fixed: browsers only expose the mic on a secure context, so the page must be
+  opened via `localhost` (documented + friendly error). Fusion window widened to 20 s for demo
+  timing, and node rooms are now first-class localization candidates.
+- Numbers written to `docs/EVAL_REAL.md` (phone-in-room table). Device connected throughout.
 
 ## Increment 4 — plan
 

@@ -106,11 +106,24 @@ is the temporal policy: one knock needs confirmation; a second agreeing detectio
 - Change detection uses the measured noise: a door/window change produced a 23σ fingerprint
   shift even though mid-band RT60 moved only 5.6% — detection is not just RT60.
 
+### More on-device results
+
+- **Glass path**: glass clink at the mic → Apple labels `glockenspiel` 45%, `glass_clink` 46%
+  → event `glass_impact` 0.46 → decision **EXPLAIN calibrated 0.64** (temporal policy: below the
+  critical immediate-alert confidence, so it asks for confirmation) → live Muse Spark.
+  A quieter clink produced no mappable label (abstention) — honest behaviour, not a false alert.
+- **Browser sensor node (Mac, `node.html` via localhost)**: recorded a real knock and posted
+  `node_id=mac-node`, `node_room=Kitchen`, event `knock` 1.0, level −25.3 dB, SNR 46.3 dB;
+  fusion localized it to **Kitchen 1.0**. (Browsers require `http://localhost:8080` for mic
+  access; the LAN-IP HTTP URL is blocked — page now explains this.)
+- **Two-node fusion**: verified with stored two-node reports (Living 0.81 / Kitchen 0.19) and
+  with the real browser node; a simultaneous phone+browser capture was skipped by choice, so
+  the real-time two-node demo remains a demo-day step, not a measured number.
+
 ### Still pending (honest)
 
-- Multiple rooms + glass event on device (only Living + knocks recorded so far).
-- Real two-phone/browser-node fusion on-device (fusion verified with stored reports + browser
-  node dry runs).
+- Multi-room probe captures (only the Living room measured on device so far).
+- Simultaneous real two-node capture (both sensors verified independently).
 
 ## Limitations (be honest in the demo)
 

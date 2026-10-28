@@ -47,9 +47,10 @@ set -a; . ./.env; set +a
 
 ## 3. Two-node shot
 
-Fusion window is 10 s, so detect on both nodes then press Fuse within that window.
-Dry-run verification (phone node level −20 dB in Living, Mac node −31 dB in Kitchen, same glass
-clip): fused `glass_impact · Living`, posteriors **Living 1.00**, 2 nodes.
+Fusion window is 20 s, so detect on both nodes then press Fuse within that window.
+Verified: Mac sensor node alone posted `mac-node / Kitchen / knock 1.0 / SNR 46.3 dB` and
+fusion localized **Kitchen 1.0**; stored two-node reports fuse to `Living 0.81 / Kitchen 0.19`.
+Open the node page as `http://localhost:8080/static/node.html` on the Mac (mic needs localhost).
 
 
 
