@@ -128,6 +128,18 @@ def check_real_world():
     check("real-world event accuracy", acc >= 0.85, f"{acc:.3f} on {len(rows)} real recordings (expected 0.92)")
 
 
+def check_external():
+    path = Path(__file__).resolve().parents[1] / "docs" / "eval_external.json"
+    if not path.exists():
+        check("external validation (unseen real clips)", None, "docs/eval_external.json missing")
+        return
+    d = json.load(open(path))
+    ok = d.get("accuracy", 0) >= 0.85 and d.get("ece_after", 1) < 0.05
+    check("external validation (unseen real clips)", ok,
+          f"accuracy {d.get('accuracy')} on {d.get('n')} unseen clips, "
+          f"ECE {d.get('ece_before')}→{d.get('ece_after')}, alert precision {d.get('alert_precision')}")
+
+
 def check_hygiene():
     import subprocess
     script = Path(__file__).resolve().parent / "check_submission.py"
@@ -144,6 +156,7 @@ def main():
     check_decision_policy()
     check_fusion()
     check_real_world()
+    check_external()
     check_hygiene()
 
     print("\nRoomSense claim verification\n" + "=" * 30)

@@ -58,7 +58,7 @@ is present) and repo hygiene. Output is archived in [`docs/VERIFY.md`](docs/VERI
 
 ## Real-world accuracy
 
-On 50 real ESC-50 recordings the on-device pretrained model scores **92%** event accuracy (and **83%** on 60 unseen external clips with **zero wrong alerts**)
+On 50 real ESC-50 recordings the on-device pretrained model scores **92%** event accuracy (and **90%** on 60 unseen external clips, 28 alerts at **0.89 precision**)
 (the earlier hand-written rules scored 16%), with immediate critical alerts at **1.00
 precision**. Details: [`docs/EVAL_REAL.md`](docs/EVAL_REAL.md).
 

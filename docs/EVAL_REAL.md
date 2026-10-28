@@ -62,20 +62,21 @@ trust layer generalizes to recordings it never saw.
 ## External validation — 60 clips never seen during development (round 16)
 
 Downloaded 10 additional ESC-50 clips per class that were **not** used for any earlier tuning or
-calibration fit, and ran the full pipeline unchanged:
+calibration fit, and ran the full pipeline unchanged (60 unique recordings; an earlier run of this
+check had a filename-collision bug that repeated 6 files — corrected in round 17):
 
 | metric | value |
 |---|---|
-| event accuracy (n=60) | **0.833** |
-| per class | glass **1.00**, knock **1.00**, baby crying **1.00**, alarm **1.00**, water **0.50** |
-| calibration ECE (hybrid profile) | 0.1517 → **0.0345** |
-| decisions | 30 alert / 30 silent |
-| **alert precision** | **1.00** (zero wrong alerts on unseen clips) |
+| event accuracy (n=60 unique) | **0.900** |
+| per class | glass **1.00**, knock **1.00**, alarm **1.00**, baby crying **0.90**, water **0.75** |
+| calibration ECE (hybrid profile, no refit) | 0.1593 → **0.0290** |
+| decisions | 28 alert / 32 silent |
+| alert precision | **0.893** (3 wrong alerts among 28) |
 
 The water class is the weak spot: ESC-50's `pouring_water` / `water_drops` clips frequently yield
 Apple labels (`liquid_*`, `click`) that map ambiguously; our mapping converts some to `water`
-and leaves others as abstentions. Glass, knock, baby and alarm — the safety-critical classes —
-were perfect on unseen data, and calibration transferred (0.0345 ECE) without refitting.
+and leaves others as abstentions. Glass, knock and alarm were perfect on unseen data; baby crying was 0.90. Calibration
+transferred (0.0290 ECE) without refitting, and no silent failure was observed.
 Aggregate numbers: `docs/eval_external.json`.
 
 ## Phone-in-room verification (pending device reconnection)

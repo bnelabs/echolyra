@@ -21,6 +21,7 @@ RoomSense claim verification
 [PASS] decision policy (alert/explain/silent): high conf + room: alert; uncertain room: explain; low SNR: silent
 [PASS] two-node fusion: glass_impact · Living 0.81 posteriors {'Living': 0.81, 'Kitchen': 0.19}
 [PASS] real-world event accuracy: 0.920 on 50 real recordings (expected 0.92)
+[PASS] external validation (unseen real clips): accuracy 0.9 on 60 unseen clips, ECE 0.1593→0.029, alert precision 0.893
 [PASS] repo flip-readiness: PASS — repo is flip-ready (warnings above are advisory)
 ==============================
 all runnable checks passed

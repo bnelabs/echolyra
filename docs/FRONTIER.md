@@ -231,6 +231,23 @@ The safety-critical classes generalize perfectly and calibration transfers to un
 without refitting. Also added `docs/VIDEO_EDIT_PACKAGE.md` and a phone-in-room placeholder table
 to `EVAL_REAL.md`. Device still unavailable (16th round).
 
+## Increment 17 — external validation bug fix + corrected numbers (round 17)
+
+An earlier external run (round 16) had a filename-collision bug: every clip in a category wrote
+to one path, so the benchmark effectively repeated 6 files. Fixed and re-run on **60 unique**
+never-before-used ESC-50 clips:
+
+| metric | corrected value |
+|---|---|
+| event accuracy | **0.900** |
+| per class | glass 1.00, knock 1.00, alarm 1.00, baby 0.90, water 0.75 |
+| calibration ECE (hybrid, no refit) | 0.1593 → **0.0290** |
+| decisions | 28 alert / 32 silent |
+| alert precision | **0.893** (3 wrong alerts) |
+
+The corrected numbers are slightly better on accuracy but no longer claim "zero wrong alerts" —
+docs and README updated honestly. Device still unavailable (17th round).
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
