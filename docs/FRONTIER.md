@@ -428,6 +428,16 @@ dimensions+sensor). Latest real capture improved layout 1 fit 0.089→0.076 ms; 
 Clear gap analysis and SOTA upgrade path (learned echo detection on dEchorate, graph labeling,
 IMU factor-graph SLAM, directivity calibration, optional LiDAR) recorded.
 
+## Increment 30 — IMU pose graph + loop closure for walk scan (round 30)
+
+Implemented `geometry_pose.py`: step distances (CMPedometer) + device-attitude headings, 5 capture
+stops, return-to-start loop constraint, soft-L1 least-squares pose adjustment, then Hough mapping.
+Live test with real saved probes: **raw loop error 0.72 m → 0.02 m** after adjustment; iOS walk
+scan now requires actual walking (rotation-only rejected) and walks back to the start. 58 geometry
+tests pass. Frontier review updated with Echoscan (TASLP 2024), complex-geometry DL (EAA 2025),
+sparse measure recovery (2025), RGI-Net, ZA-SLAM: public drop-in code/weights are scarce; the path
+is a self-trained learned echo detector on dEchorate (downloaded) + this pose graph.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

@@ -374,7 +374,7 @@ struct GeometryView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label("Walk scan · reflections from objects", systemImage: "figure.walk")
                 .font(.headline)
-            Text("Start at one spot, then walk an L with one sweep at each of four stops: start → step right → step forward → step right. The phone measures your step distance where available; keep the same height and facing. About 20 seconds. Turning the phone in place gives no baseline and is rejected.")
+            Text("Five sweeps, four walking segments: start → step right → step forward → step right → walk back to the start. Point the top of the phone in the direction you walk; the phone measures step distance and heading, then closes the loop to correct drift. Turning in place is rejected.")
                 .font(.subheadline)
             Button { work = Task { await walkScan() } } label: {
                 Label("Start walk scan (4 sweeps)", systemImage: "waveform.path.ecg")
@@ -385,7 +385,7 @@ struct GeometryView: View {
             if !walkProgress.isEmpty {
                 HStack { ProgressView(); Text(walkProgress).font(.subheadline) }
             }
-            Text("Reflections from furniture, walls and people are localized as candidates — not identified objects. Move slowly and avoid soft furnishings for clearer results. Without step sensing, ~0.6 m spacing is assumed.")
+            Text("Reflections from furniture, walls and people are localized as candidates — not identified objects. The last stop must be back at the start for loop closure. Walk slowly; keep the phone at the same height.")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
@@ -403,6 +403,11 @@ struct GeometryView: View {
                 .accessibilityLabel("Reflection candidates in a top-down 3D view")
             Text("\(persistent) persistent reflection candidates · \(unstable) unstable (possible movement/occlusion)")
                 .font(.caption).foregroundStyle(.secondary)
+            if let loop = scan.trajectory?.diagnostics,
+               let raw = loop.raw_loop_error_m, let adjusted = loop.adjusted_loop_error_m {
+                Text(String(format: "Walk trajectory loop error: %.2f m → %.2f m after pose-graph adjustment", raw, adjusted))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             ForEach(scan.reflectors.prefix(5)) { point in
                 HStack {
                     Text(point.type == "persistent" ? "Persistent" : "Unstable")
@@ -429,47 +434,73 @@ struct GeometryView: View {
 
     @MainActor private func walkScan() async {
         guard !model.busy else { return }
+        guard CMPedometer.isStepCountingAvailable() else {
+            model.errorText = "This device does not expose step counting; walk scan needs step distance."
+            return
+        }
+        let motion = CMMotionManager()
+        guard motion.isDeviceMotionAvailable else {
+            model.errorText = "Device motion is unavailable; walk scan needs heading tracking."
+            return
+        }
         model.busy = true
         scan = nil
         defer { model.busy = false; walkProgress = "" }
-        // Positions are measured with the step sensor when available (fallback: instructed 0.6 m).
+        motion.startDeviceMotionUpdates()
+        defer { motion.stopDeviceMotionUpdates() }
         let pedometer = CMPedometer()
         let walkStart = Date()
-        var measuredDistance = 0.0
+        var previousDistance = 0.0
+        var yaw0: Double?
+        var segments: [TrajectorySegment] = []
         var poses = [ScanPose(x: 0, y: 0, yaw: 0)]
-        let directions: [(Double, Double)] = [(1, 0), (0, 1), (1, 0)]
-        let labels = ["start", "step right", "step forward", "step right"]
+        let labels = ["start", "step right", "step forward", "step right", "return to start"]
         do {
             let recorder = ProbeRecorder()
             var clips: [Data] = []
-            for index in 0..<4 {
+            for index in 0..<5 {
                 try Task.checkCancellation()
-                if index > 0 {
+                if index == 0 {
+                    try? await Task.sleep(nanoseconds: 350_000_000)
+                    yaw0 = motion.deviceMotion?.attitude.yaw
+                } else {
                     let total = await stepDistance(pedometer: pedometer, from: walkStart)
-                    let segment = total.map { max(0, $0 - measuredDistance) }
+                    let segment = total.map { max(0, $0 - previousDistance) }
                     if let segment, segment < 0.15 {
                         throw NSError(domain: "Echolyra", code: 7, userInfo: [
-                            NSLocalizedDescriptionKey: "No walking detected between sweeps. Turning the phone in your hand gives no position baseline — take 1–2 steps between each sweep (right, forward, right)."])
+                            NSLocalizedDescriptionKey: "No walking detected between sweeps. Turning the phone in your hand gives no position baseline — take 2–3 steps between each sweep and return to the start on the last one."])
                     }
-                    let moved = min(max(segment ?? 0.6, 0.25), 2.5)
-                    measuredDistance += moved
-                    let direction = directions[index - 1]
+                    let moved = min(max(segment ?? 0.6, 0.3), 2.5)
+                    previousDistance += moved
+                    var heading = 0.0
+                    if let current = motion.deviceMotion?.attitude.yaw, let base = yaw0 {
+                        heading = normalizeAngle(current - base)
+                    }
+                    segments.append(TrajectorySegment(distance_m: moved, heading_rad: heading))
                     let previous = poses[poses.count - 1]
-                    poses.append(ScanPose(x: previous.x + direction.0 * moved,
-                                          y: previous.y + direction.1 * moved, yaw: 0))
+                    poses.append(ScanPose(x: previous.x + moved * cos(heading),
+                                          y: previous.y + moved * sin(heading), yaw: 0))
                 }
-                walkProgress = "Spot \(index + 1) of 4 · \(labels[index]) — hold still…"
+                walkProgress = "Spot \(index + 1) of 5 · \(labels[index]) — hold still…"
                 clips.append(try await recorder.measure())
             }
             try Task.checkCancellation()
-            walkProgress = "Localizing reflections across the walk…"
-            scan = try await model.client.scanGeometry(clips: clips, poses: poses)
+            let trajectory = segments.count == 4 ? WalkTrajectory(segments: segments, loop: true) : nil
+            walkProgress = "Adjusting the walk trajectory (loop closure) and localizing reflections…"
+            scan = try await model.client.scanGeometry(clips: clips, poses: poses, trajectory: trajectory)
 #if DEBUG
-            print("ECHOLYRA_WALK status=\(scan?.status ?? "nil") reflectors=\(scan?.reflectors.count ?? -1)")
+            print("ECHOLYRA_WALK status=\(scan?.status ?? "nil") reflectors=\(scan?.reflectors.count ?? -1) loop=\(scan?.trajectory?.diagnostics?.raw_loop_error_m ?? 0)->\(scan?.trajectory?.diagnostics?.adjusted_loop_error_m ?? 0)")
             fflush(stdout)
 #endif
         } catch is CancellationError {
         } catch { if !Task.isCancelled { model.errorText = error.localizedDescription } }
+    }
+
+    private func normalizeAngle(_ value: Double) -> Double {
+        var angle = value
+        while angle > .pi { angle -= 2 * .pi }
+        while angle < -.pi { angle += 2 * .pi }
+        return angle
     }
 
     private func stepDistance(pedometer: CMPedometer, from start: Date) async -> Double? {

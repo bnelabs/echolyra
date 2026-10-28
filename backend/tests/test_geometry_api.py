@@ -1,6 +1,7 @@
 """Route contracts: geometry never changes awareness/probe enrollment state."""
 import io
 import json
+import math
 import sys
 import unittest
 from pathlib import Path
@@ -76,6 +77,29 @@ class GeometryAPITests(unittest.TestCase):
         self.assertEqual(self.client.post("/api/geometry/scan", files=files[:3],
                                           data={"poses": poses}).status_code, 400)
         self.assertEqual(json.dumps(api.SESSION.state, sort_keys=True), before)
+
+    def test_walk_scan_accepts_pose_graph_trajectory(self):
+        clip = wav()
+        files = [("audio", (f"p{i}.wav", clip, "audio/wav")) for i in range(5)]
+        # Closed loop: right, forward, left, back; distances/headings slightly off.
+        trajectory = {"segments": [
+            {"distance_m": 0.6, "heading_rad": 0.0},
+            {"distance_m": 0.6, "heading_rad": math.pi / 2},
+            {"distance_m": 0.6, "heading_rad": math.pi},
+            {"distance_m": 0.62, "heading_rad": -math.pi / 2 + 0.03},
+        ], "loop": True}
+        response = self.client.post("/api/geometry/scan", files=files,
+                                    data={"trajectory": json.dumps(trajectory)})
+        self.assertEqual(response.status_code, 200, response.text)
+        body = response.json()
+        self.assertIn("trajectory", body)
+        self.assertIn("adjusted_loop_error_m", body["trajectory"]["diagnostics"])
+        self.assertEqual(len(body["trajectory"]["poses"]), 5)
+        self.assertEqual(self.client.post("/api/geometry/scan", files=files,
+                                          data={"trajectory": "bad"}).status_code, 400)
+        six = files + [("audio", ("p5.wav", clip, "audio/wav"))]
+        self.assertEqual(self.client.post("/api/geometry/scan", files=six,
+                                          data={"trajectory": json.dumps(trajectory)}).status_code, 400)
 
     def test_review_is_separate_and_bounded(self):
         with patch.object(api.geometry_advisor, "review", return_value={

@@ -36,6 +36,7 @@ import probe
 import meta_models as mm
 import geometry
 import geometry_advisor
+import geometry_pose
 import geometry_scan
 import geometry_stage
 import geometry_upload
@@ -414,18 +415,38 @@ async def geometry_demo():
 
 @app.post("/api/geometry/scan")
 async def geometry_scan_route(audio: list[UploadFile] | None = File(None),
-                              poses: str = Form("[]")):
+                              poses: str = Form("[]"),
+                              trajectory: str = Form("")):
     if not audio or not 4 <= len(audio) <= 8:
         return JSONResponse(status_code=400,
                             content={"error": "Walk scan needs four to eight probe recordings."})
-    try:
-        parsed = json.loads(poses)
-        clean_poses = geometry_scan.sanitize_poses(parsed)
-    except (ValueError, TypeError):
-        clean_poses = None
-    if clean_poses is None or len(clean_poses) != len(audio):
-        return JSONResponse(status_code=400,
-                            content={"error": "Send one valid walk position per recording (4–8 separated positions)."})
+    adjusted = None
+    clean_trajectory = None
+    if trajectory.strip():
+        try:
+            clean_trajectory = geometry_pose.sanitize_trajectory(json.loads(trajectory))
+        except (ValueError, TypeError):
+            clean_trajectory = None
+        if clean_trajectory is None:
+            return JSONResponse(status_code=400,
+                                content={"error": "Send a valid step trajectory (3–8 segments, distances 0.05–3 m)."})
+        try:
+            adjusted = geometry_pose.adjust(clean_trajectory)
+        except ValueError as error:
+            return JSONResponse(status_code=400, content={"error": str(error)})
+        clean_poses = adjusted["poses"]
+        if len(clean_poses) != len(audio):
+            return JSONResponse(status_code=400,
+                                content={"error": "Send one probe recording per trajectory position (segments + 1)."})
+    else:
+        try:
+            parsed = json.loads(poses)
+            clean_poses = geometry_scan.sanitize_poses(parsed)
+        except (ValueError, TypeError):
+            clean_poses = None
+        if clean_poses is None or len(clean_poses) != len(audio):
+            return JSONResponse(status_code=400,
+                                content={"error": "Send one valid walk position per recording (4–8 separated positions)."})
     recordings = []
     raws = []
     for upload in audio:
@@ -439,7 +460,11 @@ async def geometry_scan_route(audio: list[UploadFile] | None = File(None),
             return JSONResponse(status_code=400, content={"error": str(error)})
     async with GEOMETRY_WORKERS:
         result = await asyncio.to_thread(geometry_scan.scan, recordings, clean_poses, probe.FS)
-    _save_geometry_debug("scan", raws, {"poses": clean_poses}, result)
+    if adjusted is not None:
+        result["trajectory"] = {k: adjusted[k] for k in ("poses", "assumptions", "diagnostics")}
+        result["assumptions"] = adjusted["assumptions"] + geometry_scan.ASSUMPTIONS
+    _save_geometry_debug("scan", raws, {"poses": clean_poses,
+                                        "trajectory": clean_trajectory}, result)
     return result
 
 

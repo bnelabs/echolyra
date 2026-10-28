@@ -75,6 +75,30 @@ struct ReflectionDiagnostics: Codable {
     var assumed_spacing_m: Double?
 }
 
+struct TrajectorySegment: Codable {
+    var distance_m: Double
+    var heading_rad: Double
+}
+
+struct WalkTrajectory: Codable {
+    var segments: [TrajectorySegment]
+    var loop: Bool
+}
+
+struct TrajectoryInfoDiagnostics: Codable {
+    var segments: Int?
+    var loop: Bool?
+    var raw_loop_error_m: Double?
+    var adjusted_loop_error_m: Double?
+    var mean_step_m: Double?
+}
+
+struct TrajectoryInfo: Codable {
+    var poses: [ScanPose]?
+    var assumptions: [String]?
+    var diagnostics: TrajectoryInfoDiagnostics?
+}
+
 struct ReflectionScan: Codable {
     var status: String
     var message: String
@@ -82,6 +106,7 @@ struct ReflectionScan: Codable {
     var poses: [ScanPose]
     var reflectors: [ReflectionPoint]
     var diagnostics: ReflectionDiagnostics
+    var trajectory: TrajectoryInfo?
 }
 
 struct GeometryCandidate: Codable, Identifiable {
@@ -135,11 +160,16 @@ extension APIClient {
         return try JSONDecoder().decode(GeometryResult.self, from: data)
     }
 
-    func scanGeometry(clips: [Data], poses: [ScanPose]) async throws -> ReflectionScan {
+    func scanGeometry(clips: [Data], poses: [ScanPose], trajectory: WalkTrajectory? = nil) async throws -> ReflectionScan {
         let encoded = try JSONEncoder().encode(poses)
         let posesJSON = String(data: encoded, encoding: .utf8) ?? "[]"
+        var fields = ["poses": posesJSON]
+        if let trajectory, let data = try? JSONEncoder().encode(trajectory),
+           let json = String(data: data, encoding: .utf8) {
+            fields["trajectory"] = json
+        }
         let body = Self.multipart(
-            fields: ["poses": posesJSON],
+            fields: fields,
             files: clips.enumerated().map { (name: "audio", filename: "walk\($0.offset).wav",
                                               mime: "audio/wav", data: $0.element) }
         )

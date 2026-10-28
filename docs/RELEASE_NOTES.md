@@ -57,6 +57,13 @@ probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
 
+## IMU pose graph + loop closure
+
+Walk scan now captures five stops: four measured segments (pedometer distance + device heading)
+with a return-to-start loop constraint, adjusted by a small least-squares pose graph before echo
+Hough voting. Live test: raw loop error 0.72 m → 0.02 m after adjustment. Rotation-only scans are
+rejected; the app requires real walking.
+
 ## Meta capability audit + Wonder review
 
 Audio is not sendable to Meta for acoustic analysis: live tests returned "NO_AUDIO_ACCESS" for

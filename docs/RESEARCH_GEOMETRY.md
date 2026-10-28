@@ -64,6 +64,30 @@ not product claims.
 4. Docs/UI now distinguish: measured shell (strict), low-confidence shell, reflection
    candidates, and illustrative staging.
 
+## 3b. Frontier update (2025–2026, direct research; subagent attempts failed)
+
+| Work | Claim | Availability |
+|---|---|---|
+| **Echoscan** (IEEE TASLP 2024) — https://dl.acm.org/doi/pdf/10.1109/TASLP.2024.3485516 | Deep network using **high-order echoes** to infer NLOS walls and complex-shaped rooms from RIRs of a single voice-assistant speaker | No public repo found in GitHub search (0 results) — cannot drop in |
+| **Complex Room Geometry Inference via Acoustic Echoes** (EAA 2025) — https://dael.euracoustics.org/confs/landing_pages/fa2025/000244.html | Deep model predicts **floorplan + height maps** directly from RIRs; robust with furniture/objects | No public code found |
+| **Hearing the Shape of a Cuboid Room Using Sparse Measure Recovery** (arXiv 2509.08443, 2025) — https://arxiv.org/abs/2509.08443 | Convex relaxation / super-resolution of image-source measures; theoretical + numerical | Paper describes code; link not exposed in abs page — needs follow-up |
+| **RGI-Net** (IWAENC 2024) — https://paperswithcode.com/paper/rgi-net-3d-room-geometry-inference-from-room/review/ | Learned 3D RGI with hidden first-order reflections | Code/weights not confirmed |
+| **ZA-SLAM** (ACM 2026) — https://acm-stag.literatumonline.com/doi/10.1145/3745756.3809218 | Zero-shot acoustic SLAM with echoes + **IMU + loop closure**, VLM assistance | No public code confirmed |
+| **Handheld acoustic SLAM** (IEEE TMC 2024) — https://dl.acm.org/doi/abs/10.1109/TMC.2023.3323393 | Smartphone acoustic SLAM | Paywalled/possibly no code |
+| **BERP** (2025) — https://huggingface.co/papers/2405.04476 | Blind single-channel room-parameter estimator from noisy speech; code/weights announced | Room **parameters**, not geometry |
+
+**Practical conclusion:** the true frontier is largely learned models trained on RIR datasets, plus
+inertial SLAM. Public drop-in code/weights are scarce (verified by GitHub searches), so the
+realistic path is: (i) use the **dEchorate** dataset we already downloaded (683 MB silence class,
+4.2 GB complete; CC-BY-4.0, annotated mics/sources/TOA/amplitude) to train a small **learned echo
+detector/labeling model ourselves**; (ii) keep improving the **IMU pose graph** (we now have
+pedometer distance + heading + loop closure); (iii) use optional **LiDAR/RoomPlan** as local
+ground truth.
+
+**Pose graph implemented (this round):** 5 stops, 4 measured segments, return-to-start loop
+constraint; least-squares distributes loop residual (live test: raw loop error 0.72 m → 0.02 m
+after adjustment). This is SLAM-adjacent, not full visual-inertial SLAM.
+
 ## 4. Recommended roadmap (priority order)
 
 1. **IMU trajectory + loop closure** (ZA-SLAM/handheld SLAM): record device motion during the
