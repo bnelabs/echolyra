@@ -107,6 +107,21 @@ someone moving things). Verified:
 **Held-out calibration validation**: 30/20 split of real recordings; hybrid profile reaches
 **ECE 0.0166** on unseen real audio at 0.944 accepted precision (see CALIBRATION.md §3.6).
 
+## Increment 7 — activity calibration, flip-readiness, storyboard (round 7)
+
+- **Activity-score calibration** (`tools_calibrate_activity.py`): simulated stable vs
+  door-open/close series → threshold **0.20**, simulated false-positive rate **0%**, detection
+  rate **100%** (stable series score 0.0, activity series 1.0). `probe.check()` now reads the
+  calibrated threshold; honest caveat: synthetic simulation, real-probe FAR to be measured on
+  device.
+- **Flip-readiness checker** (`tools/check_submission.py`): verifies required files, tracked
+  secrets/credentials, forbidden paths, committed audio outside the synthetic demo set, commit
+  dates, dirty tree. It found and we fixed: missing LICENSE, missing privacy section, wrong
+  asset paths. Current status: **PASS**.
+- **Demo storyboard** (`docs/DEMO_STORYBOARD.md`): shot-by-shot list with exact on-screen
+  numbers and the browser fallback.
+- Device still unavailable (7th round); on-device verification pending.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

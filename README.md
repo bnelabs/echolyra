@@ -49,6 +49,13 @@ Every detection carries a decision (`alert` / `explain` / `silent`) from a calib
 operating point: ECE 0.039→0.016, 0.958 precision at threshold, and zero wrong alerts in the
 labelled set; it stays silent under noise. See [`docs/CALIBRATION.md`](docs/CALIBRATION.md).
 
+## Privacy
+
+No cameras, and no audio is stored or uploaded for classification: Apple's SoundAnalysis
+classifier runs on-device, and only compact features (SNR, decay, fingerprint, labels) leave
+the phone. Muse Spark receives event/room/context, never the raw recording. Active probes make
+room identity measurable without recording everyday life; `cache/` and `.env` stay gitignored.
+
 ## Signal science (SNR, noise, reverberation)
 
 RoomSense does explicit signal-quality analysis before any AI label:

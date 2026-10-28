@@ -117,6 +117,15 @@ def analyze_probe(recording: np.ndarray, fs: int = FS) -> dict:
 
 
 # --------------------------------------------------------------------- store
+def _activity_threshold() -> float:
+    """Calibrated threshold for the activity score (tools_calibrate_activity.py)."""
+    try:
+        data = json.loads((STATE_PATH.parent / "activity_calibration.json").read_text())
+        return float(data.get("threshold", 0.45))
+    except Exception:
+        return 0.45
+
+
 def _load_state() -> dict:
     if STATE_PATH.exists():
         try:
@@ -230,7 +239,8 @@ def check(room_id: str, recording: np.ndarray) -> dict:
         activity_score = float(np.clip((variation / max(noise_std, 0.01) - 1.0) / 4.0, 0.0, 1.0))
     else:
         activity_score = 0.0
-    unusual_activity = bool(activity_score >= 0.45 and len(window) >= 3 and status != "changed")
+    unusual_activity = bool(activity_score >= _activity_threshold()
+                            and len(window) >= 3 and status != "changed")
     room["last_status"] = status
     room["last_checked_at"] = time.time()
     _save_state(state)
