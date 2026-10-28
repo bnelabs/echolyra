@@ -84,7 +84,7 @@ def _headers(accept: str = "application/json") -> dict:
 
 
 # --------------------------------------------------------------- Muse Spark
-SYSTEM = """You are RoomTwin, an acoustic consultant. You receive JSON measurements from a phone
+SYSTEM = """You are Echolyra, an acoustic consultant. You receive JSON measurements from a phone
 measurement of a real room (RT60 per octave, C50, estimated surface absorption, a physics-based
 treatment plan). Diagnose the room in plain language and prescribe a physical fix.
 Rules: never claim lab certification; label numbers as estimates; prefer moving gear or adding
@@ -302,7 +302,7 @@ def transcribe(audio_bytes: bytes, filename: str = "brief.wav", mime: str = "aud
 
 
 # --------------------------------------------------------------- situation report
-SITUATION_SYSTEM = """You are RoomSense, a privacy-preserving home sound awareness system.
+SITUATION_SYSTEM = """You are Echolyra, a privacy-preserving home sound awareness system.
 You receive JSON about one detected sound event: its acoustic class, confidence, the room it
 was attributed to, the phone's measurements, and the local time. Write a calm, useful
 situation report. Rules: never claim certainty beyond the confidence; no medical, security

@@ -13,7 +13,7 @@ Everything software-side is done; this is the only remaining acceptance path. Ta
    `cd sprint/ios && ./install_device.sh` (auto-detects UDID + team, signs, installs, launches with
    the backend URL injected).
 4. **Trust developer (one tap)**
-   Tap RoomSense icon → *Untrusted Developer* → Settings → General → VPN & Device Management →
+   Tap Echolyra icon → *Untrusted Developer* → Settings → General → VPN & Device Management →
    **Baris Naci Erzeren** → Trust. Relaunch.
 5. **Allow microphone (one tap)** when the app asks.
 6. **Enroll rooms** — Rooms tab: enter `Living` → *Knock once and record*; repeat `Kitchen`,
@@ -37,7 +37,7 @@ calibrated confidence, SNR. Then commit.
 ## Troubleshooting
 
 - App launches but requests fail → the injected backend URL is stale: relaunch via
-  `install_device.sh` or set `ROOMSENSE_BACKEND` in Settings.
-- "Microphone access is off" → Settings → RoomSense → Microphone → on; relaunch.
+  `install_device.sh` or set `ECHOLYRA_BACKEND` in Settings.
+- "Microphone access is off" → Settings → Echolyra → Microphone → on; relaunch.
 - Trust prompt not visible → uninstall/reinstall resets trust; repeat step 4.
 - Re-probe says "no probe baseline" → run step 7 for that room first.

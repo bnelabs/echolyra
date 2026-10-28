@@ -118,7 +118,7 @@ struct APIClient {
 
     // MARK: - Helpers
 
-    static let boundary = "RoomSense-\(UUID().uuidString)"
+    static let boundary = "Echolyra-\(UUID().uuidString)"
 
     static func check(_ response: URLResponse, _ data: Data) throws {
         guard let http = response as? HTTPURLResponse else { throw APIError.badURL }

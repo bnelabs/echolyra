@@ -1,4 +1,11 @@
-# Release notes — `v0.2.0-hackathon` (2026-10-28)
+# Release notes — Echolyra (`v0.6.0`)
+
+Project renamed **Echolyra** (formerly RoomSense) — echo + lyre, pronounced *ek-oh-LY-rah*.
+The iOS bundle identifier remains `com.bnelabs.roomsense` because the free provisioning
+profile cannot auto-provision a new identifier; display name, product, backend, repo and docs
+are Echolyra.
+
+## v0.2.0-hackathon (2026-10-28)
 
 Submission candidate: judge-facing README, 11/11 claim verifier, doc-link + number audits, fresh-clone reproducibility proof, one-page submission runbook.
 
@@ -8,7 +15,7 @@ Correction release: external-validation numbers fixed (60 unique clips: 0.900 ac
 0.0290 calibrated ECE, 0.893 alert precision); documented numbers are now audited against the
 cached measurements by `tools/audit_numbers.py`.
 
-RoomSense: camera-free home awareness that measures rooms, understands sounds on-device, and
+Echolyra: camera-free home awareness that measures rooms, understands sounds on-device, and
 knows when it doesn't know.
 
 ## What is in this release
@@ -28,7 +35,7 @@ knows when it doesn't know.
 - **Browser demo (no hardware):** `/static/demo.html` — 3 demo rooms with probe baselines, five
   clips through the full calibrated pipeline, live Muse Spark situation reports.
 - **Sensor-node page:** `/static/node.html` — any laptop joins as a second microphone.
-- **iOS app:** `ios/RoomSense/` — `sprint/ios/install_device.sh` builds/installs; device run
+- **iOS app:** `ios/Echolyra/` — `sprint/ios/install_device.sh` builds/installs; device run
   pending iPhone reconnection.
 - **Verification:** `tools/verify_claims.py` (all 8 checks pass, output in `docs/VERIFY.md`)
   and `tools/check_submission.py` (flip-readiness PASS).

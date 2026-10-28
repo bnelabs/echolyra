@@ -15,10 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C6D41143CED9E8BFF031AE88"
-               BuildableName = "RoomSense.app"
-               BlueprintName = "RoomSense"
-               ReferencedContainer = "container:RoomSense.xcodeproj">
+               BlueprintIdentifier = "CB82E9A11849FF4D47C9290F"
+               BuildableName = "Echolyra.app"
+               BlueprintName = "Echolyra"
+               ReferencedContainer = "container:Echolyra.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -32,10 +32,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C6D41143CED9E8BFF031AE88"
-            BuildableName = "RoomSense.app"
-            BlueprintName = "RoomSense"
-            ReferencedContainer = "container:RoomSense.xcodeproj">
+            BlueprintIdentifier = "CB82E9A11849FF4D47C9290F"
+            BuildableName = "Echolyra.app"
+            BlueprintName = "Echolyra"
+            ReferencedContainer = "container:Echolyra.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -55,10 +55,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C6D41143CED9E8BFF031AE88"
-            BuildableName = "RoomSense.app"
-            BlueprintName = "RoomSense"
-            ReferencedContainer = "container:RoomSense.xcodeproj">
+            BlueprintIdentifier = "CB82E9A11849FF4D47C9290F"
+            BuildableName = "Echolyra.app"
+            BlueprintName = "Echolyra"
+            ReferencedContainer = "container:Echolyra.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -74,10 +74,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C6D41143CED9E8BFF031AE88"
-            BuildableName = "RoomSense.app"
-            BlueprintName = "RoomSense"
-            ReferencedContainer = "container:RoomSense.xcodeproj">
+            BlueprintIdentifier = "CB82E9A11849FF4D47C9290F"
+            BuildableName = "Echolyra.app"
+            BlueprintName = "Echolyra"
+            ReferencedContainer = "container:Echolyra.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

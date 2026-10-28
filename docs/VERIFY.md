@@ -12,7 +12,7 @@ CC BY-NC and is not redistributed). Repo hygiene calls `tools/check_submission.p
 ## Last verified output
 
 ```
-RoomSense claim verification
+Echolyra claim verification
 ==============================
 [PASS] probe RT60 recovery: 0.80→0.82, 0.60→0.61, 0.35→0.36 (all within 10%)
 [PASS] change detection (stable vs changed): same ΔT30 0.4% (stable) / changed ΔT30 43.8% (changed)

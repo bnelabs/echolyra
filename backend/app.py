@@ -1,4 +1,4 @@
-"""RoomTwin hackathon backend — FastAPI entrypoint.
+"""Echolyra hackathon backend — FastAPI entrypoint.
 
 Endpoints
   GET  /api/health          -> model configuration + cache state
@@ -43,7 +43,7 @@ ROOT = Path(__file__).parent
 OUT = ROOT / "static" / "out"
 OUT.mkdir(parents=True, exist_ok=True)
 
-app = FastAPI(title="RoomTwin", version="0.1.0")
+app = FastAPI(title="Echolyra", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 # Bound geometry uploads before the multipart parser buffers/spools an unbounded body.
 app.add_middleware(geometry_upload.GeometryUploadLimit)
@@ -198,7 +198,7 @@ async def transcribe(audio: UploadFile = File(...)):
                          audio.content_type or "audio/mp4")
 
 
-# ------------------------------------------------------------------ RoomSense awareness
+# ------------------------------------------------------------------ Echolyra awareness
 @app.get("/api/session")
 def session_summary():
     return SESSION.summary()
@@ -353,7 +353,7 @@ def decode_geometry_recording(raw: bytes) -> np.ndarray:
     try:
         with sf.SoundFile(io.BytesIO(raw)) as recording:
             if recording.format not in {"WAV", "WAVEX"}:
-                raise ValueError("Use a WAV recording of the RoomSense probe.")
+                raise ValueError("Use a WAV recording of the Echolyra probe.")
             if not 32_000 <= recording.samplerate <= 96_000 or recording.channels not in (1, 2):
                 raise ValueError("Use a mono or stereo WAV at 32–96 kHz.")
             duration = len(recording) / recording.samplerate
@@ -531,7 +531,7 @@ def probe_seed(room_id: str = Form(...), room_name: str = Form("")):
 @app.get("/", response_class=HTMLResponse)
 def index():
     page = ROOT / "static" / "index.html"
-    return HTMLResponse(page.read_text()) if page.exists() else HTMLResponse("<h1>RoomTwin API</h1>")
+    return HTMLResponse(page.read_text()) if page.exists() else HTMLResponse("<h1>Echolyra API</h1>")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import SwiftUI
 import SceneKit
 import simd
+import Darwin
 
 struct GeometryView: View {
     @EnvironmentObject private var model: AppModel
@@ -63,10 +64,13 @@ struct GeometryView: View {
             .navigationTitle("3D Room")
             .task {
 #if DEBUG
-                if ProcessInfo.processInfo.arguments.contains("-geometryDemo"), result == nil {
+                let env = ProcessInfo.processInfo.environment
+                if (ProcessInfo.processInfo.arguments.contains("-geometryDemo")
+                    || env["ECHOLYRA_GEOMETRY_DEMO"] == "1"), result == nil {
                     await loadDemo()
                 }
-                if ProcessInfo.processInfo.arguments.contains("-geometryStage"), staging == nil {
+                if (ProcessInfo.processInfo.arguments.contains("-geometryStage")
+                    || env["ECHOLYRA_GEOMETRY_STAGE"] == "1"), staging == nil {
                     await askStage()
                 }
 #endif
@@ -376,6 +380,10 @@ struct GeometryView: View {
             result = received
             selectedCandidate = received.candidates.first?.id ?? ""
             resetCamera()
+#if DEBUG
+            print("ECHOLYRA_GEOM demo status=\(received.status) candidates=\(received.candidates.count) objects=\(received.objects?.count ?? 0)")
+            fflush(stdout)
+#endif
             if ProcessInfo.processInfo.arguments.contains("-geometryStageSample") {
                 staging = sampleStaging()
             }
@@ -406,7 +414,8 @@ struct GeometryView: View {
         do {
             staging = try await model.client.stageGeometry(result)
 #if DEBUG
-            print("GEOMSTAGE received source=\(staging?.source ?? "nil") objects=\(staging?.objects.count ?? -1)")
+            print("ECHOLYRA_GEOM stage source=\(staging?.source ?? "nil") objects=\(staging?.objects.count ?? -1) style=\(staging?.style ?? "nil")")
+            fflush(stdout)
 #endif
         }
         catch is CancellationError {} catch { if !Task.isCancelled { model.errorText = error.localizedDescription } }
@@ -569,7 +578,8 @@ private struct AcousticRoomScene: UIViewRepresentable {
         if let staging, !staging.objects.isEmpty {
             addStaging(to: room, staging: staging, length: length, depth: depth, extent: extent)
 #if DEBUG
-            print("GEOMSTAGE scene staged objects=\(staging.objects.count)")
+            print("ECHOLYRA_GEOM scene staged=\(staging.objects.count) rings=\(objects.count)")
+            fflush(stdout)
 #endif
         }
         addDimensions(to: scene.rootNode, length: length, depth: depth, height: height, extent: extent)

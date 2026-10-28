@@ -39,7 +39,7 @@ cd .. && git status --short        # expect: empty (clean tree)
 # fill the placeholders in docs/SUBMISSION.md, then flip public
 # (GitHub UI: Settings → General → Danger Zone → Change visibility → Public)
 # or:
-# gh repo edit bnelabs/roomsense --visibility public --accept-visibility-change-consequences
+# gh repo edit bnelabs/echolyra --visibility public --accept-visibility-change-consequences
 python3 tools/check_submission_fields.py   # expect: PASS once video/demo URLs are set
 git add -A && git commit -m "submission: fill video and demo URLs" && git push
 git tag -a v0.2.0-hackathon -m "Submission candidate" && git push origin v0.2.0-hackathon
@@ -47,7 +47,7 @@ git tag -a v0.2.0-hackathon -m "Submission candidate" && git push origin v0.2.0-
 
 ```bash
 # post-flip, logged out
-curl -sI https://github.com/bnelabs/roomsense | head -1          # 200
+curl -sI https://github.com/bnelabs/echolyra | head -1          # 200
 # open README logged-out; click screenshots, docs links, demo link
 # open the video URL in a private window; play through
 ```

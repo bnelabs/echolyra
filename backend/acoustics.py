@@ -1,4 +1,4 @@
-"""RoomTwin hackathon backend — acoustic measurement, inversion, plan, auralization.
+"""Echolyra hackathon backend — acoustic measurement, inversion, plan, auralization.
 
 Deliberately dependency-light: numpy + scipy (+ pyroomacoustics only for the demo
 simulation of an untreated room, which can be replaced by a cached RIR).

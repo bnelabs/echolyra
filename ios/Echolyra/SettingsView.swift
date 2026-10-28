@@ -31,12 +31,12 @@ struct SettingsView: View {
                 }
 
                 Section("Privacy") {
-                    Text("RoomSense never plays sounds and never stores recordings on the server. Only numeric acoustic features are uploaded, so the app can tell what happened without keeping what it heard.")
+                    Text("Echolyra never plays sounds and never stores recordings on the server. Only numeric acoustic features are uploaded, so the app can tell what happened without keeping what it heard.")
                         .font(.footnote)
                 }
 
                 Section("About") {
-                    Text("RoomSense — camera-free home awareness. Meta Global AI Developer Hackathon, Indie Developer track.")
+                    Text("Echolyra — camera-free home awareness. Meta Global AI Developer Hackathon, Indie Developer track.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

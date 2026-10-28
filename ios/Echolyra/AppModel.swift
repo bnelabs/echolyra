@@ -13,7 +13,7 @@ final class AppModel: ObservableObject {
     @Published var errorText: String?
 
     init() {
-        let env = ProcessInfo.processInfo.environment["ROOMSENSE_BACKEND"]
+        let env = ProcessInfo.processInfo.environment["ECHOLYRA_BACKEND"]
         backendURL = env ?? UserDefaults.standard.string(forKey: "backendURL") ?? "http://192.168.68.50:8080"
     }
 
@@ -39,7 +39,7 @@ final class AppModel: ObservableObject {
                                reason: "conformal_pass", alert_threshold: 0.23, snr_db: 34.2))
     }
 
-    /// Headless active-probe check (`ROOMSENSE_AUTOPROBE=enroll|check`): measure the room,
+    /// Headless active-probe check (`ECHOLYRA_AUTOPROBE=enroll|check`): measure the room,
     /// enroll/re-probe it through the backend, and print the measured RT60/status.
     func runAutoProbe(mode: String) async {
         log("AUTOPROBE start mode=\(mode) backend=\(backendURL)")
@@ -76,7 +76,7 @@ final class AppModel: ObservableObject {
         log("AUTOTEST start backend=\(backendURL)")
         let recorder = Recorder()
         do {
-            let seconds = Double(ProcessInfo.processInfo.environment["ROOMSENSE_AUTOTEST_SECONDS"] ?? "2.8") ?? 2.8
+            let seconds = Double(ProcessInfo.processInfo.environment["ECHOLYRA_AUTOTEST_SECONDS"] ?? "2.8") ?? 2.8
             let rec = try await recorder.record(seconds: seconds)
             let clip = rec.data
             log("AUTOTEST recorded \(clip.count) bytes")
@@ -87,8 +87,8 @@ final class AppModel: ObservableObject {
             log("AUTOTEST heard: \(heard.prefix(3).map { "\($0.label) \(Int($0.confidence * 100))%" }.joined(separator: ", "))")
             let result = try await client.detect(
                 clip: clip, heard: heard,
-                nodeID: ProcessInfo.processInfo.environment["ROOMSENSE_NODE_ID"] ?? "iphone",
-                nodeRoom: ProcessInfo.processInfo.environment["ROOMSENSE_NODE_ROOM"] ?? "")
+                nodeID: ProcessInfo.processInfo.environment["ECHOLYRA_NODE_ID"] ?? "iphone",
+                nodeRoom: ProcessInfo.processInfo.environment["ECHOLYRA_NODE_ROOM"] ?? "")
             lastResult = result
             log("AUTOTEST detect label=\(result.event.label) conf=\(result.event.confidence) room=\(result.room.room_name ?? "nil") roomConf=\(result.room.confidence) situation=\(result.situation.headline ?? "nil") model=\(result.situation._model ?? "nil")")
         } catch {

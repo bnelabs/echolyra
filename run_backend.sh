@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start the RoomTwin backend reachable from the iPhone on the same Wi-Fi.
+# Start the Echolyra backend reachable from the iPhone on the same Wi-Fi.
 #   ./run_backend.sh                 # uses python3
 #   PYTHON=../prototype/.venv/bin/python ./run_backend.sh
 set -euo pipefail
@@ -25,7 +25,7 @@ IP="$(ipconfig getifaddr en0 2>/dev/null || true)"
 [ -z "${IP:-}" ] && IP="127.0.0.1"
 
 echo "=============================================="
-echo " RoomTwin backend"
+echo " Echolyra backend"
 echo "   Mac:     http://127.0.0.1:8080"
 echo "   iPhone:  http://${IP}:8080"
 echo "   Health:  http://${IP}:8080/api/health   <- open this in iPhone Safari FIRST"

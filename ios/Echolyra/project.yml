@@ -1,4 +1,4 @@
-name: RoomSense
+name: Echolyra
 options:
   bundleIdPrefix: com.bnelabs
   deploymentTarget:
@@ -13,7 +13,7 @@ settings:
     TARGETED_DEVICE_FAMILY: "1"
     SUPPORTS_MACCATALYST: NO
 targets:
-  RoomSense:
+  Echolyra:
     type: application
     platform: iOS
     sources:
@@ -30,17 +30,17 @@ targets:
     info:
       path: Info.plist
       properties:
-        CFBundleDisplayName: RoomSense
+        CFBundleDisplayName: Echolyra
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         NSMicrophoneUsageDescription: >-
-          RoomSense listens for knocks and household sounds to learn each room's
+          Echolyra listens for knocks and household sounds to learn each room's
           acoustic signature.
         NSLocalNetworkUsageDescription: >-
-          RoomSense sends recorded audio to your configured backend on the
+          Echolyra sends recorded audio to your configured backend on the
           local network for acoustic analysis.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
@@ -50,10 +50,10 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Info.plist
 schemes:
-  RoomSense:
+  Echolyra:
     build:
       targets:
-        RoomSense: all
+        Echolyra: all
     run:
       config: Debug
     archive:

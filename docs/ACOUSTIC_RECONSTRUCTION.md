@@ -1,6 +1,6 @@
 **Sound-only 3D room estimates**
 
-RoomSense's **3D Room** tab explores whether early acoustic echoes support a
+Echolyra's **3D Room** tab explores whether early acoustic echoes support a
 rectangular room shell. It uses the phone's speaker and microphone, without a
 camera, LiDAR, supplied room dimensions, or an image-generated room. It is a
 research feature: it estimates a simple rectangular layout from recorded echoes.

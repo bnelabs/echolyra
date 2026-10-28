@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Re-run RoomSense's headline claims in one command.
+"""Re-run Echolyra's headline claims in one command.
 
 Usage (from sprint/backend or anywhere):
     ../../prototype/.venv/bin/python tools/verify_claims.py
@@ -188,7 +188,7 @@ def main():
     check_links()
     check_hygiene()
 
-    print("\nRoomSense claim verification\n" + "=" * 30)
+    print("\nEcholyra claim verification\n" + "=" * 30)
     failed = 0
     for name, ok, detail in results:
         tag = "PASS" if ok else ("SKIP" if ok is None else "FAIL")

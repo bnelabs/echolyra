@@ -1,18 +1,18 @@
-# RoomSense — submission pack
+# Echolyra — submission pack
 
 ## Identity
 
-- **Project:** RoomSense — camera-free home awareness
+- **Project:** Echolyra — camera-free home awareness
 - **Track:** Indie Developer
 - **Problem statement:** Push the Frontier
 - **One-liner:** *A phone that measures a room's acoustic fingerprint, hears what happens in it,
   says which room it happened in, and knows when it doesn't know — without cameras or stored audio.*
-- **Repo:** `github.com/bnelabs/roomsense` (private until submission; flip Nov 3, 18:00 ET)
-- **Demo:** `/static/demo.html` (no hardware needed) · iOS app (`sprint/ios/RoomSense/`)
+- **Repo:** `github.com/bnelabs/echolyra` (private until submission; flip Nov 3, 18:00 ET)
+- **Demo:** `/static/demo.html` (no hardware needed) · iOS app (`sprint/ios/Echolyra/`)
 
 ## 100-word blurb
 
-RoomSense turns a phone into a privacy-preserving acoustic sensor. A quiet sweep measures each
+Echolyra turns a phone into a privacy-preserving acoustic sensor. A quiet sweep measures each
 room's true impulse response (ISO-3382 RT60/EDT), so rooms get source-independent fingerprints
 and can be re-probed to detect change (door, furniture, movement). On-device Apple SoundAnalysis
 (303 classes) recognizes what happened; a calibrated decision layer chooses alert / explain /
@@ -82,12 +82,12 @@ iPhone 12 Pro Max (iOS 27.0.1), real room: probe **RT60 0.239 s**; re-probes sta
 
 ## Submission form — paste-ready fields
 
-- **Project name:** RoomSense — camera-free home awareness
+- **Project name:** Echolyra — camera-free home awareness
 - **Tagline:** It hears your home, measures it, and knows when it doesn't know.
 - **Track:** Indie Developer · **Problem statement:** Push the Frontier
-- **Repo:** github.com/bnelabs/roomsense (public at flip)
+- **Repo:** github.com/bnelabs/echolyra (public at flip)
 - **Demo video:** `<fill after recording>` · **Live demo (no install):** `http://<mac-ip>:8080/static/demo.html`
-- **Description (short):** RoomSense turns a phone into a privacy-preserving acoustic sensor.
+- **Description (short):** Echolyra turns a phone into a privacy-preserving acoustic sensor.
   A quiet sweep measures each room's true impulse response (ISO-3382 RT60/EDT), giving
   source-independent room fingerprints and change detection. On-device Apple SoundAnalysis
   (303 classes) recognizes events; a calibrated decision layer alerts only when evidence is

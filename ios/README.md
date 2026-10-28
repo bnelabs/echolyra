@@ -1,4 +1,4 @@
-# RoomSense iOS app — ready to build (typechecked against iOS 27.1 SDK)
+# Echolyra iOS app — ready to build (typechecked against iOS 27.1 SDK)
 
 **Status:** 9 Swift files, 615 lines, written and **typechecked with Swift 6 against the
 iPhoneOS 27.1 SDK on this Mac — zero errors**. It has not been run on a device yet
@@ -12,18 +12,18 @@ by knocking → "Listen" correctly says *what* and *which room*.
 ## 1. Create the Xcode project (2 minutes)
 
 1. Xcode → File → New → Project → **iOS App**, SwiftUI, Swift.
-2. Product name **RoomSense**, minimum iOS **17.0**, Interface SwiftUI, Language Swift.
-3. Delete the generated `ContentView.swift` and `RoomSenseApp.swift`.
-4. Drag the **9 files from `RoomSense/`** into the project (Copy items if needed, add to target).
+2. Product name **Echolyra**, minimum iOS **17.0**, Interface SwiftUI, Language Swift.
+3. Delete the generated `ContentView.swift` and `EcholyraApp.swift`.
+4. Drag the **9 files from `Echolyra/`** into the project (Copy items if needed, add to target).
 5. Signing & Capabilities → select your personal team (free Apple ID works for on-device builds).
 
 ## 2. Info.plist keys
 
 ```xml
 <key>NSMicrophoneUsageDescription</key>
-<string>RoomSense listens for knocks and household sounds to learn each room's acoustic signature.</string>
+<string>Echolyra listens for knocks and household sounds to learn each room's acoustic signature.</string>
 <key>NSLocalNetworkUsageDescription</key>
-<string>RoomSense sends acoustic features to your own backend on the local network.</string>
+<string>Echolyra sends acoustic features to your own backend on the local network.</string>
 <key>NSAppTransportSecurity</key>
 <dict>
   <key>NSAllowsLocalNetworking</key><true/>
@@ -62,7 +62,7 @@ Team detected on this Mac: **QGPX7JPUL4 — "Baris Naci Erzeren (Personal Team)"
 ```
 
 iOS requires a one-time **Trust** for the developer certificate before a dev-signed app
-can launch. On the iPhone: tap the RoomSense icon → *Untrusted Developer* → **Settings →
+can launch. On the iPhone: tap the Echolyra icon → *Untrusted Developer* → **Settings →
 General → VPN & Device Management → Developer App → "Baris Naci Erzeren" → Trust**, then
 allow the microphone prompt. After that, `install_device.sh` launches the app directly.
 
@@ -70,7 +70,7 @@ allow the microphone prompt. After that, `install_device.sh` launches the app di
 
 | File | Role |
 |---|---|
-| `RoomSenseApp.swift` | app entry |
+| `EcholyraApp.swift` | app entry |
 | `ContentView.swift` | 3 tabs: Rooms / Listen / Settings |
 | `RoomsView.swift` | learn a room (record a knock → `POST /api/enroll`) |
 | `DetectView.swift` | record a sound → `POST /api/detect`; result card + teach menu |
@@ -84,7 +84,7 @@ allow the microphone prompt. After that, `install_device.sh` launches the app di
 
 - Audio is recorded as **CAF**, which the backend reads via libsndfile (`soundfile`); no conversion
   needed on the phone.
-- The old calibration app (`ios/RoomTwin/`) is legacy and not used by RoomSense.
+- The old calibration app (`ios/Echolyra/`) is legacy and not used by Echolyra.
 - Reproduce the type check:
   ```bash
   xcrun --sdk iphoneos swiftc -typecheck -target arm64-apple-ios17.0 \

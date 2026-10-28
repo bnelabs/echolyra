@@ -13,8 +13,8 @@ final class ProbeRecorder: ObservableObject {
             AVAudioApplication.requestRecordPermission { c.resume(returning: $0) }
         }
         guard granted else {
-            throw NSError(domain: "RoomSense", code: 1, userInfo: [
-                NSLocalizedDescriptionKey: "Microphone access is off. Enable it in Settings → RoomSense → Microphone."])
+            throw NSError(domain: "Echolyra", code: 1, userInfo: [
+                NSLocalizedDescriptionKey: "Microphone access is off. Enable it in Settings → Echolyra → Microphone."])
         }
         try Task.checkCancellation()
         let session = AVAudioSession.sharedInstance()
@@ -22,9 +22,9 @@ final class ProbeRecorder: ObservableObject {
         try session.setPreferredSampleRate(48_000)
         try session.setActive(true)
 
-        let sweepURL = FileManager.default.temporaryDirectory.appendingPathComponent("roomsense-probe-\(UUID().uuidString).wav")
+        let sweepURL = FileManager.default.temporaryDirectory.appendingPathComponent("echolyra-probe-\(UUID().uuidString).wav")
         let recURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("roomsense-probe-rec-\(UUID().uuidString).wav")
+            .appendingPathComponent("echolyra-probe-rec-\(UUID().uuidString).wav")
         defer {
             isMeasuring = false
             status = ""
@@ -48,7 +48,7 @@ final class ProbeRecorder: ObservableObject {
         let recorder = try AVAudioRecorder(url: recURL, settings: settings)
         defer { recorder.stop() }
         guard recorder.record(), player.play() else {
-            throw NSError(domain: "RoomSense", code: 3, userInfo: [
+            throw NSError(domain: "Echolyra", code: 3, userInfo: [
                 NSLocalizedDescriptionKey: "Could not start the probe speaker and microphone. Try again with no other audio capture running."])
         }
         isMeasuring = true

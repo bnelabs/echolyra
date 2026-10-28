@@ -1,4 +1,4 @@
-"""Calibrated uncertainty + decision policy for RoomSense.
+"""Calibrated uncertainty + decision policy for Echolyra.
 
 Two layers:
 1. Reliability calibration (histogram binning with Laplace smoothing + monotonicity):

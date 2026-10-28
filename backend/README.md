@@ -1,4 +1,4 @@
-# RoomTwin backend — hackathon starter (Day 1)
+# Echolyra backend — hackathon starter (Day 1)
 
 FastAPI service that turns a phone sweep recording + RoomPlan geometry (+ photos) into an
 acoustic analysis, a physical treatment plan, and **before/after audio** — wired for four

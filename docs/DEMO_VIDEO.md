@@ -1,4 +1,4 @@
-# RoomSense — 3-minute demo video
+# Echolyra — 3-minute demo video
 
 **Hard cap 3:00. Sound-on. Judges watch this live in the final round.**
 

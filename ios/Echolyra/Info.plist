@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>RoomSense</string>
+	<string>Echolyra</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -26,9 +26,9 @@
 		<true/>
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>RoomSense sends recorded audio to your configured backend on the local network for acoustic analysis.</string>
+	<string>Echolyra sends recorded audio to your configured backend on the local network for acoustic analysis.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>RoomSense listens for knocks and household sounds to learn each room's acoustic signature.</string>
+	<string>Echolyra listens for knocks and household sounds to learn each room's acoustic signature.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

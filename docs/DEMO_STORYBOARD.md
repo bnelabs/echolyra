@@ -6,7 +6,7 @@ for exact numbers is acceptable; real device preferred). Fallback at any point: 
 
 ## Assets needed
 
-- iPhone with RoomSense installed, 3 rooms enrolled (living, kitchen, bedroom)
+- iPhone with Echolyra installed, 3 rooms enrolled (living, kitchen, bedroom)
 - Laptop with `http://<mac-ip>:8080/static/node.html` open (second sensor)
 - 2 takes of a glass clink, 1 knock, 1 closing door
 - The screenshots in `docs/screenshots/` as caption material if a live shot fails

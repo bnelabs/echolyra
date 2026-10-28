@@ -1,4 +1,4 @@
-"""RoomSense — home sound awareness.
+"""Echolyra — home sound awareness.
 
 Core loop:
   1. ENROLL: a docked phone hears a sound made in each room (a knock is enough).

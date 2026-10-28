@@ -1,6 +1,6 @@
 # Frontier roadmap — from demo to a real acoustic-awareness system
 
-**Goal (active until the hackathon ships, then product):** turn RoomSense from a threshold
+**Goal (active until the hackathon ships, then product):** turn Echolyra from a threshold
 prototype into a frontier acoustic-awareness system. Acceptance criteria:
 
 1. Real pretrained acoustic understanding on-device (Apple SoundAnalysis, 303 classes) with
@@ -266,7 +266,7 @@ docs and README updated honestly. Device still unavailable (17th round).
   (`docs/eval_real_summary.json`, `docs/eval_external.json`) with fresh-clone fallbacks in
   `calibration.load_params`, `probe._activity_threshold` and the verifier — every headline
   number now reproduces from a clean clone without dev caches or CC BY-NC audio.
-- **Fresh-clone dry run passed**: verifier 10/10 from `/tmp/roomsense-fresh`; server boots,
+- **Fresh-clone dry run passed**: verifier 10/10 from `/tmp/echolyra-fresh`; server boots,
   static pages 200, demo setup returns probe RT60s, glass detect returns `alert` (Muse Spark
   `fallback` without a key — correct). Evidence in `docs/FLIP_DRY_RUN.md`.
 - Added `tools/check_submission_fields.py` (reports the three expected placeholders:

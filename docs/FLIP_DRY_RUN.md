@@ -6,8 +6,8 @@ Simulates what a judge sees after the repo goes public: a **fresh clone**, no de
 ## Fresh-clone verification — 10/10 PASS
 
 ```bash
-git clone https://github.com/bnelabs/roomsense /tmp/roomsense-fresh
-cd /tmp/roomsense-fresh/backend
+git clone https://github.com/bnelabs/echolyra /tmp/echolyra-fresh
+cd /tmp/echolyra-fresh/backend
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
 python ../tools/verify_claims.py
 ```
@@ -34,7 +34,7 @@ reproducible **without** redistributing evaluation-only audio or committing dev 
 ## Fresh-clone server — boots and runs
 
 ```bash
-cd /tmp/roomsense-fresh/backend
+cd /tmp/echolyra-fresh/backend
 uvicorn app:app --host 127.0.0.1 --port 8081
 ```
 

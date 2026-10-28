@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct RoomSenseApp: App {
+struct EcholyraApp: App {
     var body: some Scene {
         WindowGroup { ContentView() }
     }

@@ -1,4 +1,4 @@
-# Signal science — what RoomSense actually measures (and what it refuses to guess)
+# Signal science — what Echolyra actually measures (and what it refuses to guess)
 
 **Status:** implemented in `backend/awareness.py`; evaluated on synthetic rooms (see caveats).
 This page answers: *does it analyse SNR / noise / reverberation — and where is the frontier?*
@@ -44,7 +44,7 @@ a pretrained **303-class** sound classifier that ships with iOS/macOS. Verified 
 includes `knock`, `glass_breaking`, `glass_clink`, `baby_crying`, `crying_sobbing`,
 `door_slam`, `door_bell`, `alarm_clock`, `telephone_bell_ringing`, `water_tap_faucet`,
 `thump_thud`, `speech`, `screaming`, `cough`. It runs fully on the phone; the top labels are
-sent with the clip and mapped to RoomSense event families in `backend/awareness.py`
+sent with the clip and mapped to Echolyra event families in `backend/awareness.py`
 (`APPLE_LABEL_MAP`, `event_from_heard`).
 
 **What reasons about it (Meta Model API):** `muse-spark-1.3-contributor` produces the

@@ -8,7 +8,7 @@ Read at a natural pace; the numbers are the pitch. Target 3:00.
 clap, how it colours a voice, how long a glass clink rings. Cameras can see your home. We
 wanted something that hears it and then forgets."
 
-**[0:15]** "This is RoomSense. The phone plays a sweep you can barely hear and records the
+**[0:15]** "This is Echolyra. The phone plays a sweep you can barely hear and records the
 room's answer — its true impulse response. In three seconds it measures the reverberation
 time: 0.46 seconds in the living room, 0.22 in the kitchen, 0.71 in the bedroom. That's a
 fingerprint no knock can fake, because the room, not the sound, defines it."
@@ -34,7 +34,7 @@ accuracy, versus sixteen percent for hand-written rules. Calibration error on un
 zero point zero one seven, from zero point one three. One active probe is already as
 informative as knocking in every room."
 
-**[2:45]** "RoomSense. It hears your home, measures it, and knows when it doesn't know.
+**[2:45]** "Echolyra. It hears your home, measures it, and knows when it doesn't know.
 Built in six days with Meta's models. Repo and live demo on screen."
 
 ## Recording checklist

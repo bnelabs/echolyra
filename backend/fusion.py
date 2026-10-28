@@ -1,4 +1,4 @@
-"""Multi-node fusion for RoomSense.
+"""Multi-node fusion for Echolyra.
 
 One phone hears an event and guesses what/where. Several phones (an old iPhone, a Mac,
 a tablet) hearing the same event can decide *where* much better, because the level and

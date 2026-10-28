@@ -23,7 +23,10 @@ struct ContentView: View {
         .task {
             await model.refresh()
 #if DEBUG
-            if ProcessInfo.processInfo.arguments.contains("-geometryDemo") {
+            let debugEnv = ProcessInfo.processInfo.environment
+            if ProcessInfo.processInfo.arguments.contains("-geometryDemo")
+                || debugEnv["ECHOLYRA_GEOMETRY_DEMO"] == "1"
+                || debugEnv["ECHOLYRA_GEOMETRY_STAGE"] == "1" {
                 selectedTab = 3
             } else if ProcessInfo.processInfo.arguments.contains("-sampleResult") {
                 model.loadSampleResult()
@@ -31,12 +34,12 @@ struct ContentView: View {
             } else if ProcessInfo.processInfo.arguments.contains("-tabListen") {
                 selectedTab = 1
             }
-            let autotestEnv = ProcessInfo.processInfo.environment["ROOMSENSE_AUTOTEST"] == "1"
+            let autotestEnv = ProcessInfo.processInfo.environment["ECHOLYRA_AUTOTEST"] == "1"
             if autotestEnv || ProcessInfo.processInfo.arguments.contains("-autotest") {
                 await model.runSelfTest()
                 selectedTab = 1
             }
-            if let probeMode = ProcessInfo.processInfo.environment["ROOMSENSE_AUTOPROBE"], !probeMode.isEmpty {
+            if let probeMode = ProcessInfo.processInfo.environment["ECHOLYRA_AUTOPROBE"], !probeMode.isEmpty {
                 await model.runAutoProbe(mode: probeMode)
             }
 #endif

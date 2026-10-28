@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pre-flip / pre-submission hygiene check for the RoomSense repo.
+"""Pre-flip / pre-submission hygiene check for the Echolyra repo.
 
 Run from the repo root (the directory containing backend/, ios/, docs/):
     python3 tools/check_submission.py
@@ -19,7 +19,7 @@ REQUIRED_FILES = [
     "README.md", "LICENSE", ".gitignore", "backend/requirements.txt", "run_backend.sh",
     "backend/app.py", "backend/awareness.py", "backend/probe.py", "backend/calibration.py",
     "backend/fusion.py", "backend/meta_models.py", "backend/.env.example",
-    "ios/RoomSense/RoomSense.xcodeproj/project.pbxproj",
+    "ios/Echolyra/Echolyra.xcodeproj/project.pbxproj",
     "docs/SUBMISSION.md", "docs/EVAL_REAL.md", "docs/CALIBRATION.md", "docs/FRONTIER.md",
     "backend/static/demo.html", "backend/static/node.html",
     "backend/static/demo/labels.json", "tools/check_submission.py",
