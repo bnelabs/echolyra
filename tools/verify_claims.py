@@ -140,6 +140,15 @@ def check_external():
           f"ECE {d.get('ece_before')}→{d.get('ece_after')}, alert precision {d.get('alert_precision')}")
 
 
+def check_numbers():
+    import subprocess
+    script = Path(__file__).resolve().parent / "audit_numbers.py"
+    out = subprocess.run([sys.executable, str(script)], capture_output=True, text=True)
+    ok = out.returncode == 0
+    check("documented numbers match measurements", ok,
+          (out.stdout.strip().splitlines() or ["no output"])[-1])
+
+
 def check_hygiene():
     import subprocess
     script = Path(__file__).resolve().parent / "check_submission.py"
@@ -157,6 +166,7 @@ def main():
     check_fusion()
     check_real_world()
     check_external()
+    check_numbers()
     check_hygiene()
 
     print("\nRoomSense claim verification\n" + "=" * 30)

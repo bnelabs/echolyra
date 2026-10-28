@@ -1,4 +1,8 @@
-# Release notes — `v0.1-hackathon` (2026-10-28)
+# Release notes — `v0.1.1-hackathon` (2026-10-28)
+
+Correction release: external-validation numbers fixed (60 unique clips: 0.900 accuracy,
+0.0290 calibrated ECE, 0.893 alert precision); documented numbers are now audited against the
+cached measurements by `tools/audit_numbers.py`.
 
 RoomSense: camera-free home awareness that measures rooms, understands sounds on-device, and
 knows when it doesn't know.
@@ -41,6 +45,12 @@ change detection            0.4% ΔT30 stable vs 39–60% changed
 probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.72)
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
+
+## External validation (60 unseen real clips, corrected round 17)
+
+- event accuracy **0.900** (glass/knock/alarm 1.00, baby 0.90, water 0.75)
+- calibration ECE **0.1593 → 0.0290** with no refit; 28 alerts at **0.893 precision**
+  (3 wrong); aggregate in `docs/eval_external.json`, checked by `tools/verify_claims.py`.
 
 ## Known limitations (kept honest)
 

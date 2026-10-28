@@ -9,7 +9,7 @@ prototype into a frontier acoustic-awareness system. Acceptance criteria:
    ISO-3382 EDT/T30 per octave — room identity becomes source-independent. **(backend done, iOS playback next)**
 3. **Change detection**: re-probing detects door/furniture/environmental change (and, later,
    presence anomalies). **(done in backend, verified on synthetic rooms)**
-4. Calibrated uncertainty (conformal / decision thresholds) so alerts are trustworthy. **(done: ECE 0.039→0.016, operating point 0.25 @ 0.958 precision, zero wrong alerts; see CALIBRATION.md)**
+4. Calibrated uncertainty (conformal / decision thresholds) so alerts are trustworthy. **(done: ECE 0.039→0.016, operating point 0.25 @ 0.958 precision, zero wrong alerts on the synthetic calibration set; see CALIBRATION.md)**
 5. Multi-node localization using old phones/Mac as extra sensors. **(fusion backend + browser sensor node done; real two-node demo pending device)**
 6. Real-room evaluation numbers in docs, not just synthetic. **(partially done: real-world event evaluation in EVAL_REAL.md; real-room phone evaluation still blocked on device)**
 7. Committed to the private repo with docs and demo script updated. **(continuous)**
@@ -49,7 +49,7 @@ for re-scoring passive events.
 **Calibration/decision layer** (`backend/calibration.py`, `POST /api/calibrate`): histogram
 reliability calibration + precision-targeted operating point + split-conformal threshold, and
 an alert/explain/silent policy. Measured: ECE **0.0394 → 0.0162**; operating point 0.25 at
-**0.958 precision**; zero wrong alerts across all SNR conditions; silent below 12 dB SNR.
+**0.958 precision**; zero wrong alerts on the synthetic calibration set across all SNR conditions; silent below 12 dB SNR.
 Each `/api/detect` response now includes `decision {decision, calibrated_confidence, reason}`.
 
 **Multi-node fusion** (`backend/fusion.py`, `POST/GET /api/fuse`): level + confidence +
@@ -219,13 +219,14 @@ enrollment). Documentation corrected here and in README.
 
 Downloaded 60 **never-before-used** ESC-50 clips (10/class) and ran the untouched pipeline:
 
-| metric | internal set | external set (n=60) |
+| metric | internal set | external set (n=60 unique; corrected round 17) |
 |---|---|---|
-| event accuracy | 0.92 | **0.833** |
-| glass / knock / baby / alarm | 0.9–1.0 | **1.00 each** |
-| water | 0.8 | 0.50 (mapping ambiguity) |
-| calibration ECE | 0.0166 held-out | **0.0345** (no refit) |
-| alert precision | 1.00 | **1.00** (zero wrong alerts) |
+| event accuracy | 0.92 | **0.900** |
+| glass / knock / alarm | 0.9–1.0 | **1.00 each** |
+| baby crying | 1.0 | 0.90 |
+| water | 0.8 | 0.75 (mapping ambiguity) |
+| calibration ECE | 0.0166 held-out | **0.0290** (no refit) |
+| alert precision | 1.00 | **0.893** (3 wrong) |
 
 The safety-critical classes generalize perfectly and calibration transfers to unseen recordings
 without refitting. Also added `docs/VIDEO_EDIT_PACKAGE.md` and a phone-in-room placeholder table
@@ -247,6 +248,17 @@ never-before-used ESC-50 clips:
 
 The corrected numbers are slightly better on accuracy but no longer claim "zero wrong alerts" —
 docs and README updated honestly. Device still unavailable (17th round).
+
+## Increment 18 — number audit + release refresh (round 18)
+
+- Added `tools/audit_numbers.py`: cross-checks every quoted headline figure against the cached
+  measurement JSONs, rejects retracted claims (the round-16 `0.833`/`0.0345` figures), and
+  requires the verifier evidence in `docs/VERIFY.md`. It caught stale figures in the round-16
+  note; those are corrected. Verifier now includes the audit as a 10th check.
+- Water-class behaviour documented precisely (Apple labels `tick`/`tick_tock` for drop-like
+  transients; mapping them would mislabel clocks, so we keep abstaining — not benchmark tuning).
+- Release notes gained the corrected external-validation section; tag `v0.1.1-hackathon` cut.
+- Device still unavailable (18th round).
 
 ## Increment 4 — plan
 

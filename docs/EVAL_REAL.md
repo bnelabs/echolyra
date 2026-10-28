@@ -73,9 +73,11 @@ check had a filename-collision bug that repeated 6 files — corrected in round 
 | decisions | 28 alert / 32 silent |
 | alert precision | **0.893** (3 wrong alerts among 28) |
 
-The water class is the weak spot: ESC-50's `pouring_water` / `water_drops` clips frequently yield
-Apple labels (`liquid_*`, `click`) that map ambiguously; our mapping converts some to `water`
-and leaves others as abstentions. Glass, knock and alarm were perfect on unseen data; baby crying was 0.90. Calibration
+The water class is the weak spot, and the reason is concrete: ESC-50 `water_drops` clips are
+often labelled by Apple as **`tick` / `tick_tock` / `clock`** (drop-like transients), and
+`tick_tock` is also a legitimate clock sound. Mapping those to `water` would mislabel clocks, so
+we keep them as **abstentions** instead — water stays our weakest class by design, not by tuning
+to the benchmark. `pouring_water` clips mostly map correctly via `liquid_*` / `water`. Glass, knock and alarm were perfect on unseen data; baby crying was 0.90. Calibration
 transferred (0.0290 ECE) without refitting, and no silent failure was observed.
 Aggregate numbers: `docs/eval_external.json`.
 
