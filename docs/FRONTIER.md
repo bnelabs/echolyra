@@ -447,6 +447,17 @@ windows/objects and object categories with export. Fully on-device; no uploads; 
 permission text; unsupported on simulator/non-LiDAR. Built and installed on the iPhone 12 Pro Max
 (launch verified). Docs: `docs/HYBRID_LIDAR.md`.
 
+## Increment 32 — detector + Meta use-case audit (round 32)
+
+Researched the detector inventory (SoundAnalysis 303 classes, LiDAR/RoomPlan, Vision/ARKit,
+CoreMotion/pedometer/altimeter, BLE/NFC/UWB, Watch/HealthKit, HomeKit) and Meta's real
+capabilities (SAM 3.1 boxes/masks, Muse Wonder image/video→text, Muse Image illustration, Voice
+Transcribe speech-only, Spark reasoning; no non-speech audio). Documented honest real-life use
+cases, feasibility ratings and explicit do-not-claim items in
+`docs/DETECTORS_AND_USE_CASES.md`. Strongest additions: opt-in **Scene Check** (photo/video →
+SAM + Wonder), **home inventory/move-out** (LiDAR + vision), accessibility narration,
+independent-living check-in (non-medical). Safety decisions stay on-device.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

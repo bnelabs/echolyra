@@ -113,6 +113,13 @@ FFT deconvolution, image-source echo geometry, bounded search, Hough voting and 
 nonlinear least-squares refinement — a classical pipeline, not learned/SLAM SOTA. Details and gap
 analysis: [`docs/GEOMETRY_MATH.md`](docs/GEOMETRY_MATH.md).
 
+## Detectors & honest use cases
+
+What sensors the app can use (sound, LiDAR/RoomPlan, camera/Vision, motion, BLE/UWB, Watch), what
+Meta can genuinely add (scene segmentation, vision descriptions, reasoning, speech, illustrations),
+and which real-life use cases are defensible — with explicit “don’t claim” items:
+[`docs/DETECTORS_AND_USE_CASES.md`](docs/DETECTORS_AND_USE_CASES.md).
+
 ## Research background
 
 The geometry feature is grounded in the acoustic room-inference literature (dEchorate annotated
