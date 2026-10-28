@@ -81,6 +81,7 @@ final class AppModel: ObservableObject {
 
     @Published var probeMessage: String?
     @Published var probeStatusByRoom: [String: String] = [:]
+    @Published var probeRT60ByRoom: [String: Double] = [:]
 
     func probe(roomName: String) async {
         busy = true
@@ -92,6 +93,7 @@ final class AppModel: ObservableObject {
             let clip = try await recorder.measure()
             let resp = try await client.probeEnroll(roomID: id, roomName: roomName, clip: clip)
             let rt = resp.probe?.room?.rt60_mid_s ?? resp.probe?.analyses?.first?.rt60_mid_s
+            if let rt { probeRT60ByRoom[roomName] = rt }
             probeMessage = rt.map { String(format: "Room measured: RT60 %.2f s — acoustic fingerprint stored", $0) }
                 ?? "Probe uploaded"
             session = try await client.session()

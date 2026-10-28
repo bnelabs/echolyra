@@ -7,34 +7,36 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		13E1FEDC1C009080257D8092 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_CDAFAA38-83C1-41D0-8AEC-02209DB3A485" /* SettingsView.swift */; };
-		4FE0E7B8797B9E23904CB134 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_5C66A412-3C35-4640-8451-7C35E8563F73" /* Recorder.swift */; };
-		53CDE661CD04B457449058D1 /* RoomsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_BB25B4CC-3A6F-4F97-A792-8EB0D87AF0FB" /* RoomsView.swift */; };
-		6EDE463D95E1F0885FA1088D /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_4F60523A-0564-4A03-B4F8-E633ADB54E82" /* APIClient.swift */; };
-		738268F68F4EFE2404AEA503 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_21C19174-08EA-4307-A69E-15591A0A52AF" /* ContentView.swift */; };
-		97CB5DF3F1F8F7538C909DAB /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_08EAAA4B-575A-4C34-9C77-2A3C183EC5FA" /* AppModel.swift */; };
-		AA0F045E381FFB985C323DC2 /* ProbeRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_1D4068D4-A441-4D8F-9AD1-FE07B868FE1C" /* ProbeRecorder.swift */; };
-		ACB936C69BF9221D87EF7B0D /* ProbeSweep.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_5D64BF3F-47E5-4549-BED6-D72321576365" /* ProbeSweep.swift */; };
-		BB3A22CC912D4D8620F922B8 /* SoundUnderstanding.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_267E6C90-E56C-4CC5-905D-855F43EC58C4" /* SoundUnderstanding.swift */; };
-		D3E19EA10ED30120C5A6D4A3 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_A52CBCE3-3E6C-4C78-BABC-41F3EC3F5C88" /* Models.swift */; };
-		DE8E575D1A0CEE024ED8C28E /* RoomSenseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_C79FFF66-E7FA-4B96-B14A-2F3B0C63E11B" /* RoomSenseApp.swift */; };
-		EF86338ABD8376A6B1436616 /* DetectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_3282CF20-9000-43BB-92E3-2D02533DC545" /* DetectView.swift */; };
+		1A9282A642DD90768E81DBD5 /* DetectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_062D1B61-C51E-40AA-9EAE-469EEBBB6B84" /* DetectView.swift */; };
+		1DE829B835E768911FB3E92F /* ProbeRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_B29E598E-A86F-484C-92B9-AC974DD919E6" /* ProbeRecorder.swift */; };
+		1E3B6200DBF7C507E34C6DA4 /* ProbeSweep.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_95DFBFAB-1330-4CCB-992D-74CB34643042" /* ProbeSweep.swift */; };
+		388193ABBE6BC17652D5F854 /* RoomsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_546D5EC9-FC95-4B6F-B093-59D3FC360F27" /* RoomsView.swift */; };
+		722D1990897D9B356CE36818 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_CD556795-479D-4BAE-A33F-85F30934B233" /* AppModel.swift */; };
+		995FB1D07C0595D1AFEF40A0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_5CFB8436-9F0F-4D84-9A72-D92BC3C80CD9" /* SettingsView.swift */; };
+		A7EF1AB3DAFE6476558F0A76 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_A7CD0AD9-4C40-40B5-BF90-E9E323BBBA9F" /* ContentView.swift */; };
+		AB41ED155FA45A32179EFC2E /* SoundUnderstanding.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_7F012ACD-23C1-4ED5-8F22-4ABF315E2099" /* SoundUnderstanding.swift */; };
+		B35EFE558D47A78781A4AE5F /* RoomSenseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_0A0F6A46-1D9B-4ACB-B41F-08B916677184" /* RoomSenseApp.swift */; };
+		CAAAEBD42EBBA8DE42374292 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_8E548F7A-172C-4B6D-AFE4-8B6C7E4C88B1" /* Recorder.swift */; };
+		DD31243BF117637C89A3C3AD /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_B0A7CC1D-D904-43FB-96A7-93D88E97F095" /* Models.swift */; };
+		FA61B19DEAAE62EB03039248 /* RoomSense.xcodeproj in Resources */ = {isa = PBXBuildFile; fileRef = "TEMP_BBE14580-6913-4A04-A4AE-13C8E1FE590C" /* RoomSense.xcodeproj */; };
+		FFA48ED75BABCEA70E464514 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_40A9EF5E-04B1-4C45-8136-37DB6657935B" /* APIClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		794B94B59933FB3BCA5F3F97 /* RoomSense.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RoomSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		"TEMP_08EAAA4B-575A-4C34-9C77-2A3C183EC5FA" /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
-		"TEMP_1D4068D4-A441-4D8F-9AD1-FE07B868FE1C" /* ProbeRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeRecorder.swift; sourceTree = "<group>"; };
-		"TEMP_21C19174-08EA-4307-A69E-15591A0A52AF" /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		"TEMP_267E6C90-E56C-4CC5-905D-855F43EC58C4" /* SoundUnderstanding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundUnderstanding.swift; sourceTree = "<group>"; };
-		"TEMP_3282CF20-9000-43BB-92E3-2D02533DC545" /* DetectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectView.swift; sourceTree = "<group>"; };
-		"TEMP_4F60523A-0564-4A03-B4F8-E633ADB54E82" /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
-		"TEMP_5C66A412-3C35-4640-8451-7C35E8563F73" /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
-		"TEMP_5D64BF3F-47E5-4549-BED6-D72321576365" /* ProbeSweep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSweep.swift; sourceTree = "<group>"; };
-		"TEMP_A52CBCE3-3E6C-4C78-BABC-41F3EC3F5C88" /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		"TEMP_BB25B4CC-3A6F-4F97-A792-8EB0D87AF0FB" /* RoomsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomsView.swift; sourceTree = "<group>"; };
-		"TEMP_C79FFF66-E7FA-4B96-B14A-2F3B0C63E11B" /* RoomSenseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomSenseApp.swift; sourceTree = "<group>"; };
-		"TEMP_CDAFAA38-83C1-41D0-8AEC-02209DB3A485" /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		"TEMP_062D1B61-C51E-40AA-9EAE-469EEBBB6B84" /* DetectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectView.swift; sourceTree = "<group>"; };
+		"TEMP_0A0F6A46-1D9B-4ACB-B41F-08B916677184" /* RoomSenseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomSenseApp.swift; sourceTree = "<group>"; };
+		"TEMP_40A9EF5E-04B1-4C45-8136-37DB6657935B" /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		"TEMP_546D5EC9-FC95-4B6F-B093-59D3FC360F27" /* RoomsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomsView.swift; sourceTree = "<group>"; };
+		"TEMP_5CFB8436-9F0F-4D84-9A72-D92BC3C80CD9" /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		"TEMP_7F012ACD-23C1-4ED5-8F22-4ABF315E2099" /* SoundUnderstanding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundUnderstanding.swift; sourceTree = "<group>"; };
+		"TEMP_8E548F7A-172C-4B6D-AFE4-8B6C7E4C88B1" /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
+		"TEMP_95DFBFAB-1330-4CCB-992D-74CB34643042" /* ProbeSweep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSweep.swift; sourceTree = "<group>"; };
+		"TEMP_A7CD0AD9-4C40-40B5-BF90-E9E323BBBA9F" /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		"TEMP_B0A7CC1D-D904-43FB-96A7-93D88E97F095" /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		"TEMP_B29E598E-A86F-484C-92B9-AC974DD919E6" /* ProbeRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeRecorder.swift; sourceTree = "<group>"; };
+		"TEMP_BBE14580-6913-4A04-A4AE-13C8E1FE590C" /* RoomSense.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = RoomSense.xcodeproj; sourceTree = "<group>"; };
+		"TEMP_CD556795-479D-4BAE-A33F-85F30934B233" /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -53,21 +55,22 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		"TEMP_CDCF0A45-5AEB-4515-8A35-BFB3E5E79819" /* . */ = {
+		"TEMP_2641EE6A-0644-40AC-8C3B-D130D1197046" /* . */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_1D4068D4-A441-4D8F-9AD1-FE07B868FE1C" /* ProbeRecorder.swift */,
-				"TEMP_BB25B4CC-3A6F-4F97-A792-8EB0D87AF0FB" /* RoomsView.swift */,
-				"TEMP_5C66A412-3C35-4640-8451-7C35E8563F73" /* Recorder.swift */,
-				"TEMP_CDAFAA38-83C1-41D0-8AEC-02209DB3A485" /* SettingsView.swift */,
-				"TEMP_267E6C90-E56C-4CC5-905D-855F43EC58C4" /* SoundUnderstanding.swift */,
-				"TEMP_4F60523A-0564-4A03-B4F8-E633ADB54E82" /* APIClient.swift */,
-				"TEMP_08EAAA4B-575A-4C34-9C77-2A3C183EC5FA" /* AppModel.swift */,
-				"TEMP_A52CBCE3-3E6C-4C78-BABC-41F3EC3F5C88" /* Models.swift */,
-				"TEMP_C79FFF66-E7FA-4B96-B14A-2F3B0C63E11B" /* RoomSenseApp.swift */,
-				"TEMP_5D64BF3F-47E5-4549-BED6-D72321576365" /* ProbeSweep.swift */,
-				"TEMP_21C19174-08EA-4307-A69E-15591A0A52AF" /* ContentView.swift */,
-				"TEMP_3282CF20-9000-43BB-92E3-2D02533DC545" /* DetectView.swift */,
+				"TEMP_B29E598E-A86F-484C-92B9-AC974DD919E6" /* ProbeRecorder.swift */,
+				"TEMP_546D5EC9-FC95-4B6F-B093-59D3FC360F27" /* RoomsView.swift */,
+				"TEMP_8E548F7A-172C-4B6D-AFE4-8B6C7E4C88B1" /* Recorder.swift */,
+				"TEMP_5CFB8436-9F0F-4D84-9A72-D92BC3C80CD9" /* SettingsView.swift */,
+				"TEMP_7F012ACD-23C1-4ED5-8F22-4ABF315E2099" /* SoundUnderstanding.swift */,
+				"TEMP_40A9EF5E-04B1-4C45-8136-37DB6657935B" /* APIClient.swift */,
+				"TEMP_CD556795-479D-4BAE-A33F-85F30934B233" /* AppModel.swift */,
+				"TEMP_BBE14580-6913-4A04-A4AE-13C8E1FE590C" /* RoomSense.xcodeproj */,
+				"TEMP_B0A7CC1D-D904-43FB-96A7-93D88E97F095" /* Models.swift */,
+				"TEMP_0A0F6A46-1D9B-4ACB-B41F-08B916677184" /* RoomSenseApp.swift */,
+				"TEMP_95DFBFAB-1330-4CCB-992D-74CB34643042" /* ProbeSweep.swift */,
+				"TEMP_A7CD0AD9-4C40-40B5-BF90-E9E323BBBA9F" /* ContentView.swift */,
+				"TEMP_062D1B61-C51E-40AA-9EAE-469EEBBB6B84" /* DetectView.swift */,
 			);
 			name = .;
 			path = .;
@@ -81,6 +84,7 @@
 			buildConfigurationList = 093818FDD1A68A9C15426849 /* Build configuration list for PBXNativeTarget "RoomSense" */;
 			buildPhases = (
 				68A8398855FC524E08F87D3A /* Sources */,
+				7404CD9A8FC31F07A0D37C22 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -127,23 +131,34 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		7404CD9A8FC31F07A0D37C22 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA61B19DEAAE62EB03039248 /* RoomSense.xcodeproj in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		68A8398855FC524E08F87D3A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6EDE463D95E1F0885FA1088D /* APIClient.swift in Sources */,
-				97CB5DF3F1F8F7538C909DAB /* AppModel.swift in Sources */,
-				738268F68F4EFE2404AEA503 /* ContentView.swift in Sources */,
-				EF86338ABD8376A6B1436616 /* DetectView.swift in Sources */,
-				D3E19EA10ED30120C5A6D4A3 /* Models.swift in Sources */,
-				AA0F045E381FFB985C323DC2 /* ProbeRecorder.swift in Sources */,
-				ACB936C69BF9221D87EF7B0D /* ProbeSweep.swift in Sources */,
-				4FE0E7B8797B9E23904CB134 /* Recorder.swift in Sources */,
-				DE8E575D1A0CEE024ED8C28E /* RoomSenseApp.swift in Sources */,
-				53CDE661CD04B457449058D1 /* RoomsView.swift in Sources */,
-				13E1FEDC1C009080257D8092 /* SettingsView.swift in Sources */,
-				BB3A22CC912D4D8620F922B8 /* SoundUnderstanding.swift in Sources */,
+				FFA48ED75BABCEA70E464514 /* APIClient.swift in Sources */,
+				722D1990897D9B356CE36818 /* AppModel.swift in Sources */,
+				A7EF1AB3DAFE6476558F0A76 /* ContentView.swift in Sources */,
+				1A9282A642DD90768E81DBD5 /* DetectView.swift in Sources */,
+				DD31243BF117637C89A3C3AD /* Models.swift in Sources */,
+				1DE829B835E768911FB3E92F /* ProbeRecorder.swift in Sources */,
+				1E3B6200DBF7C507E34C6DA4 /* ProbeSweep.swift in Sources */,
+				CAAAEBD42EBBA8DE42374292 /* Recorder.swift in Sources */,
+				B35EFE558D47A78781A4AE5F /* RoomSenseApp.swift in Sources */,
+				388193ABBE6BC17652D5F854 /* RoomsView.swift in Sources */,
+				995FB1D07C0595D1AFEF40A0 /* SettingsView.swift in Sources */,
+				AB41ED155FA45A32179EFC2E /* SoundUnderstanding.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -156,6 +156,18 @@ vs 0.389 (replace); probe-seeded 0.370 vs 0.333 vs 0.296. The default is now `ig
 probe RT60 stays in its honest role (change detection, fusion weighting, probe-only
 enrollment). Documentation corrected here and in README.
 
+## Increment 10 — room-weights study, iOS RT60 UX, demo cards (round 10)
+
+- **Learned room-distance weights**: grid search over (decay, brightness, cepstrum) weights fit
+  on 54 training events; train accuracy 0.537 → 0.593 but **held-out accuracy unchanged**
+  (0.611 both), so the learned weights were *not* shipped (honest no-op). Current weights hold
+  **0.611 on 72 unseen events** — better than the earlier 0.500 estimate.
+- **iOS**: room rows now show the measured RT60 next to live drift/activity status;
+  typecheck + device build succeeded.
+- **Demo media pack**: five 1920×1080 number cards rendered in `docs/media/` (accuracy,
+  calibration, probe recovery, change detection, fusion) for zero-title-work video editing.
+- Device still unavailable (10th round).
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

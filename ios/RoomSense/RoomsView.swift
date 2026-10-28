@@ -46,6 +46,11 @@ struct RoomsView: View {
                                 Spacer()
                                 Text("\(room.examples ?? 0) sample\(room.examples == 1 ? "" : "s")")
                                     .foregroundStyle(.secondary)
+                                if let rt60 = model.probeRT60ByRoom[room.name] {
+                                    Text(String(format: "RT60 %.2f s", rt60))
+                                        .font(.caption2.monospacedDigit())
+                                        .foregroundStyle(.secondary)
+                                }
                                 if let status = model.probeStatusByRoom[room.name] {
                                     Text(status)
                                         .font(.caption2)
