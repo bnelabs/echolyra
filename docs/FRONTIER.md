@@ -178,6 +178,18 @@ enrollment). Documentation corrected here and in README.
   EXPLAIN, speech→SILENT, alarm→EXPLAIN; hybrid profile ECE 0.0162, op 0.23).
 - Device still unavailable (11th round).
 
+## Increment 12 — spectral room-ID experiment + two-node rehearsal (round 12)
+
+- **Probe-template log-mel room ID** (proposed frontier alternative): templates synthesized from
+  the measured RIR, matched in 40-band log-mel space. Held-out accuracy **0.458** — identical to
+  the shipped metric (0.458 on the same split), and even *true-RIR* templates reached only 0.458.
+  Conclusion: the ceiling is the template idea, not the metric; **not shipped** (documented no-op).
+- **Two-node rehearsal fix**: fusion window was 3 s, shorter than a detect+situation round trip,
+  so rehearsals saw one node. Window is now **10 s**; verified two nodes fuse correctly.
+- Flip rehearsal: `tools/check_submission.py` **PASS** (71 tracked files, 20 commits, no `.env`
+  tracked); only advisory warning is the dirty tree until this commit.
+- Device still unavailable (12th round).
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

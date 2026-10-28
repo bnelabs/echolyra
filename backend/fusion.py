@@ -29,7 +29,7 @@ def _softmax(scores: dict[str, float]) -> dict[str, float]:
     return {k: v / z for k, v in exps.items()}
 
 
-def fuse(reports: list[dict], max_age_s: float = 3.0,
+def fuse(reports: list[dict], max_age_s: float = 10.0,
          room_probe: dict[str, float] | None = None) -> dict:
     """Fuse reports from multiple nodes that heard the same event."""
     now = time.time()

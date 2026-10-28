@@ -47,6 +47,12 @@ set -a; . ./.env; set +a
 
 ## 3. Two-node shot
 
+Fusion window is 10 s, so detect on both nodes then press Fuse within that window.
+Dry-run verification (phone node level −20 dB in Living, Mac node −31 dB in Kitchen, same glass
+clip): fused `glass_impact · Living`, posteriors **Living 1.00**, 2 nodes.
+
+
+
 - Laptop `/static/node.html` (node id `mac-node`, room Kitchen) → **Listen** while the phone
   hears a Living-room event → phone **Listen** → laptop **Fuse** → expected ~
   `glass_impact · Living` (dry-run verification: **Living 0.80 / Kitchen 0.20**).
