@@ -200,6 +200,13 @@ enrollment). Documentation corrected here and in README.
 - Release freeze prepared: `docs/RELEASE_NOTES.md` maps every acceptance criterion to evidence
   and commits; annotated tag `v0.1-hackathon` cut.
 
+## Increment 14 — judge verification script + submission finalization (round 14)
+
+- **`tools/verify_claims.py`**: re-runs every headline number in one command; all 8 checks pass
+  (probe recovery, change detection, activity, held-out calibration, decision policy, fusion,
+  real-world accuracy, repo hygiene). Output archived in `docs/VERIFY.md`, linked from README.
+- Device still unavailable (14th round).
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

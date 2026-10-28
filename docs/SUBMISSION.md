@@ -66,6 +66,26 @@ practice, so the "ears" are Apple's on-device 303-class classifier and Meta hand
 | Works | Browser demo + iOS app (device-compiled), verified end-to-end server loop, real-world benchmark |
 | Production potential | Privacy-first architecture, on-device classification, installable calibration profiles, roadmapped mesh localization |
 
+## Submission form — paste-ready fields
+
+- **Project name:** RoomSense — camera-free home awareness
+- **Tagline:** It hears your home, measures it, and knows when it doesn't know.
+- **Track:** Indie Developer · **Problem statement:** Push the Frontier
+- **Repo:** github.com/bnelabs/roomsense (public at flip)
+- **Demo video:** `<fill after recording>` · **Live demo (no install):** `http://<mac-ip>:8080/static/demo.html`
+- **Description (short):** RoomSense turns a phone into a privacy-preserving acoustic sensor.
+  A quiet sweep measures each room's true impulse response (ISO-3382 RT60/EDT), giving
+  source-independent room fingerprints and change detection. On-device Apple SoundAnalysis
+  (303 classes) recognizes events; a calibrated decision layer alerts only when evidence is
+  trustworthy; Muse Spark 1.3 Contributor writes the situation report. No cameras, no stored
+  or uploaded audio.
+- **Description (long):** see §100-word blurb and `HACKATHON.md` §1–2.
+- **Models used:** muse-spark-1.3-contributor, sam-3.1, muse-voice-transcribe-1.0
+  (muse-image-1.0 optional). On-device: Apple SoundAnalysis (iOS 27).
+- **New-work disclosure:** all code written Oct 28–Nov 3, 2026 during the hackathon; commit
+  history and `docs/RELEASE_NOTES.md` map every criterion to its evidence.
+- **License:** MIT. **Team:** Baris Naci Erzeren (solo).
+
 ## Submission checklist (Nov 3 → Nov 4)
 
 1. Reconnect iPhone → Trust developer → Allow microphone → run real-room verification (probe, event, two-node).
