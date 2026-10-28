@@ -283,6 +283,16 @@ docs and README updated honestly. Device still unavailable (17th round).
   features (the old "speak a rule" beat was removed).
 - Device still unavailable (20th round).
 
+## Increment 21 — submission runbook + final candidate tag (round 21)
+
+- Consolidated `docs/SUBMISSION_RUNBOOK.md`: T-4→T-0 timeline, copy-paste gate commands with
+  expected outputs, flip sequence, post-flip logged-out checks, submission-form fields, and
+  emergency fallbacks.
+- Current gates: checker **PASS**, verifier **11/11 PASS**, link check **PASS**, number audit
+  **PASS**, submission-fields checker reports only the 3 expected video/URL placeholders.
+- Tagged **`v0.2.0-hackathon`** as the submission candidate.
+- Device still unavailable (21st round).
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

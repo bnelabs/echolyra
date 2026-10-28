@@ -1,4 +1,8 @@
-# Release notes — `v0.1.1-hackathon` (2026-10-28)
+# Release notes — `v0.2.0-hackathon` (2026-10-28)
+
+Submission candidate: judge-facing README, 11/11 claim verifier, doc-link + number audits, fresh-clone reproducibility proof, one-page submission runbook.
+
+## v0.1.1-hackathon
 
 Correction release: external-validation numbers fixed (60 unique clips: 0.900 accuracy,
 0.0290 calibrated ECE, 0.893 alert precision); documented numbers are now audited against the
