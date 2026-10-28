@@ -22,9 +22,11 @@ per-octave EDT/T30 (Schroeder) → room fingerprint (T30 vector + late-tail spec
 compare with stored baseline → change detection.
 
 Endpoints: `POST /api/probe/enroll`, `POST /api/probe/check`, `GET /api/probe/status`.
-The probe's `T30_mid` is attached to the room and **replaces the event-derived decay** in room
-attribution (`Session.set_probe_baseline`), so "which room" no longer depends on what sound
-happened to be tested.
+The probe's `T30_mid` is attached to the room and used for change detection and fusion. We
+initially substituted it for the event-derived decay in passive room attribution; round 9
+measurements showed that **hurts** accuracy (knocks enrollment: 0.500 → 0.389 on 54 events), so
+the default is now `probe_decay_mode="ignore"` — probe truth is kept for probing/fusion, not
+for re-scoring passive events.
 
 **Measured on synthetic rooms** (simulated RIRs + noise, 48 kHz):
 
@@ -141,6 +143,18 @@ something to knock. Synthetic evaluation; real-room numbers pending device.
 
 Also: activity-score calibration (threshold 0.20, simulated FPR 0%, TPR 100%), flip-readiness
 checker PASS, and `docs/DEMO_VOICEOVER.md` timed script.
+
+## Increment 9 — tuning probe-seeded synthesis + honest correction (round 9)
+
+Tried to improve RIR-seeded room templates (3 seeds/kernel, level normalisation, transient-
+weighted kernels) on 54 events through the true room transfers: all variants were worse than
+the simple 6-kernel synthesis (v0 accuracy 0.370; best variant 0.333; knocks 0.500). Kept v0.
+
+**Correction found by measurement:** substituting the probe's RT60 for the event-derived decay
+in passive attribution degrades accuracy — knocks enrollment 0.500 (ignore) vs 0.444 (blend)
+vs 0.389 (replace); probe-seeded 0.370 vs 0.333 vs 0.296. The default is now `ignore`; the
+probe RT60 stays in its honest role (change detection, fusion weighting, probe-only
+enrollment). Documentation corrected here and in README.
 
 ## Increment 4 — plan
 

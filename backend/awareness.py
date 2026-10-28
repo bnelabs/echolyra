@@ -601,7 +601,14 @@ class Session:
         for idx, rv in enumerate(R):
             rid = ids[idx]
             probe_t30 = self.state["rooms"].get(rid, {}).get("probe_t30")
-            r_dec = float(probe_t30) if probe_t30 else float(rv[13] * 60.0)
+            enrolled_dec = float(rv[13] * 60.0)
+            mode = getattr(self, "probe_decay_mode", "ignore")
+            if probe_t30 and mode == "replace":
+                r_dec = float(probe_t30)
+            elif probe_t30 and mode == "blend":
+                r_dec = 0.5 * (enrolled_dec + float(probe_t30))
+            else:
+                r_dec = enrolled_dec
             r_br = float(rv[14] * 10.0)
             r_mf = rv[:13]
             cos = float(np.dot(ev_mf, r_mf) /
