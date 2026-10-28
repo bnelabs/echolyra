@@ -190,6 +190,16 @@ enrollment). Documentation corrected here and in README.
   tracked); only advisory warning is the dirty tree until this commit.
 - Device still unavailable (12th round).
 
+## Increment 13 — probe-seeded decay fit (no-op) + release freeze (round 13)
+
+- Tried closing the probe-only enrollment gap by setting the synthesized room vector's decay
+  slot to the measured probe RT60 (and separately a RIR spectral-centroid brightness):
+  0.370 baseline → **0.296** / **0.333**; both worse (kept v0). Same lesson as round 9: passive
+  attribution should not be forced toward physical room truth when the observed cue is
+  source-dependent.
+- Release freeze prepared: `docs/RELEASE_NOTES.md` maps every acceptance criterion to evidence
+  and commits; annotated tag `v0.1-hackathon` cut.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
