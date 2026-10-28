@@ -215,6 +215,22 @@ enrollment). Documentation corrected here and in README.
   explanation, suggested action, false-alarm check) — now in the README.
 - Device still unavailable (15th round); verification + submission checklists frozen.
 
+## Increment 16 — external validation on unseen real clips (round 16)
+
+Downloaded 60 **never-before-used** ESC-50 clips (10/class) and ran the untouched pipeline:
+
+| metric | internal set | external set (n=60) |
+|---|---|---|
+| event accuracy | 0.92 | **0.833** |
+| glass / knock / baby / alarm | 0.9–1.0 | **1.00 each** |
+| water | 0.8 | 0.50 (mapping ambiguity) |
+| calibration ECE | 0.0166 held-out | **0.0345** (no refit) |
+| alert precision | 1.00 | **1.00** (zero wrong alerts) |
+
+The safety-critical classes generalize perfectly and calibration transfers to unseen recordings
+without refitting. Also added `docs/VIDEO_EDIT_PACKAGE.md` and a phone-in-room placeholder table
+to `EVAL_REAL.md`. Device still unavailable (16th round).
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

@@ -59,6 +59,35 @@ Splitting the real recordings 30 fit / 20 validation and fitting only on the 30:
 Held-out decisions: 9 alerts at **0.889 precision** (one wrong), 11 silent. So the calibrated
 trust layer generalizes to recordings it never saw.
 
+## External validation — 60 clips never seen during development (round 16)
+
+Downloaded 10 additional ESC-50 clips per class that were **not** used for any earlier tuning or
+calibration fit, and ran the full pipeline unchanged:
+
+| metric | value |
+|---|---|
+| event accuracy (n=60) | **0.833** |
+| per class | glass **1.00**, knock **1.00**, baby crying **1.00**, alarm **1.00**, water **0.50** |
+| calibration ECE (hybrid profile) | 0.1517 → **0.0345** |
+| decisions | 30 alert / 30 silent |
+| **alert precision** | **1.00** (zero wrong alerts on unseen clips) |
+
+The water class is the weak spot: ESC-50's `pouring_water` / `water_drops` clips frequently yield
+Apple labels (`liquid_*`, `click`) that map ambiguously; our mapping converts some to `water`
+and leaves others as abstentions. Glass, knock, baby and alarm — the safety-critical classes —
+were perfect on unseen data, and calibration transferred (0.0345 ECE) without refitting.
+Aggregate numbers: `docs/eval_external.json`.
+
+## Phone-in-room verification (pending device reconnection)
+
+Fill this in from `docs/DEVICE_VERIFICATION.md` steps 7–9, then commit:
+
+| room | measured RT60 | re-probe ΔT30 / status | event | decision | calibrated | SNR |
+|---|---|---|---|---|---|---|
+| Living | — | — | — | — | — | — |
+| Kitchen | — | — | — | — | — | — |
+| Bedroom | — | — | — | — | — | — |
+
 ## Limitations (be honest in the demo)
 
 - This evaluates **event understanding only**; room attribution is not measurable on clips

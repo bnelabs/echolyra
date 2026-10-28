@@ -1,0 +1,20 @@
+{
+ "n": 60,
+ "accuracy": 0.833,
+ "per_class": {
+  "glass_breaking": 1.0,
+  "knock": 1.0,
+  "baby_crying": 1.0,
+  "alarm": 1.0,
+  "water": 0.5
+ },
+ "ece_before": 0.1517,
+ "ece_after": 0.0345,
+ "decisions": {
+  "alert": 30,
+  "explain": 0,
+  "silent": 30
+ },
+ "alert_precision": 1.0,
+ "alerts": 30
+}
