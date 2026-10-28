@@ -47,7 +47,9 @@ def fuse(reports: list[dict], max_age_s: float = 10.0,
     event_decay = next((float(r["event_decay"]) for r in live
                         if r.get("event_decay") not in (None, 0)), None)
     for r in live:
-        room = r.get("room_name") or "unknown"
+        # If a node knows its own room (phone in the living room, laptop in the kitchen),
+        # that is the candidate room it contributes; otherwise fall back to attribution.
+        room = r.get("node_room") or r.get("room_name") or "unknown"
         level = float(r.get("level_db", -60.0))
         conf = float(r.get("room_confidence", 0.0))
         score = LEVEL_WEIGHT * (level + 60.0) / 20.0 + CONF_WEIGHT * conf * 2.0
@@ -87,7 +89,7 @@ def fuse(reports: list[dict], max_age_s: float = 10.0,
         "event_posteriors": {k: round(v, 2) for k, v in sorted(event_p.items(), key=lambda kv: -kv[1])},
         "probe_informed": bool(room_probe and event_decay),
         "event_decay_db_s": round(event_decay, 1) if event_decay else None,
-        "nodes": [{"node_id": r.get("node_id"), "room": r.get("room_name"),
+        "nodes": [{"node_id": r.get("node_id"), "room": r.get("node_room") or r.get("room_name"),
                    "level_db": r.get("level_db"), "snr_db": r.get("snr_db"),
                    "event": r.get("event_label")} for r in live],
     }

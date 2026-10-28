@@ -48,12 +48,15 @@ struct APIClient {
         return try JSONDecoder().decode(EnrollResponse.self, from: data).session
     }
 
-    func detect(clip: Data, heard: [SoundLabel] = []) async throws -> DetectResponse {
+    func detect(clip: Data, heard: [SoundLabel] = [], nodeID: String = "",
+                nodeRoom: String = "") async throws -> DetectResponse {
         var fields: [String: String] = [:]
         if !heard.isEmpty, let data = try? JSONEncoder().encode(heard),
            let json = String(data: data, encoding: .utf8) {
             fields["sound_labels"] = json
         }
+        if !nodeID.isEmpty { fields["node_id"] = nodeID }
+        if !nodeRoom.isEmpty { fields["node_room"] = nodeRoom }
         let body = Self.multipart(
             fields: fields,
             files: [(name: "audio", filename: "event.wav", mime: "audio/wav", data: clip)]

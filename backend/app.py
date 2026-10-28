@@ -258,6 +258,7 @@ async def detect(audio: UploadFile = File(...), node_room: str = Form(""),
                                            rec["event"].get("label", ""), decision)
     NODE_REPORTS.append({
         "node_id": node_id or node_room or "phone",
+        "node_room": node_room or None,
         "room_name": rec["room"].get("room_name"),
         "room_confidence": rec["room"].get("confidence", 0.0),
         "event_label": rec["event"].get("label"),

@@ -85,7 +85,10 @@ final class AppModel: ObservableObject {
             let heard = await SoundUnderstanding.classify(fileURL: rec.url)
             try? FileManager.default.removeItem(at: rec.url)
             log("AUTOTEST heard: \(heard.prefix(3).map { "\($0.label) \(Int($0.confidence * 100))%" }.joined(separator: ", "))")
-            let result = try await client.detect(clip: clip, heard: heard)
+            let result = try await client.detect(
+                clip: clip, heard: heard,
+                nodeID: ProcessInfo.processInfo.environment["ROOMSENSE_NODE_ID"] ?? "iphone",
+                nodeRoom: ProcessInfo.processInfo.environment["ROOMSENSE_NODE_ROOM"] ?? "")
             lastResult = result
             log("AUTOTEST detect label=\(result.event.label) conf=\(result.event.confidence) room=\(result.room.room_name ?? "nil") roomConf=\(result.room.confidence) situation=\(result.situation.headline ?? "nil") model=\(result.situation._model ?? "nil")")
         } catch {
@@ -119,7 +122,9 @@ final class AppModel: ObservableObject {
         busy = true
         defer { busy = false }
         lastClip = clip
-        do { lastResult = try await client.detect(clip: clip, heard: heard) }
+        do { lastResult = try await client.detect(clip: clip, heard: heard,
+                                                  nodeID: "iphone",
+                                                  nodeRoom: UserDefaults.standard.string(forKey: "nodeRoom") ?? "") }
         catch { errorText = error.localizedDescription }
     }
 

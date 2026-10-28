@@ -28,7 +28,8 @@
 <body>
 <header>
   <h1>Room<span>Sense</span> — sensor node</h1>
-  <div class="sub">Turn this laptop into an extra acoustic sensor: record, detect, then fuse with the phone's detections.</div>
+  <div class="sub">Turn this laptop into an extra acoustic sensor: record, detect, then fuse with the phone's detections.<br/>
+  <b>Open via <code>http://localhost:8080/static/node.html</code></b> (browsers block the mic on plain <code>http://&lt;LAN-IP&gt;</code>).</div>
 </header>
 <main>
   <section class="card">
@@ -59,6 +60,11 @@ const $ = id => document.getElementById(id);
 $("base").value = location.origin;
 
 async function recordPCM(seconds = 3.2) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error("Microphone API unavailable: browsers only expose it in a secure context. " +
+      "Open this page via http://localhost:8080/static/node.html on the Mac running the backend, " +
+      "or use HTTPS. (Plain http://<LAN-IP> is blocked by the browser.)");
+  }
   const stream = await navigator.mediaDevices.getUserMedia({audio: {
     channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false}});
   const ctx = new AudioContext({sampleRate: 48000});
@@ -112,7 +118,7 @@ $("listen").onclick = async () => {
       `<span class="pill">SNR ${d.event?.snr_db ?? d.features?.snr_db ?? "?"} dB</span>`;
     $("situation").textContent = d.situation?.headline ?? "";
     $("raw").textContent = JSON.stringify({decision: d.decision, room: d.room}, null, 1).slice(0, 2000);
-  } catch (e) { $("status").textContent = "Error: " + e; }
+  } catch (e) { $("status").textContent = "Error: " + (e && e.message ? e.message : e); }
   $("listen").disabled = false;
 };
 
