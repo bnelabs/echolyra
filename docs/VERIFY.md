@@ -14,8 +14,8 @@ CC BY-NC and is not redistributed). Repo hygiene calls `tools/check_submission.p
 ```
 RoomSense claim verification
 ==============================
-[PASS] probe RT60 recovery: 0.80→0.80, 0.60→0.60, 0.35→0.36 (all within 10%)
-[PASS] change detection (stable vs changed): same ΔT30 0.4% (stable) / changed ΔT30 53.2% (changed)
+[PASS] probe RT60 recovery: 0.80→0.82, 0.60→0.61, 0.35→0.36 (all within 10%)
+[PASS] change detection (stable vs changed): same ΔT30 0.4% (stable) / changed ΔT30 43.8% (changed)
 [PASS] activity anomaly detection: 5/10 alternating probes flagged unusual
 [PASS] held-out calibration (hybrid): ECE 0.1285→0.0166, precision 0.944 (fit 30 / val 20)
 [PASS] decision policy (alert/explain/silent): high conf + room: alert; uncertain room: explain; low SNR: silent

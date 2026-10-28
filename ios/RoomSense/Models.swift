@@ -128,6 +128,7 @@ struct LinkedProbe: Codable {
 struct ProbeEnrollResponse: Codable {
     var probe: ProbeEnvelope?
     var linked_session: LinkedProbe?
+    var seeded_room: ProbeRoom?
 }
 
 struct ProbeCheckResponse: Codable {

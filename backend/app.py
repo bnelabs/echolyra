@@ -17,6 +17,7 @@ import time
 import uuid
 import wave
 import os
+import pathlib
 from pathlib import Path
 
 import numpy as np
@@ -276,8 +277,14 @@ async def detect(audio: UploadFile = File(...), node_room: str = Form(""),
 async def probe_enroll(room_id: str = Form(...), room_name: str = Form(...),
                        audio: list[UploadFile] | None = File(None)):
     recs = []
-    for f in (audio or [])[:3]:
+    debug_dir = None
+    if os.environ.get("DEBUG_CAPTURE") == "1":
+        debug_dir = pathlib.Path(__file__).parent / "cache" / "probe_clips" / room_id
+        debug_dir.mkdir(parents=True, exist_ok=True)
+    for i, f in enumerate((audio or [])[:3]):
         raw = await f.read()
+        if debug_dir is not None:
+            (debug_dir / f"{int(time.time())}_{i}.wav").write_bytes(raw)
         x, fs = read_wav_mono(raw)          # 16 kHz mono float
         if fs != probe.FS:
             x = resample(x, fs, probe.FS)
@@ -305,6 +312,10 @@ async def probe_enroll(room_id: str = Form(...), room_name: str = Form(...),
 @app.post("/api/probe/check")
 async def probe_check(room_id: str = Form(...), audio: UploadFile = File(...)):
     raw = await audio.read()
+    if os.environ.get("DEBUG_CAPTURE") == "1":
+        debug_dir = pathlib.Path(__file__).parent / "cache" / "probe_clips" / room_id
+        debug_dir.mkdir(parents=True, exist_ok=True)
+        (debug_dir / f"check_{int(time.time())}.wav").write_bytes(raw)
     x, fs = read_wav_mono(raw)
     if fs != probe.FS:
         x = resample(x, fs, probe.FS)

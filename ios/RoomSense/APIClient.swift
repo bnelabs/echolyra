@@ -84,9 +84,13 @@ struct APIClient {
     }
 
     func probeEnroll(roomID: String, roomName: String, clip: Data) async throws -> ProbeEnrollResponse {
+        try await probeEnroll(roomID: roomID, roomName: roomName, clips: [clip])
+    }
+
+    func probeEnroll(roomID: String, roomName: String, clips: [Data]) async throws -> ProbeEnrollResponse {
         let body = Self.multipart(
             fields: ["room_id": roomID, "room_name": roomName],
-            files: [(name: "audio", filename: "probe.wav", mime: "audio/wav", data: clip)]
+            files: clips.enumerated().map { (name: "audio", filename: "probe\($0.offset).wav", mime: "audio/wav", data: $0.element) }
         )
         var upload = request("api/probe/enroll", method: "POST")
         upload.setValue("multipart/form-data; boundary=\(Self.boundary)", forHTTPHeaderField: "Content-Type")

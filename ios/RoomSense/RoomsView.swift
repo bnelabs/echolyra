@@ -28,7 +28,7 @@ struct RoomsView: View {
                         Label("Measure acoustics (active probe)", systemImage: "waveform.path.ecg")
                     }
                     .disabled(model.busy || roomName.trimmingCharacters(in: .whitespaces).isEmpty)
-                    Text("Knock = fast signature. Active probe = the phone emits a quiet 3 s sweep and measures the room's true impulse response (RT60, per-band decay) — this is what detects a room changing later.")
+                    Text("Knock = fast signature. Active probe = the phone emits three quiet 3 s sweeps (~15 s) and measures the room's true impulse response (RT60, 2–8 kHz decay) — this is what detects a room changing later.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     if let message = model.probeMessage {

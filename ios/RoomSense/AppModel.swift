@@ -39,6 +39,36 @@ final class AppModel: ObservableObject {
                                reason: "conformal_pass", alert_threshold: 0.23, snr_db: 34.2))
     }
 
+    /// Headless active-probe check (`ROOMSENSE_AUTOPROBE=enroll|check`): measure the room,
+    /// enroll/re-probe it through the backend, and print the measured RT60/status.
+    func runAutoProbe(mode: String) async {
+        log("AUTOPROBE start mode=\(mode) backend=\(backendURL)")
+        let recorder = ProbeRecorder()
+        do {
+            let clip = try await recorder.measure()
+            log("AUTOPROBE recorded \(clip.count) bytes")
+            if mode == "check" {
+                let resp = try await client.probeCheck(roomID: "living", clip: clip)
+                probeMessage = resp.status ?? (resp.change_detected == true ? "changed" : "stable")
+                log("AUTOPROBE check status=\(resp.status ?? "nil") delta=\(resp.max_t30_change_pct ?? 0)% conf=\(resp.confidence ?? 0) transient=\(resp.transient_change ?? false) rt60=\(resp.current?.rt60_mid_s ?? 0)")
+            } else {
+                // 3 sweeps: the backend averages them and estimates the room's real
+                // repeatability noise, which is the honest threshold for change detection.
+                var clips = [clip]
+                for i in 2...3 {
+                    if let more = try? await recorder.measure() { clips.append(more) }
+                    log("AUTOPROBE extra sweep \(i) recorded")
+                }
+                let resp = try await client.probeEnroll(roomID: "living", roomName: "Living", clips: clips)
+                let rt = resp.probe?.room?.rt60_mid_s ?? resp.probe?.analyses?.first?.rt60_mid_s
+                probeMessage = rt.map { String(format: "Room measured: RT60 %.2f s", $0) } ?? "probe uploaded"
+                log("AUTOPROBE enroll rt60=\(rt ?? 0) valid=\(resp.probe?.room?.valid ?? false) n=\(clips.count) seeded=\(resp.seeded_room != nil)")
+            }
+        } catch {
+            log("AUTOPROBE error \(error.localizedDescription)")
+        }
+    }
+
     /// Headless end-to-end check (launch with `-autotest`): record → enroll → detect → log.
     private func log(_ message: String) { print(message); fflush(stdout) }
 
@@ -46,7 +76,8 @@ final class AppModel: ObservableObject {
         log("AUTOTEST start backend=\(backendURL)")
         let recorder = Recorder()
         do {
-            let rec = try await recorder.record(seconds: 2.8)
+            let seconds = Double(ProcessInfo.processInfo.environment["ROOMSENSE_AUTOTEST_SECONDS"] ?? "2.8") ?? 2.8
+            let rec = try await recorder.record(seconds: seconds)
             let clip = rec.data
             log("AUTOTEST recorded \(clip.count) bytes")
             session = try await client.enroll(roomID: "sim-test", roomName: "Simulator test room", clip: clip) ?? session
@@ -111,8 +142,10 @@ final class AppModel: ObservableObject {
             .replacingOccurrences(of: " ", with: "-")
         do {
             let recorder = ProbeRecorder()
-            let clip = try await recorder.measure()
-            let resp = try await client.probeEnroll(roomID: id, roomName: roomName, clip: clip)
+            // three sweeps: backend averages them and estimates the room's real repeatability
+            var clips = [try await recorder.measure()]
+            for _ in 2...3 { if let more = try? await recorder.measure() { clips.append(more) } }
+            let resp = try await client.probeEnroll(roomID: id, roomName: roomName, clips: clips)
             let rt = resp.probe?.room?.rt60_mid_s ?? resp.probe?.analyses?.first?.rt60_mid_s
             if let rt { probeRT60ByRoom[roomName] = rt }
             probeMessage = rt.map { String(format: "Room measured: RT60 %.2f s — acoustic fingerprint stored", $0) }

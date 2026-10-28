@@ -18,8 +18,9 @@ Everything software-side is done; this is the only remaining acceptance path. Ta
 5. **Allow microphone (one tap)** when the app asks.
 6. **Enroll rooms** — Rooms tab: enter `Living` → *Knock once and record*; repeat `Kitchen`,
    `Bedroom`. Expect "Learned rooms: 3".
-7. **Active probe** — *Measure acoustics (active probe)* for each room. Expect
-   `Room measured: RT60 0.4–0.8 s — acoustic fingerprint stored`; room row shows `RT60 x.xx s`.
+7. **Active probe** — *Measure acoustics (active probe)* for each room; it plays **three** quiet sweeps (~15 s). Expect
+   `Room measured: RT60 0.2–0.8 s — acoustic fingerprint stored`; room row shows `RT60 x.xx s`.
+   (Measured on iPhone 12 Pro Max: Living 0.239 s; repeat probes 0.241/0.242 s → stable.)
 8. **Change detection** — open a door, tap *Re-probe* on that room. Expect
    `Room drifting/changed — ΔT30 max …% (conf …%)`.
 9. **Live event** — Listen tab: play a glass clink → `glass_impact`, room, `ALERT · calibrated`;

@@ -81,15 +81,36 @@ to the benchmark. `pouring_water` clips mostly map correctly via `liquid_*` / `w
 transferred (0.0290 ECE) without refitting, and no silent failure was observed.
 Aggregate numbers: `docs/eval_external.json`.
 
-## Phone-in-room verification (pending device reconnection)
+## Phone-in-room verification (measured on iPhone 12 Pro Max, iOS 27.0.1)
 
-Fill this in from `docs/DEVICE_VERIFICATION.md` steps 7–9, then commit:
+Protocol after real-device tuning: **3 probe sweeps** per enrollment, analysis restricted to the
+**2–8 kHz** bands the phone speaker/mic can actually reproduce, tolerance floors from measured
+re-проbе noise (30 ms per band). All numbers below are from the device, not simulation.
 
-| room | measured RT60 | re-probe ΔT30 / status | event | decision | calibrated | SNR |
+| room | measured RT60 (2–8 kHz) | re-probe ΔT30 / status | event | decision | calibrated | SNR |
 |---|---|---|---|---|---|---|
-| Living | — | — | — | — | — | — |
-| Kitchen | — | — | — | — | — | — |
-| Bedroom | — | — | — | — | — | — |
+| Living | **0.239 s** (2k 0.233 / 4k 0.245 / 8k 0.244) | same config: 7.7% stable (0.69), 1.6% stable (0.93) | 6–8 knocks | `knock` 0.72 → **EXPLAIN** | **0.94** | 14.4 dB |
+| Living, door/window open | 0.238 s | **ΔT30 5.6%, fingerprint distance 0.258 (23σ) → DRIFT** (0.51), transient flagged | — | — | — | — |
+
+Apple on-device labels for the knock clip: **`hammer` 80%, `knock` 72%, `door` 65%** (mapped to
+`knock`); Muse Spark returned a live situation ("Possible knock heard"). The EXPLAIN (not ALERT)
+is the temporal policy: one knock needs confirmation; a second agreeing detection escalates.
+
+### Real-device protocol findings (shipped fixes)
+
+- 250 Hz and 500 Hz deconvolution is unusable on a phone speaker (RT60 estimates 6–10 s);
+  1 kHz is unstable across launches (per-band std 206 ms). **2–8 kHz is the usable range**
+  (band CV 4–7%).
+- Single-sweep enrollment gave 9–13% RT60 spread between identical probes. **3-sweep
+  enrollment** + per-band repeatability keeps same-room re-probes at ΔT30 1.6–7.7% (stable).
+- Change detection uses the measured noise: a door/window change produced a 23σ fingerprint
+  shift even though mid-band RT60 moved only 5.6% — detection is not just RT60.
+
+### Still pending (honest)
+
+- Multiple rooms + glass event on device (only Living + knocks recorded so far).
+- Real two-phone/browser-node fusion on-device (fusion verified with stored reports + browser
+  node dry runs).
 
 ## Limitations (be honest in the demo)
 

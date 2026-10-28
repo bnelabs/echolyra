@@ -22,6 +22,11 @@ from scipy.signal import fftconvolve, resample_poly
 
 FS = 48_000
 BANDS = np.array([250, 500, 1000, 2000, 4000, 8000])
+# Phone speakers cannot reproduce the low bands, and even 1 kHz is unstable across launches
+# (measured CV 18% low bands, 1 kHz band std 206 ms on-device). Room identity/change uses
+# 2-8 kHz, where repeatability is 4-7% of RT60.
+USABLE_BANDS = np.array([2000, 4000, 8000])
+USABLE_IDX = [int(np.where(BANDS == fc)[0][0]) for fc in USABLE_BANDS]
 F1, F2, SWEEP_T = 250.0, 16_000.0, 3.0   # phone-speaker-friendly band
 STATE_PATH = Path(__file__).parent / "cache" / "probe_state.json"
 RIR_DIR = Path(__file__).parent / "cache" / "probe_rirs"
@@ -90,29 +95,33 @@ def analyze_probe(recording: np.ndarray, fs: int = FS) -> dict:
     t30 = [_decay(rir, fc, -5, -35, fs) for fc in BANDS]
     edt = [_decay(rir, fc, 0, -10, fs) for fc in BANDS]
     energies = np.array([_band_energy(rir, fc, fs) for fc in BANDS])
-    valid_bands = int(np.sum(np.isfinite(t30)))
     t30_arr = np.array(t30, dtype=float)
-    mid = np.nanmedian(t30_arr[1:4])           # 500 Hz - 2 kHz
+    usable_t30 = t30_arr[USABLE_IDX]
+    usable_energies = energies[USABLE_IDX]
+    valid_bands = int(np.sum(np.isfinite(usable_t30)))
+    mid = np.nanmedian(t30_arr[USABLE_IDX[0]:USABLE_IDX[1] + 1])   # 2 kHz - 4 kHz
     snr = 20 * math.log10(
         (np.max(np.abs(recording)) + 1e-9) /
         (np.sqrt(np.mean(recording[: max(64, int(0.05 * fs))] ** 2)) + 1e-9))
-    shape = (energies - np.mean(energies)) / 12.0
-    # fingerprint: reverberation in the most phone-usable bands + late-tail spectral shape
+    shape = (usable_energies - np.mean(usable_energies)) / 12.0
+    # fingerprint: reverberation in phone-usable bands + late-tail spectral shape
     fingerprint = np.concatenate([
-        np.nan_to_num(t30_arr, nan=0.0) / 1.2,
+        np.nan_to_num(usable_t30, nan=0.0) / 1.2,
         shape,
         [math.log1p(max(mid, 0.01)) / 2.0],
     ]).tolist()
     return {
         "rir": rir,
         "t30_s": [None if not np.isfinite(v) else round(float(v), 3) for v in t30],
+        "t30_usable_s": [None if not np.isfinite(v) else round(float(v), 3) for v in usable_t30],
+        "usable_bands_hz": [int(v) for v in USABLE_BANDS],
         "edt_s": [None if not np.isfinite(v) else round(float(v), 3) for v in edt],
         "rt60_mid_s": None if not np.isfinite(mid) else round(float(mid), 3),
         "band_shape": [round(float(v), 2) for v in shape],
         "fingerprint": [round(float(v), 4) for v in fingerprint],
         "valid_bands": valid_bands,
         "snr_db": round(float(snr), 1),
-        "valid": bool(valid_bands >= 4 and snr > 12),
+        "valid": bool(valid_bands >= 3 and snr > 12),   # 3 usable bands (2-8 kHz)
         "measured_at": time.time(),
     }
 
@@ -152,8 +161,9 @@ def enroll(room_id: str, room_name: str, recordings: list[np.ndarray]) -> dict:
         raise ValueError("no probe recordings")
     fps = [np.array(a["fingerprint"]) for a in analyses]
     mean_fp = np.mean(np.stack(fps), axis=0)
-    t30s = np.array([a["t30_s"] for a in analyses], dtype=float)
-    mid = np.nanmedian(t30s[:, 1:4]) if np.isfinite(t30s).any() else None
+    t30s = np.array([a["t30_usable_s"] for a in analyses], dtype=float)
+    mid = np.nanmedian(t30s[:, :2]) if np.isfinite(t30s).any() else None
+    usable_std = np.nanstd(t30s, axis=0) if len(analyses) > 1 else np.zeros(t30s.shape[1])
     # Repeatability estimate: pairwise distance between the enrollment probes tells us how
     # much this room's fingerprint naturally varies (noise floor for change detection).
     noise_mean, noise_std = 0.0, 0.02
@@ -171,6 +181,8 @@ def enroll(room_id: str, room_name: str, recordings: list[np.ndarray]) -> dict:
         "t30_mid_s": None if mid is None or not np.isfinite(mid) else round(float(mid), 3),
         "rt60_mid_s": analyses[0]["rt60_mid_s"],
         "t30_s": analyses[0]["t30_s"],
+        "t30_usable_s": analyses[0]["t30_usable_s"],
+        "t30_std": [None if not np.isfinite(v) else round(float(v), 3) for v in usable_std],
         "band_shape": analyses[0]["band_shape"],
         "valid": all(a["valid"] for a in analyses),
         "n_probes": len(analyses),
@@ -209,28 +221,42 @@ def check(room_id: str, recording: np.ndarray) -> dict:
     a = analyze_probe(recording)
     base = np.array(room["fingerprint"])
     cur = np.array(a["fingerprint"])
+    if len(base) != len(cur):
+        raise ValueError("probe baseline from an older protocol; re-enroll this room")
     dist = float(np.linalg.norm(cur - base))
     noise_mean = float(room.get("noise_mean", 0.0))
     noise_std = max(float(room.get("noise_std", 0.02)), 0.01)
     z = (dist - noise_mean) / noise_std
 
-    base_t30 = np.array([v if v is not None else np.nan for v in room.get("t30_s", [])], dtype=float)
-    cur_t30 = np.array([v if v is not None else np.nan for v in a["t30_s"]], dtype=float)
+    base_t30 = np.array([v if v is not None else np.nan
+                         for v in room.get("t30_usable_s", room.get("t30_s", []))], dtype=float)
+    cur_t30 = np.array([v if v is not None else np.nan for v in a["t30_usable_s"]], dtype=float)
+    if len(base_t30) != len(cur_t30):
+        raise ValueError("probe baseline from an older protocol; re-enroll this room")
     rel = np.abs(cur_t30 - base_t30) / np.maximum(base_t30, 0.05)
-    max_rel = float(np.nanmax(rel)) if np.isfinite(rel).any() else 0.0
+    # RT-change decisions use the 2-4 kHz bands (8 kHz is fingerprint-only; it fluctuates more)
+    mid_rel = rel[:2] if len(rel) >= 2 else rel
+    max_rel = float(np.nanmax(mid_rel)) if np.isfinite(mid_rel).any() else 0.0
+    # per-band z against the room's own repeated-probe variability (needs 3-probe enrollment)
+    std = np.array([v if v is not None else np.nan for v in room.get("t30_std", [0.02] * 4)], dtype=float)
+    std = np.where(np.isfinite(std) & (std > 0.01), std, 0.03)
+    std = np.maximum(std, 0.03)   # 30 ms floor: cross-launch probe repeatability on a phone
+    band_z = np.abs(cur_t30 - base_t30) / np.maximum(std, 0.01)
+    max_band_z = float(np.nanmax(band_z)) if np.isfinite(band_z).any() else 0.0
 
     # Thresholds combine the physically meaningful per-band RT change with fingerprint
     # distance. (Pure z-scores explode when the enrollment repeatability is very tight.)
-    # max_rel is a fraction; thresholds: >20% RT change = changed, 6-20% = drift.
-    if max_rel > 0.20 or dist > 0.35:
+    # Change decision uses both the physical RT change and the room's measured repeatability:
+    # a real door/furniture change must exceed what repeated probes already show.
+    if max_rel > 0.25 or dist > 0.45 or max_band_z > 6.0:
         status = "changed"
-        confidence = min(0.99, 0.70 + 0.29 * min((max_rel - 0.20) / 0.40, 1.0))
-    elif max_rel > 0.06 or dist > 0.08:
+        confidence = min(0.99, 0.70 + 0.29 * min(max(max_rel - 0.25, (max_band_z - 6.0) / 8.0), 1.0))
+    elif max_rel > 0.10 or dist > 0.25 or max_band_z > 3.5:
         status = "drift"
-        confidence = min(0.95, 0.55 + 0.40 * min((max_rel - 0.06) / 0.14, 1.0))
+        confidence = min(0.95, 0.55 + 0.40 * min(max(max_rel - 0.10, (max_band_z - 3.5) / 4.0) / 0.5, 1.0))
     else:
         status = "stable"
-        confidence = min(0.99, 0.60 + 0.39 * (1.0 - min(max_rel / 0.06, 1.0)))
+        confidence = min(0.99, 0.60 + 0.39 * (1.0 - min(max(max_rel / 0.10, max_band_z / 3.5), 1.0)))
 
     history = room.get("history", [])
     history.append({"ts": round(time.time(), 1), "distance": round(dist, 4), "z": round(z, 2),

@@ -26,9 +26,13 @@ struct ContentView: View {
             } else if ProcessInfo.processInfo.arguments.contains("-tabListen") {
                 selectedTab = 1
             }
-            if ProcessInfo.processInfo.arguments.contains("-autotest") {
+            let autotestEnv = ProcessInfo.processInfo.environment["ROOMSENSE_AUTOTEST"] == "1"
+            if autotestEnv || ProcessInfo.processInfo.arguments.contains("-autotest") {
                 await model.runSelfTest()
                 selectedTab = 1
+            }
+            if let probeMode = ProcessInfo.processInfo.environment["ROOMSENSE_AUTOPROBE"], !probeMode.isEmpty {
+                await model.runAutoProbe(mode: probeMode)
             }
 #endif
         }

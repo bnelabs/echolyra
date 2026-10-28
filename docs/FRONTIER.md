@@ -293,6 +293,23 @@ docs and README updated honestly. Device still unavailable (17th round).
 - Tagged **`v0.2.0-hackathon`** as the submission candidate.
 - Device still unavailable (21st round).
 
+## Increment 22 — on-device verification + real probe protocol (round 22)
+
+Device verification finally ran on the connected iPhone 12 Pro Max:
+
+- **Criterion 2/3 verified on hardware**: 3-sweep active probe measured Living RT60 **0.239 s**;
+  same-room re-probes 0.241/0.242 s → **stable** (ΔT30 7.7% / 1.6%, conf 0.69/0.93); opening a
+  door/window produced **DRIFT** (fingerprint 0.258 = 23σ above noise, conf 0.51).
+- **Criterion 1 verified on hardware**: real knocks → Apple labels `hammer` 80% / `knock` 72% /
+  `door` 65% → event `knock` 0.72 → decision **EXPLAIN calibrated 0.94** → live Muse Spark
+  situation, SNR 14.4 dB.
+- **Protocol fixes discovered and shipped**: phone speaker cannot reproduce 250/500 Hz (6–10 s
+  garbage RT60) and 1 kHz is unstable across launches (std 206 ms); room identity/change now
+  uses **2–8 kHz** only. Single-sweep enrollment gave 9–13% spread; **3-sweep enrollment** with
+  per-band repeatability stats + 30 ms tolerance floors makes same-room probes stable.
+- iOS probe UI now records 3 sweeps (~15 s) like the CLI autoprobe; device build installed.
+- Numbers written to `docs/EVAL_REAL.md` (phone-in-room table). Device still connected.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
