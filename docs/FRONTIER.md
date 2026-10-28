@@ -67,6 +67,15 @@ story demo-able without a second iPhone.
   low-SNR recordings silent. See `EVAL_REAL.md` and `CALIBRATION.md`.
 - Apple label mapping expanded to 36 identifiers (alarms, water, liquid, smoke detector, sirens).
 
+## Increment 4 — judge-facing demo (round 3, 2026-10-28)
+
+- **Browser demo** (`static/demo.html` + `POST /api/demo/setup`): three synthetic rooms with
+  probe baselines, then recorded clips run through the calibrated pipeline. Verified live:
+  glass clip → `glass_impact` 1.0, room Living, decision **alert 1.0**, Muse Spark situation.
+- Device still `unavailable` (3rd round): criteria 1/2/5/6 on-device verification pending;
+  all software-side work continues.
+- Still queued: probe-informed fusion weighting, real-data calibration profile.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
