@@ -1,0 +1,20 @@
+.DS_Store
+
+# Xcode
+xcuserdata/
+DerivedData/
+*.xcuserstate
+build/
+*.xcworkspace/xcuserdata/
+
+# secrets + generated artifacts (NEVER commit)
+backend/.env
+backend/cache/
+backend/static/out/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+build-*/
+*.png.tmp

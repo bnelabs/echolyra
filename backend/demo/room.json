@@ -1,0 +1,12 @@
+{
+  "name": "demo living room",
+  "length": 5.2, "width": 4.0, "height": 2.6,
+  "surfaces": [
+    {"id": "floor",   "area_m2": 20.8, "material": "wood"},
+    {"id": "ceiling", "area_m2": 20.8, "material": "plaster"},
+    {"id": "left",    "area_m2": 10.4, "material": "curtain"},
+    {"id": "right",   "area_m2": 10.4, "material": "drywall"},
+    {"id": "front",   "area_m2": 13.5, "material": "drywall"},
+    {"id": "back",    "area_m2": 13.5, "material": "drywall"}
+  ]
+}

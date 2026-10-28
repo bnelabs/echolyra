@@ -1,0 +1,217 @@
+"""RoomTwin hackathon backend — FastAPI entrypoint.
+
+Endpoints
+  GET  /api/health          -> model configuration + cache state
+  GET  /api/demo            -> full end-to-end analysis of a bundled demo room
+  POST /api/analyze         -> multipart: audio(wav), room(json), use_case, photos[]
+  POST /api/segment         -> multipart: image, concept  (SAM 3.1)
+  POST /api/visualize       -> multipart: image, instruction (Muse Image)
+  POST /api/transcribe      -> multipart: audio (Muse Voice Transcribe)
+"""
+from __future__ import annotations
+
+import asyncio
+import io
+import json
+import uuid
+import wave
+from pathlib import Path
+
+import numpy as np
+from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from scipy.signal import resample_poly
+
+import acoustics as ac
+import awareness as aw
+import meta_models as mm
+
+ROOT = Path(__file__).parent
+OUT = ROOT / "static" / "out"
+OUT.mkdir(parents=True, exist_ok=True)
+
+app = FastAPI(title="RoomTwin", version="0.1.0")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.mount("/static", StaticFiles(directory=str(ROOT / "static")), name="static")
+
+DEMO_CACHE: dict[str, dict] = {}
+SESSION = aw.Session()
+
+
+# ------------------------------------------------------------------ helpers
+def read_wav_mono(raw: bytes) -> tuple[np.ndarray, int]:
+    with wave.open(io.BytesIO(raw), "rb") as w:
+        fs, n, ch, sw = w.getframerate(), w.getnframes(), w.getnchannels(), w.getsampwidth()
+        frames = w.readframes(n)
+    if sw == 1:
+        arr = (np.frombuffer(frames, dtype=np.uint8).astype(np.float64) - 128) / 128
+    elif sw == 2:
+        arr = np.frombuffer(frames, dtype="<i2").astype(np.float64) / 32768
+    elif sw == 4:
+        arr = np.frombuffer(frames, dtype="<i4").astype(np.float64) / 2147483648
+    else:
+        raise ValueError(f"unsupported sample width {sw}")
+    if ch > 1:
+        arr = arr.reshape(-1, ch).mean(axis=1)
+    return arr, fs
+
+
+def resample(x: np.ndarray, fs: int, target: int = ac.FS) -> np.ndarray:
+    if fs == target:
+        return x
+    from math import gcd
+    g = gcd(int(fs), target)
+    return resample_poly(x, target // g, fs // g)
+
+
+def save_wav(name: str, data: bytes) -> str:
+    (OUT / name).write_bytes(data)
+    return f"/static/out/{name}"
+
+
+def analysis_payload(room, measured_rir=None, use_case="movies") -> dict:
+    result = ac.analyze(room, measured_rir=measured_rir, use_case=use_case)
+    audio = result.pop("audio")
+    tag = uuid.uuid4().hex[:10]
+    result["audio"] = {"before_url": save_wav(f"before_{tag}.wav", audio["before"]),
+                       "after_url": save_wav(f"after_{tag}.wav", audio["after"])}
+    result["meta_models"] = mm.configured()
+    result["ai_plan"] = mm.muse_spark_plan({
+        "room": result["room"], "metrics": result["metrics"],
+        "inversion": result["inversion"], "plan": result["plan"], "score": result["score"]})
+    return result
+
+
+# ------------------------------------------------------------------ routes
+@app.get("/api/health")
+def health():
+    return {"ok": True, "models": mm.configured(), "demo_cached": "demo" in DEMO_CACHE}
+
+
+@app.get("/api/demo")
+def demo():
+    if "demo" not in DEMO_CACHE:
+        DEMO_CACHE["demo"] = analysis_payload(ac.default_room())
+    return DEMO_CACHE["demo"]
+
+
+@app.post("/api/analyze")
+async def analyze(
+    room: str = Form("{}"),
+    use_case: str = Form("movies"),
+    audio: list[UploadFile] | None = File(None),
+    photos: list[UploadFile] | None = File(None),
+):
+    try:
+        room_obj = ac.room_from_json(json.loads(room) if room else {})
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": f"bad room json: {e}"})
+    # 1) vision first: SAM 3.1 area shares steer the material priors (vision -> physics)
+    seg, vision = [], None
+    if photos:
+        jobs = []
+        for ph in photos[:3]:
+            img = await ph.read()
+            for concept in ("wall", "curtain", "rug", "window"):
+                jobs.append((img, concept, ph.content_type or "image/jpeg"))
+        seg = list(await asyncio.gather(*[asyncio.to_thread(mm.sam_segment, *j) for j in jobs]))
+        shares = mm.materials_from_segments(seg)
+        vision = {"segments": seg, "material_shares": shares, **ac.apply_vision_prior(room_obj, shares)}
+    # 2) measurement — 1..3 positions, median-fused in acoustics.analyze
+    measured, audio_metas, qc = [], [], []
+    if audio:
+        for f in audio[:3]:
+            raw = await f.read()
+            try:
+                x, fs = read_wav_mono(raw)
+                x = resample(x, fs)
+                # the app plays our known 4 s sweep; the upload is the recording
+                rir = ac.deconvolve(x, ac.exp_sweep(), ac.FS)
+                m = ac.analyze_rir(rir)
+                measured.append(rir)
+                qc.append(ac.quality_check(x, m))
+                audio_metas.append({"bytes": len(raw), "sample_rate_in": fs,
+                                    "duration_s": round(len(x) / ac.FS, 2)})
+            except Exception as e:
+                audio_metas.append({"error": f"could not read wav: {e}"})
+    payload = analysis_payload(room_obj, measured if measured else None, use_case)
+    payload["audio_meta"] = audio_metas
+    payload["qc"] = qc
+    if vision:
+        payload["sam"] = vision
+    return payload
+
+
+@app.post("/api/segment")
+async def segment(image: UploadFile = File(...), concept: str = Form("wall")):
+    return mm.sam_segment(await image.read(), concept, image.content_type or "image/jpeg")
+
+
+@app.post("/api/visualize")
+async def visualize(image: UploadFile = File(...), instruction: str = Form("add acoustic panels")):
+    return mm.muse_image_edit(await image.read(), instruction, image.content_type or "image/jpeg")
+
+
+@app.post("/api/transcribe")
+async def transcribe(audio: UploadFile = File(...)):
+    return mm.transcribe(await audio.read(), audio.filename or "brief.m4a",
+                         audio.content_type or "audio/mp4")
+
+
+# ------------------------------------------------------------------ RoomSense awareness
+@app.get("/api/session")
+def session_summary():
+    return SESSION.summary()
+
+
+@app.post("/api/reset")
+def session_reset():
+    SESSION.reset()
+    return {"ok": True}
+
+
+@app.post("/api/enroll")
+async def enroll(room_id: str = Form(...), room_name: str = Form(...),
+                 audio: list[UploadFile] | None = File(None)):
+    raws = [await f.read() for f in (audio or [])]
+    try:
+        room = SESSION.enroll(room_id, room_name, raws)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse(status_code=400, content={"error": str(e)})
+    return {"room": room, "session": SESSION.summary()}
+
+
+@app.post("/api/teach")
+async def teach(label: str = Form(...), audio: list[UploadFile] | None = File(None)):
+    raws = [await f.read() for f in (audio or [])]
+    try:
+        out = SESSION.teach(label, raws)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse(status_code=400, content={"error": str(e)})
+    return {**out, "session": SESSION.summary()}
+
+
+@app.post("/api/detect")
+async def detect(audio: UploadFile = File(...), node_room: str = Form("")):
+    raw = await audio.read()
+    try:
+        rec = SESSION.detect(raw)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse(status_code=400, content={"error": str(e)})
+    payload = {**rec, "node_room": node_room,
+               "sensor_room": None}
+    payload["situation"] = mm.situation_report(payload)
+    return payload
+
+
+@app.get("/", response_class=HTMLResponse)
+def index():
+    page = ROOT / "static" / "index.html"
+    return HTMLResponse(page.read_text()) if page.exists() else HTMLResponse("<h1>RoomTwin API</h1>")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8080)
