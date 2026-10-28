@@ -22,6 +22,8 @@ struct RecentEvent: Codable, Identifiable {
 struct EventInfo: Codable {
     var label: String
     var confidence: Double
+    var snr_db: Double?
+    var reason: String?
     var ranking: [EventRank]?
 }
 
@@ -34,6 +36,9 @@ struct RoomMatch: Codable {
     var room_id: String?
     var room_name: String?
     var confidence: Double
+    var uncertain: Bool?
+    var reason: String?
+    var snr_db: Double?
     var ranking: [RoomRank]?
 }
 
@@ -55,6 +60,8 @@ struct DetectResponse: Codable {
     var event: EventInfo
     var room: RoomMatch
     var situation: Situation
+    var certainty: Double?
+    var heard: [SoundLabel]?
 }
 
 struct EnrollResponse: Codable {

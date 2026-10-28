@@ -7,13 +7,27 @@ final class Recorder: ObservableObject {
     @Published var isRecording = false
     @Published var remaining: Double = 0
 
-    func record(seconds: Double = 2.8) async throws -> Data {
+    private func microphonePermission() async -> Bool {
+        await withCheckedContinuation { continuation in
+            AVAudioApplication.requestRecordPermission { granted in
+                continuation.resume(returning: granted)
+            }
+        }
+    }
+
+    func record(seconds: Double = 2.8) async throws -> (data: Data, url: URL) {
+        let granted = await microphonePermission()
+        guard granted else {
+            throw NSError(domain: "RoomSense", code: 2, userInfo: [
+                NSLocalizedDescriptionKey: "Microphone access is off. Enable it in Settings → RoomSense → Microphone, then try again."
+            ])
+        }
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.record, mode: .measurement, options: [])
         try session.setActive(true)
 
         let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("roomsense-\(UUID().uuidString).caf")
+            .appendingPathComponent("roomsense-\(UUID().uuidString).wav")
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatLinearPCM),
             AVSampleRateKey: 16_000.0,
@@ -39,7 +53,6 @@ final class Recorder: ObservableObject {
         try? session.setActive(false, options: .notifyOthersOnDeactivation)
 
         let data = try Data(contentsOf: url)
-        try? FileManager.default.removeItem(at: url)
-        return data
+        return (data, url)
     }
 }

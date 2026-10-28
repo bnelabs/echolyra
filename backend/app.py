@@ -15,12 +15,14 @@ import io
 import json
 import uuid
 import wave
+import os
 from pathlib import Path
 
 import numpy as np
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 from scipy.signal import resample_poly
 
@@ -194,14 +196,27 @@ async def teach(label: str = Form(...), audio: list[UploadFile] | None = File(No
 
 
 @app.post("/api/detect")
-async def detect(audio: UploadFile = File(...), node_room: str = Form("")):
+async def detect(audio: UploadFile = File(...), node_room: str = Form(""),
+                 sound_labels: str = Form("[]")):
     raw = await audio.read()
+    if os.environ.get("DEBUG_CAPTURE", "0") == "1":
+        try:
+            Path("/tmp/last_device_clip.bin").write_bytes(raw)
+        except Exception:
+            pass
     try:
-        rec = SESSION.detect(raw)
+        import json as _json
+        heard = _json.loads(sound_labels) if sound_labels else []
+        if not isinstance(heard, list):
+            heard = []
+    except Exception:
+        heard = []
+    try:
+        rec = SESSION.detect(raw, heard=heard)
     except Exception as e:  # noqa: BLE001
         return JSONResponse(status_code=400, content={"error": str(e)})
     payload = {**rec, "node_room": node_room,
-               "sensor_room": None}
+               "sensor_room": None, "heard": rec.get("heard", [])}
     payload["situation"] = mm.situation_report(payload)
     return payload
 

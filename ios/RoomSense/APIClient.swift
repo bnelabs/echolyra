@@ -38,7 +38,7 @@ struct APIClient {
     func enroll(roomID: String, roomName: String, clip: Data) async throws -> SessionSummary? {
         let body = Self.multipart(
             fields: ["room_id": roomID, "room_name": roomName],
-            files: [(name: "audio", filename: "knock.caf", mime: "audio/x-caf", data: clip)]
+            files: [(name: "audio", filename: "knock.wav", mime: "audio/wav", data: clip)]
         )
         var upload = request("api/enroll", method: "POST")
         upload.setValue("multipart/form-data; boundary=\(Self.boundary)", forHTTPHeaderField: "Content-Type")
@@ -48,10 +48,15 @@ struct APIClient {
         return try JSONDecoder().decode(EnrollResponse.self, from: data).session
     }
 
-    func detect(clip: Data) async throws -> DetectResponse {
+    func detect(clip: Data, heard: [SoundLabel] = []) async throws -> DetectResponse {
+        var fields: [String: String] = [:]
+        if !heard.isEmpty, let data = try? JSONEncoder().encode(heard),
+           let json = String(data: data, encoding: .utf8) {
+            fields["sound_labels"] = json
+        }
         let body = Self.multipart(
-            fields: [:],
-            files: [(name: "audio", filename: "event.caf", mime: "audio/x-caf", data: clip)]
+            fields: fields,
+            files: [(name: "audio", filename: "event.wav", mime: "audio/wav", data: clip)]
         )
         var upload = request("api/detect", method: "POST")
         upload.setValue("multipart/form-data; boundary=\(Self.boundary)", forHTTPHeaderField: "Content-Type")
@@ -68,7 +73,7 @@ struct APIClient {
     func teach(label: String, clip: Data) async throws -> SessionSummary? {
         let body = Self.multipart(
             fields: ["label": label],
-            files: [(name: "audio", filename: "teach.caf", mime: "audio/x-caf", data: clip)]
+            files: [(name: "audio", filename: "teach.wav", mime: "audio/wav", data: clip)]
         )
         var upload = request("api/teach", method: "POST")
         upload.setValue("multipart/form-data; boundary=\(Self.boundary)", forHTTPHeaderField: "Content-Type")

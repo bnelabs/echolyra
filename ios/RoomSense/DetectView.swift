@@ -72,8 +72,10 @@ struct DetectView: View {
     private func listen() {
         Task {
             do {
-                let clip = try await recorder.record(seconds: 3.2)
-                await model.detect(clip: clip)
+                let rec = try await recorder.record(seconds: 3.2)
+                let heard = await SoundUnderstanding.classify(fileURL: rec.url)
+                await model.detect(clip: rec.data, heard: heard)
+                try? FileManager.default.removeItem(at: rec.url)
             } catch {
                 model.errorText = error.localizedDescription
             }
@@ -83,6 +85,14 @@ struct DetectView: View {
 
 struct ResultCard: View {
     let result: DetectResponse
+
+    private var uncertainMessage: String {
+        switch result.room.reason {
+        case "low_snr": return "Signal too close to the noise floor — room attribution withheld. Move nearer or wait for a quieter moment."
+        case "needs_room_sample": return "This sound type needs a room-specific sample — teach it here once."
+        default: return "Room uncertain — teach this sound, or record another sample in that room."
+        }
+    }
 
     private var urgencyColor: Color {
         switch (result.situation.urgency ?? "").lowercased() {
@@ -95,12 +105,25 @@ struct ResultCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
-                Text(EventLabels.pretty(result.event.label))
+                Text(result.event.label == "unknown" ? "Unclear sound" : EventLabels.pretty(result.event.label))
                     .font(.title2.weight(.bold))
                 Spacer()
                 Text("\((result.event.confidence * 100).formatted(.number.precision(.fractionLength(0))))%")
                     .font(.title3)
                     .foregroundStyle(.secondary)
+            }
+
+            HStack(spacing: 12) {
+                if let snr = result.event.snr_db {
+                    Label("SNR \(snr.formatted(.number.precision(.fractionLength(0)))) dB", systemImage: "waveform")
+                        .font(.caption)
+                        .foregroundStyle(snr < 15 ? .orange : .secondary)
+                }
+                if let certainty = result.certainty {
+                    Label("certainty \((certainty * 100).formatted(.number.precision(.fractionLength(0))))%", systemImage: "checkmark.seal")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             HStack(spacing: 8) {
                 Image(systemName: "mappin.and.ellipse")
@@ -110,10 +133,19 @@ struct ResultCard: View {
             }
             .font(.subheadline)
 
-            if result.room.confidence < 0.35 {
-                Text("Room uncertain — teach this sound, or record another sample in that room.")
+            if result.room.uncertain == true || result.room.confidence < 0.35 {
+                Text(uncertainMessage)
                     .font(.caption)
                     .foregroundStyle(.orange)
+            }
+
+            if let heard = result.heard, !heard.isEmpty {
+                let chips = heard.prefix(3)
+                    .map { "\($0.label.replacingOccurrences(of: "_", with: " ")) \(Int($0.confidence * 100))%" }
+                    .joined(separator: " · ")
+                Text("On-device hearing: \(chips)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             if let urgency = result.situation.urgency {

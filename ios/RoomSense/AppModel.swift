@@ -25,11 +25,15 @@ final class AppModel: ObservableObject {
         log("AUTOTEST start backend=\(backendURL)")
         let recorder = Recorder()
         do {
-            let clip = try await recorder.record(seconds: 2.8)
+            let rec = try await recorder.record(seconds: 2.8)
+            let clip = rec.data
             log("AUTOTEST recorded \(clip.count) bytes")
             session = try await client.enroll(roomID: "sim-test", roomName: "Simulator test room", clip: clip) ?? session
             log("AUTOTEST enrolled rooms=\(session?.rooms?.count ?? 0)")
-            let result = try await client.detect(clip: clip)
+            let heard = await SoundUnderstanding.classify(fileURL: rec.url)
+            try? FileManager.default.removeItem(at: rec.url)
+            log("AUTOTEST heard: \(heard.prefix(3).map { "\($0.label) \(Int($0.confidence * 100))%" }.joined(separator: ", "))")
+            let result = try await client.detect(clip: clip, heard: heard)
             lastResult = result
             log("AUTOTEST detect label=\(result.event.label) conf=\(result.event.confidence) room=\(result.room.room_name ?? "nil") roomConf=\(result.room.confidence) situation=\(result.situation.headline ?? "nil") model=\(result.situation._model ?? "nil")")
         } catch {
@@ -59,11 +63,11 @@ final class AppModel: ObservableObject {
         catch { errorText = error.localizedDescription }
     }
 
-    func detect(clip: Data) async {
+    func detect(clip: Data, heard: [SoundLabel] = []) async {
         busy = true
         defer { busy = false }
         lastClip = clip
-        do { lastResult = try await client.detect(clip: clip) }
+        do { lastResult = try await client.detect(clip: clip, heard: heard) }
         catch { errorText = error.localizedDescription }
     }
 

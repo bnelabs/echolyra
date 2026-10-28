@@ -78,6 +78,94 @@ def _envelope(x: np.ndarray, fs: int = FEATURE_SR, win_ms: float = 10.0):
     return np.sqrt(np.mean(frames ** 2, axis=1)), win
 
 
+# --------------------------------------------------------------------- mfcc / noise
+N_MELS, N_MFCC, N_FFT = 26, 13, 512
+
+
+def _mel_filterbank() -> np.ndarray:
+    def hz2mel(h): return 2595.0 * math.log10(1.0 + h / 700.0)
+    def mel2hz(m): return 700.0 * (10 ** (m / 2595.0) - 1.0)
+    lo, hi = hz2mel(80.0), hz2mel(min(7600.0, FEATURE_SR / 2 - 100))
+    pts = mel2hz(np.linspace(lo, hi, N_MELS + 2))
+    bins = np.floor((N_FFT + 1) * pts / FEATURE_SR).astype(int)
+    fb = np.zeros((N_MELS, N_FFT // 2 + 1))
+    for m in range(1, N_MELS + 1):
+        l, c, r = bins[m - 1], bins[m], bins[m + 1]
+        for k in range(l, c):
+            fb[m - 1, k] = (k - l) / max(1, c - l)
+        for k in range(c, r):
+            fb[m - 1, k] = (r - k) / max(1, r - c)
+    return fb
+
+
+MEL_FB = _mel_filterbank()
+
+
+def mfcc(x: np.ndarray, fs: int = FEATURE_SR, n_frames: int = 40) -> np.ndarray:
+    """Mean MFCC vector (13) — cepstral coloration is a classic room fingerprint."""
+    win, hop = int(0.025 * fs), int(0.010 * fs)
+    if len(x) < win:
+        x = np.pad(x, (0, win - len(x)))
+    frames = np.lib.stride_tricks.sliding_window_view(x, win)[::hop]
+    if len(frames) > n_frames:
+        frames = frames[:n_frames]
+    spec = np.abs(np.fft.rfft(frames * np.hanning(win), n=N_FFT)) ** 2
+    mel = np.log(spec @ MEL_FB.T + 1e-10)
+    from scipy.fft import dct
+    ceps = dct(mel, type=2, axis=1)[:, 1:N_MFCC + 1]
+    return ceps.mean(axis=0)
+
+
+def _frame_band_energies(x: np.ndarray, fs: int = FEATURE_SR):
+    """Per-frame octave-band dB energies (for noise-floor and SNR estimation)."""
+    win, hop = int(0.030 * fs), int(0.010 * fs)
+    if len(x) < win:
+        x = np.pad(x, (0, win - len(x)))
+    frames = np.lib.stride_tricks.sliding_window_view(x, win)[::hop]
+    spec = np.abs(np.fft.rfft(frames * np.hanning(win), n=1024)) ** 2
+    freqs = np.fft.rfftfreq(1024, 1 / fs)
+    out = []
+    for fc in BANDS:
+        m = (freqs >= fc / math.sqrt(2)) & (freqs < fc * math.sqrt(2))
+        out.append(10 * np.log10(spec[:, m].sum(axis=1) + 1e-12) if m.any() else np.full(len(frames), -120.0))
+    return np.stack(out, axis=1), win / fs  # [frames, bands]
+
+
+def noise_and_snr(x: np.ndarray, onset: int, fs: int = FEATURE_SR) -> dict:
+    """Estimate the room's noise floor and the event's per-band SNR.
+
+    Noise floor = per-band energy of the pre-onset segment (silence before the sound).
+    Event energy = peak per-band frame energy in the active window. Using pre-onset
+    silence avoids the bias that a 15th-percentile over the whole clip has when the
+    event dominates the recording.
+    """
+    frames, frame_dur = _frame_band_energies(x, fs)
+    onset_frame = int(onset / fs / frame_dur)
+    pre = frames[: max(1, min(onset_frame, len(frames)))]
+    if len(pre) >= 2:
+        noise = np.percentile(pre, 50, axis=0)
+    else:  # no pre-roll: fall back to the quietest frames
+        noise = np.percentile(frames, 15, axis=0)
+    t0, t1 = onset_frame, min(len(frames), onset_frame + max(1, int(0.5 / frame_dur)))
+    event = frames[t0:t1].max(axis=0) if t1 > t0 else frames.max(axis=0)
+    snr_band = np.clip(event - noise, -10, 60)
+
+    # broadband SNR from time-domain RMS: pre-event silence vs active segment
+    pre_n = int(0.35 * fs)
+    pre_sig = x[max(0, onset - pre_n):onset]
+    seg = x[onset: onset + int(0.5 * fs)]
+    if len(pre_sig) > 64 and len(seg) > 64:
+        noise_rms = float(np.sqrt(np.mean(pre_sig ** 2))) + 1e-9
+        snr_db = 10 * math.log10(float(np.mean(seg ** 2)) / (noise_rms ** 2) + 1e-12)
+    else:
+        snr_db = float(np.median(snr_band))
+    return {
+        "noise_floor_db": [round(float(v), 1) for v in noise],
+        "snr_band_db": [round(float(v), 1) for v in snr_band],
+        "snr_db": round(float(np.clip(snr_db, -20, 100)), 1),
+    }
+
+
 def find_onset(x: np.ndarray, fs: int = FEATURE_SR) -> int:
     """First frame whose energy rises well above the noise floor (fallback: peak energy)."""
     env, win = _envelope(x, fs)
@@ -104,6 +192,26 @@ def _log_band_energies(x: np.ndarray) -> np.ndarray:
         m = (freqs >= lo) & (freqs < hi)
         out.append(10 * math.log10(float(np.mean(spec[m] ** 2)) + 1e-12) if m.any() else -120.0)
     return np.array(out)
+
+
+def early_decay(x: np.ndarray, fs: int = FEATURE_SR) -> float | None:
+    """Decay rate (dB/s) fitted only over -5..-25 dB of the 300-6000 Hz envelope.
+
+    Room identity lives in reverberation, but the *late* tail is exactly where noise
+    lives. Restricting the fit to the first 25 dB keeps the fingerprint usable at
+    moderate SNR (classical EDT/T20-style practice).
+    """
+    y = _band(x, 300, 6000, fs)
+    env, win = _envelope(np.abs(y), fs, 5.0)
+    if len(env) < 12:
+        return None
+    db = 20 * np.log10(env + 1e-12)
+    db = db - db.max()
+    idx = np.where((db <= -5) & (db >= -25))[0]
+    if len(idx) < 8:
+        return None
+    slope = np.polyfit(idx * (win / fs), db[idx], 1)[0]
+    return float(-slope) if slope < 0 else None
 
 
 def extract_features(x: np.ndarray, fs: int = FEATURE_SR) -> dict:
@@ -157,6 +265,8 @@ def extract_features(x: np.ndarray, fs: int = FEATURE_SR) -> dict:
     above = env > max(1e-6, 0.15 * float(np.max(env))) if len(env) else np.array([False])
     active_ms = float(np.sum(above) * win / fs * 1000)
     crest = float(peak / (rms + 1e-9))
+    snr_info = noise_and_snr(x, onset, fs)
+    mfcc_mean = mfcc(seg[: int(0.5 * fs)], fs)
 
     return {
         "onset_sample": int(onset),
@@ -166,6 +276,7 @@ def extract_features(x: np.ndarray, fs: int = FEATURE_SR) -> dict:
         "rms_db": round(20 * math.log10(rms + 1e-12), 1),
         "crest": round(crest, 2),
         "decay_db_s": None if not math.isfinite(decay_db_s) else round(decay_db_s, 1),
+        "early_decay_db_s": None if early_decay(seg, fs) is None else round(early_decay(seg, fs), 1),
         "decay_20_ms": None if not math.isfinite(decay_20_ms) else round(decay_20_ms, 1),
         "bands_db": [round(float(b), 1) for b in bands_db],
         "brightness_db": round(float(hf), 1),
@@ -173,22 +284,64 @@ def extract_features(x: np.ndarray, fs: int = FEATURE_SR) -> dict:
         "flatness": round(flatness, 4),
         "tonality": round(tonal, 4),
         "modulation": round(mod, 3),
+        "mfcc": [round(float(v), 2) for v in mfcc_mean],
+        **snr_info,
     }
 
 
-def feature_vector(f: dict) -> np.ndarray:
-    """Room-transfer signature: source-independent-ish shape cues."""
-    bands = np.array(f["bands_db"], dtype=float)
-    v = np.concatenate([
-        bands / 12.0,
-        [f["brightness_db"] / 12.0,
-         (f["decay_db_s"] or 30.0) / 120.0,
+def source_vector(f: dict) -> np.ndarray:
+    """Features for WHAT happened — noise-normalised, so low-SNR events stay separable."""
+    snr = np.clip(np.array(f["snr_band_db"], dtype=float), -5, 45) / 20.0
+    bright = (np.mean(snr[-3:]) - np.mean(snr[:2]))
+    return np.concatenate([
+        snr,
+        [bright,
          (f["crest"] - 5.0) / 15.0,
          f["modulation"],
-         f["flatness"] * 5.0],
+         f["flatness"] * 5.0,
+         f["tonality"] * 3.0,
+         min(f["active_ms"], 3000.0) / 1000.0],
     ])
-    return v
 
+
+def room_vector(f: dict) -> np.ndarray:
+    """Features for WHERE it happened — cepstral coloration + reverberant decay."""
+    mf = np.array(f["mfcc"], dtype=float) / 8.0
+    decay = (f.get("early_decay_db_s") or f["decay_db_s"] or 30.0) / 60.0
+    bright = f["brightness_db"] / 10.0
+    dur = math.log1p(max(f["active_ms"], 1.0)) / 3.0
+    return np.concatenate([mf, [decay, bright, dur]])
+
+
+
+# --------------------------------------------------------------------- Apple sound labels
+# Apple's SoundAnalysis classifier (303 classes) runs on-device; the app sends its top labels.
+APPLE_LABEL_MAP = {
+    "glass_breaking": "glass_impact", "glass_clink": "glass_impact",
+    "knock": "knock", "door_slam": "impact_thud", "thump_thud": "impact_thud",
+    "drawer_open_or_close": "impact_thud", "cupboard_open_or_close": "impact_thud",
+    "baby_crying": "baby_cry", "crying_sobbing": "baby_cry",
+    "speech": "speech", "whispering": "speech", "conversation": "speech",
+    "alarm_clock": "alarm_beep", "telephone_bell_ringing": "alarm_beep",
+    "reverse_beeps": "alarm_beep", "beep": "alarm_beep", "buzzer": "alarm_beep",
+    "water": "water", "water_tap_faucet": "water", "waterfall": "water",
+    "door": "knock", "door_bell": "alarm_beep",
+}
+
+
+def event_from_heard(heard: list[dict]) -> dict | None:
+    """Map on-device Apple classifier labels to our event label (best confidence wins)."""
+    best = None
+    for item in heard:
+        label = str(item.get("label", "")).strip().lower()
+        conf = float(item.get("confidence", 0.0))
+        mapped = APPLE_LABEL_MAP.get(label)
+        if mapped and conf >= 0.15 and (best is None or conf > best[1]):
+            best = (mapped, conf, label)
+    if best is None:
+        return None
+    return {"label": best[0], "confidence": round(best[1], 2), "heard_as": best[2],
+            "source": "apple_sound_analysis"}
 
 # --------------------------------------------------------------------- classifier
 def _rule_scores(f: dict) -> dict:
@@ -227,7 +380,7 @@ def _rule_scores(f: dict) -> dict:
 def classify_event(f: dict, templates: dict[str, list[list[float]]] | None = None) -> dict:
     scores = _rule_scores(f)
     if templates:
-        v = feature_vector(f)
+        v = source_vector(f)
         for label, examples in templates.items():
             if not examples:
                 continue
@@ -237,8 +390,15 @@ def classify_event(f: dict, templates: dict[str, list[list[float]]] | None = Non
     ranked = sorted(((k, max(0.0, v)) for k, v in scores.items()), key=lambda kv: -kv[1])
     top_label, top_score = ranked[0]
     confidence = round(top_score / total, 2)
+    # Signal-quality gate: do not confidently label sounds that are near the noise floor.
+    snr = float(f.get("snr_db", 30.0))
+    if snr < 4.0:
+        return {"label": "unknown", "confidence": 0.0, "reason": "low_snr",
+                "snr_db": snr,
+                "ranking": [{"label": k, "score": round(v, 2)} for k, v in ranked[:4]]}
+    confidence = round(min(1.0, confidence * max(0.25, min(1.0, (snr - 2) / 18.0))), 2)
     return {"label": top_label if top_score > 0.4 else "unknown",
-            "confidence": confidence,
+            "confidence": confidence, "snr_db": snr,
             "ranking": [{"label": k, "score": round(v, 2)} for k, v in ranked[:4]]}
 
 
@@ -246,10 +406,13 @@ def classify_event(f: dict, templates: dict[str, list[list[float]]] | None = Non
 def _load_state() -> dict:
     if STATE_PATH.exists():
         try:
-            return json.loads(STATE_PATH.read_text())
+            state = json.loads(STATE_PATH.read_text())
+            if state.get("version") != 2:
+                return {"version": 2, "rooms": {}, "templates": {}, "events": []}
+            return state
         except Exception:
             pass
-    return {"rooms": {}, "templates": {}, "events": []}
+    return {"version": 2, "rooms": {}, "templates": {}, "events": []}
 
 
 def _save_state(state: dict):
@@ -262,7 +425,7 @@ class Session:
         self.state = _load_state()
 
     def reset(self):
-        self.state = {"rooms": {}, "templates": {}, "events": []}
+        self.state = {"version": 2, "rooms": {}, "templates": {}, "events": []}
         _save_state(self.state)
 
     def enroll(self, room_id: str, room_name: str, clips: list[bytes]) -> dict:
@@ -270,7 +433,7 @@ class Session:
         for raw in clips:
             x, _ = read_wav_mono(raw)
             f = extract_features(x)
-            vectors.append(feature_vector(f))
+            vectors.append(room_vector(f))
             feats.append(f)
         if not vectors:
             raise ValueError("no usable clips")
@@ -278,7 +441,8 @@ class Session:
         room = self.state["rooms"].get(room_id, {"id": room_id, "name": room_name, "n": 0})
         room["name"] = room_name
         room["n"] += len(vectors)
-        room["vector"] = v.tolist()
+        room["rvec"] = v.tolist()
+        room["snr_db"] = round(float(np.mean([f.get("snr_db", 30) for f in feats])), 1)
         room["level_db"] = round(float(np.mean([f["peak_db"] for f in feats])), 1)
         room["decay_db_s"] = round(float(np.mean([f["decay_db_s"] or 30 for f in feats])), 1)
         self.state["rooms"][room_id] = room
@@ -289,36 +453,79 @@ class Session:
         self.state["templates"].setdefault(label, [])
         for raw in clips:
             x, _ = read_wav_mono(raw)
-            self.state["templates"][label].append(feature_vector(extract_features(x)).tolist())
+            self.state["templates"][label].append(source_vector(extract_features(x)).tolist())
         _save_state(self.state)
         return {"label": label, "examples": len(self.state["templates"][label])}
 
-    def attribute_room(self, f: dict) -> dict:
+    def attribute_room(self, f: dict, event_label: str = "") -> dict:
         rooms = self.state["rooms"]
         if not rooms:
-            return {"room_id": None, "room_name": None, "confidence": 0.0, "ranking": []}
-        v = feature_vector(f)
-        scored = []
+            return {"room_id": None, "room_name": None, "confidence": 0.0,
+                    "uncertain": True, "ranking": [], "reason": "no_rooms"}
+        vectors, ids, names = [], [], []
         for rid, r in rooms.items():
-            rv = np.array(r["vector"])
-            dist = float(np.linalg.norm(v - rv))
-            scored.append((dist, rid, r["name"]))
-        scored.sort()
-        best_d, best_id, best_name = scored[0]
-        conf = 1.0 / (1.0 + best_d)
-        if len(scored) > 1:
-            margin = scored[1][0] - best_d
-            conf = min(1.0, conf * (0.6 + min(1.0, margin)))
-        return {"room_id": best_id, "room_name": best_name,
-                "confidence": round(conf, 2),
-                "ranking": [{"room": n, "distance": round(d, 3)} for d, _, n in scored[:4]]}
+            if "rvec" not in r:            # legacy record
+                continue
+            vectors.append(r["rvec"]); ids.append(rid); names.append(r["name"])
+        if not vectors:
+            return {"room_id": None, "room_name": None, "confidence": 0.0,
+                    "uncertain": True, "ranking": [], "reason": "no_rooms"}
+        R = np.array(vectors)
+        if len(R) == 1:
+            return {"room_id": ids[0], "room_name": names[0], "confidence": 1.0,
+                    "uncertain": False, "distance": 0.0, "reason": "single_room",
+                    "ranking": [{"room": names[0], "distance": 0.0, "p": 1.0}]}
+        # Physical, noise-robust metric: early decay (room tail before noise dominates),
+        # spectral brightness (wall low-pass), and cepstral cosine (coloration).
+        ev_dec = float(f.get("early_decay_db_s") or f.get("decay_db_s") or 30.0)
+        ev_br = float(f["brightness_db"])
+        ev_mf = np.array(f["mfcc"], dtype=float)
+        d = []
+        for rv in R:
+            r_dec = float(rv[13] * 60.0)
+            r_br = float(rv[14] * 10.0)
+            r_mf = rv[:13]
+            cos = float(np.dot(ev_mf, r_mf) /
+                        (np.linalg.norm(ev_mf) * np.linalg.norm(r_mf) + 1e-9))
+            d.append(2.0 * abs(math.log((ev_dec + 1.0) / (r_dec + 1.0)))
+                     + 0.5 * abs(ev_br - r_br) / 6.0
+                     + 1.0 * (1.0 - cos))
+        d = np.array(d)
+        p = np.exp(-(d - d.min()) / 0.6)
+        p = p / p.sum()
+        order = np.argsort(-p)
+        conf = float(p[order[0]])
+        margin = float(p[order[0]] - p[order[1]])
+        snr_ev = float(f.get("snr_db", 30.0))
+        # Below ~25 dB the reverberant tail is buried in noise: say "uncertain" instead of guessing.
+        sustained = event_label in {"baby_cry", "speech", "water", "alarm_beep"}
+        low_snr = snr_ev < 25.0
+        uncertain = bool(conf < 0.50 or margin < 0.15 or low_snr or (sustained and len(R) < 3))
+        reason = None
+        if low_snr: reason = "low_snr"
+        elif sustained: reason = "needs_room_sample"
+        return {"room_id": ids[order[0]], "room_name": names[order[0]],
+                "confidence": round(conf, 2), "uncertain": uncertain,
+                "distance": round(float(d[order[0]]), 2), "reason": reason,
+                "snr_db": round(snr_ev, 1),
+                "ranking": [{"room": names[i], "distance": round(float(d[i]), 2),
+                             "p": round(float(p[i]), 2)} for i in order[:4]]}
 
-    def detect(self, raw: bytes) -> dict:
+    def detect(self, raw: bytes, heard: list[dict] | None = None) -> dict:
         x, _ = read_wav_mono(raw)
         f = extract_features(x)
         event = classify_event(f, self.state.get("templates"))
-        where = self.attribute_room(f)
-        rec = {"event": event, "room": where, "features": f}
+        heard_event = event_from_heard(heard or [])
+        if heard_event and (event["label"] == "unknown" or heard_event["confidence"] > event.get("confidence", 0.0)):
+            heard_event["snr_db"] = event.get("snr_db")
+            heard_event["ranking"] = event.get("ranking", [])
+            event = heard_event
+        where = self.attribute_room(f, event_label=event["label"])
+        if where.get("uncertain"):
+            where["room_name"] = where.get("room_name")
+        rec = {"event": event, "room": where, "heard": heard or [],
+               "certainty": round(event["confidence"] * where["confidence"], 2),
+               "features": f}
         self.state["events"] = (self.state["events"] + [rec])[-50:]
         _save_state(self.state)
         return rec
@@ -328,5 +535,18 @@ class Session:
                           for r in self.state["rooms"].values()],
                 "templates": {k: len(v) for k, v in self.state["templates"].items()},
                 "events": [{"label": e["event"]["label"], "room": e["room"]["room_name"],
-                            "confidence": e["event"]["confidence"]}
+                            "confidence": e["event"]["confidence"],
+                            "snr_db": e["features"].get("snr_db"),
+                            "heard_as": e["event"].get("heard_as")}
                            for e in self.state["events"][-8:]]}
+
+
+# --------------------------------------------------------------- test helpers
+def wav_bytes(x: np.ndarray, fs: int = FEATURE_SR) -> bytes:
+    """Serialise float samples to mono 16-bit WAV (used by tests/evaluation)."""
+    pcm = (np.clip(x, -1, 1) * 32767).astype("<i2")
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1); w.setsampwidth(2); w.setframerate(fs)
+        w.writeframes(pcm.tobytes())
+    return buf.getvalue()

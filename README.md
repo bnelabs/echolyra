@@ -26,9 +26,18 @@ audio stored, no cloud recordings.
 | Model | Role |
 |---|---|
 | `muse-spark-1.3-contributor` | Situation report: urgency, explanation, what to check (from event JSON) |
+| Apple `SoundAnalysis` (on-device, 303 classes) | Acoustic event recognition: knock, glass_breaking, baby_crying, door_slam, alarm, speech, water — runs on the phone, no audio leaves it |
 | `sam-3.1` | Room photos → surface/object context for the floorplan |
 | `muse-voice-transcribe-1.0` | Voice rules / hands-free commands |
 | `muse-image-1.0` | Optional "what to check" visual |
+
+## Signal science (SNR, noise, reverberation)
+
+RoomSense does explicit signal-quality analysis before any AI label:
+pre-onset **noise-floor estimation**, per-band and peak **SNR**, SNR gating, noise-normalised
+features, **early-decay** room fingerprints and a calibrated *uncertain* state. Measured
+behaviour: event ID holds to ~20 dB SNR; room ID holds to ~40 dB; below that it refuses to
+guess. Full methodology, numbers and the frontier roadmap: [`docs/SIGNAL_SCIENCE.md`](docs/SIGNAL_SCIENCE.md).
 
 ## How it works
 

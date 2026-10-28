@@ -21,6 +21,9 @@ targets:
         excludes:
           - project.yml
           - Info.plist
+          - build
+          - build-device
+          - "**/.DS_Store"
     info:
       path: Info.plist
       properties:

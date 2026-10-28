@@ -61,8 +61,9 @@ struct RoomsView: View {
         let name = roomName.trimmingCharacters(in: .whitespaces)
         Task {
             do {
-                let clip = try await recorder.record(seconds: 2.8)
-                await model.enroll(roomName: name, clip: clip)
+                let rec = try await recorder.record(seconds: 2.8)
+                await model.enroll(roomName: name, clip: rec.data)
+                try? FileManager.default.removeItem(at: rec.url)
                 roomName = ""
             } catch {
                 model.errorText = error.localizedDescription
