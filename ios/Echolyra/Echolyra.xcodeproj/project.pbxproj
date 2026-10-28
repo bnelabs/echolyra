@@ -7,40 +7,40 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		04558973731A70CA4C487BB8 /* ProbeRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_C21E9EBC-625E-4FC5-98E1-1D7B9F4C5B04" /* ProbeRecorder.swift */; };
-		1FDE63629035CFF894307688 /* GeometryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_6E63D589-5C38-49A7-9EA0-AF9E02B16485" /* GeometryView.swift */; };
-		344DBDD4D5DFF3BE5C91B0E6 /* EcholyraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_C7FAD65F-0868-4E6A-8828-A42A27FF8722" /* EcholyraApp.swift */; };
-		4523FCA553653B7C2F5F33D3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_480D7325-DA87-4577-B0A1-13EFEDD6F180" /* ContentView.swift */; };
-		45E4367F277ED02038B54D44 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = "TEMP_43E90F13-B7C9-4D75-BB04-E12DECEE447A" /* Assets.xcassets */; };
-		4658FB818A42D93010E6B848 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_5A1E25D2-A296-41F9-BD1C-39CF54B18253" /* SettingsView.swift */; };
-		65E9345EF61FBA590D0BEF16 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_FA3664AB-A726-4FF0-811A-712CE6C1A4F9" /* Recorder.swift */; };
-		68EB847F90AE05C90C18E165 /* SoundUnderstanding.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_EAFC7AD9-9EE5-4BAE-94A3-09AF8BA52D57" /* SoundUnderstanding.swift */; };
-		8B06FC83D65CBF37D7F354C4 /* ProbeSweep.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_811B5734-4F89-400C-9688-1E3E8A24526C" /* ProbeSweep.swift */; };
-		965FC1EBB9FE8E041248E68D /* RoomsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_324FE058-B6ED-4F70-92ED-266AE124A2CE" /* RoomsView.swift */; };
-		A47D38AEAF10CA70421545EF /* GeometryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_E2CBCF96-2CA4-4110-A688-EC29D8139159" /* GeometryModels.swift */; };
-		A6C2AB70B184C8967AFA73C0 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_D2806B5C-D7D3-405D-AE62-54B477AADE43" /* AppModel.swift */; };
-		DABE6726BA5EF2BB4EC21049 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_C42D8DA5-A7AB-4FDB-89F5-D640C45A7973" /* APIClient.swift */; };
-		E957E9ECE6F60FF6B487F711 /* DetectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_2968FD34-52D4-4389-BF23-671AF84678C5" /* DetectView.swift */; };
-		FC3E16D4B7AA0EDD5B4719DB /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_A92CF6E8-AB49-4DD8-B606-450A12F66A9C" /* Models.swift */; };
+		2D5BD07AF42A7224CB53CF95 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_E7AD666B-3F13-4FFF-BDCA-9E935AC60FAD" /* AppModel.swift */; };
+		3AEB661E69A6ED91533C0D7B /* DetectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_56152CD4-FEB7-4311-B5B8-19E71EA75723" /* DetectView.swift */; };
+		4931593BC74E31633F53E327 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_252B6180-6D86-4D53-8B4F-282206CA040A" /* Recorder.swift */; };
+		4CFC5EFDF79632A6B8C21C95 /* SoundUnderstanding.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_1D932F84-6EE3-46F1-89DD-612CC2662F74" /* SoundUnderstanding.swift */; };
+		55EC63524C035623D0899CEF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_B690D504-9718-44E3-B120-4663B70F670D" /* SettingsView.swift */; };
+		650B32B20624E8D99DF9E3EA /* ProbeSweep.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_6D3B7A69-591D-4BE0-B863-49A7D87F2738" /* ProbeSweep.swift */; };
+		69DEDDADF7812675B242E461 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_44E9D796-37FA-452E-B494-7A466FF119B1" /* Models.swift */; };
+		7279D9C3105CBEAED88943FC /* GeometryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_C40CC7B7-2464-4A63-887E-E072F05CF082" /* GeometryView.swift */; };
+		887FE34152D25DA1B71F8F9D /* EcholyraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_F946BCA2-F978-488B-845A-3FD4D239BECF" /* EcholyraApp.swift */; };
+		97001BE38ED61B779AC0C9AA /* GeometryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_6CC4887A-4AED-43BE-ADE5-DBDFA2DD4B1C" /* GeometryModels.swift */; };
+		BA5589839EE97F754962F5BA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_F7AA17E5-295A-41C4-99AD-B98560381589" /* ContentView.swift */; };
+		D9F42AABA309307222ACDD52 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_91295E73-48AD-4F0C-AADB-DA54B817B0ED" /* APIClient.swift */; };
+		E5067344C43BA5C086610E64 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = "TEMP_C094552D-9EEB-4C38-9C75-2D7698944D30" /* Assets.xcassets */; };
+		F3A47B688C4AB8D037588EDC /* ProbeRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_C36B8153-5984-44E9-8BAD-843ADCEF243B" /* ProbeRecorder.swift */; };
+		F528D567060B3F5D1150263D /* RoomsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_767DB24A-B3DC-4973-8217-B3269A65F16A" /* RoomsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A4C163281F8AEB68460A1F75 /* Echolyra.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Echolyra.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		"TEMP_2968FD34-52D4-4389-BF23-671AF84678C5" /* DetectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectView.swift; sourceTree = "<group>"; };
-		"TEMP_324FE058-B6ED-4F70-92ED-266AE124A2CE" /* RoomsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomsView.swift; sourceTree = "<group>"; };
-		"TEMP_43E90F13-B7C9-4D75-BB04-E12DECEE447A" /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		"TEMP_480D7325-DA87-4577-B0A1-13EFEDD6F180" /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		"TEMP_5A1E25D2-A296-41F9-BD1C-39CF54B18253" /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		"TEMP_6E63D589-5C38-49A7-9EA0-AF9E02B16485" /* GeometryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryView.swift; sourceTree = "<group>"; };
-		"TEMP_811B5734-4F89-400C-9688-1E3E8A24526C" /* ProbeSweep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSweep.swift; sourceTree = "<group>"; };
-		"TEMP_A92CF6E8-AB49-4DD8-B606-450A12F66A9C" /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		"TEMP_C21E9EBC-625E-4FC5-98E1-1D7B9F4C5B04" /* ProbeRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeRecorder.swift; sourceTree = "<group>"; };
-		"TEMP_C42D8DA5-A7AB-4FDB-89F5-D640C45A7973" /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
-		"TEMP_C7FAD65F-0868-4E6A-8828-A42A27FF8722" /* EcholyraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcholyraApp.swift; sourceTree = "<group>"; };
-		"TEMP_D2806B5C-D7D3-405D-AE62-54B477AADE43" /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
-		"TEMP_E2CBCF96-2CA4-4110-A688-EC29D8139159" /* GeometryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryModels.swift; sourceTree = "<group>"; };
-		"TEMP_EAFC7AD9-9EE5-4BAE-94A3-09AF8BA52D57" /* SoundUnderstanding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundUnderstanding.swift; sourceTree = "<group>"; };
-		"TEMP_FA3664AB-A726-4FF0-811A-712CE6C1A4F9" /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
+		"TEMP_1D932F84-6EE3-46F1-89DD-612CC2662F74" /* SoundUnderstanding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundUnderstanding.swift; sourceTree = "<group>"; };
+		"TEMP_252B6180-6D86-4D53-8B4F-282206CA040A" /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
+		"TEMP_44E9D796-37FA-452E-B494-7A466FF119B1" /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		"TEMP_56152CD4-FEB7-4311-B5B8-19E71EA75723" /* DetectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectView.swift; sourceTree = "<group>"; };
+		"TEMP_6CC4887A-4AED-43BE-ADE5-DBDFA2DD4B1C" /* GeometryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryModels.swift; sourceTree = "<group>"; };
+		"TEMP_6D3B7A69-591D-4BE0-B863-49A7D87F2738" /* ProbeSweep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSweep.swift; sourceTree = "<group>"; };
+		"TEMP_767DB24A-B3DC-4973-8217-B3269A65F16A" /* RoomsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomsView.swift; sourceTree = "<group>"; };
+		"TEMP_91295E73-48AD-4F0C-AADB-DA54B817B0ED" /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		"TEMP_B690D504-9718-44E3-B120-4663B70F670D" /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		"TEMP_C094552D-9EEB-4C38-9C75-2D7698944D30" /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		"TEMP_C36B8153-5984-44E9-8BAD-843ADCEF243B" /* ProbeRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeRecorder.swift; sourceTree = "<group>"; };
+		"TEMP_C40CC7B7-2464-4A63-887E-E072F05CF082" /* GeometryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryView.swift; sourceTree = "<group>"; };
+		"TEMP_E7AD666B-3F13-4FFF-BDCA-9E935AC60FAD" /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		"TEMP_F7AA17E5-295A-41C4-99AD-B98560381589" /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		"TEMP_F946BCA2-F978-488B-845A-3FD4D239BECF" /* EcholyraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcholyraApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -59,24 +59,24 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		"TEMP_55EF2565-B4C3-4B9C-A534-2427DBAB8DBC" /* . */ = {
+		"TEMP_F5B9AFE9-6BA6-4DAF-A669-7E4570F0EACF" /* . */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_C7FAD65F-0868-4E6A-8828-A42A27FF8722" /* EcholyraApp.swift */,
-				"TEMP_C21E9EBC-625E-4FC5-98E1-1D7B9F4C5B04" /* ProbeRecorder.swift */,
-				"TEMP_324FE058-B6ED-4F70-92ED-266AE124A2CE" /* RoomsView.swift */,
-				"TEMP_FA3664AB-A726-4FF0-811A-712CE6C1A4F9" /* Recorder.swift */,
-				"TEMP_5A1E25D2-A296-41F9-BD1C-39CF54B18253" /* SettingsView.swift */,
-				"TEMP_EAFC7AD9-9EE5-4BAE-94A3-09AF8BA52D57" /* SoundUnderstanding.swift */,
-				"TEMP_C42D8DA5-A7AB-4FDB-89F5-D640C45A7973" /* APIClient.swift */,
-				"TEMP_D2806B5C-D7D3-405D-AE62-54B477AADE43" /* AppModel.swift */,
-				"TEMP_43E90F13-B7C9-4D75-BB04-E12DECEE447A" /* Assets.xcassets */,
-				"TEMP_E2CBCF96-2CA4-4110-A688-EC29D8139159" /* GeometryModels.swift */,
-				"TEMP_6E63D589-5C38-49A7-9EA0-AF9E02B16485" /* GeometryView.swift */,
-				"TEMP_A92CF6E8-AB49-4DD8-B606-450A12F66A9C" /* Models.swift */,
-				"TEMP_811B5734-4F89-400C-9688-1E3E8A24526C" /* ProbeSweep.swift */,
-				"TEMP_480D7325-DA87-4577-B0A1-13EFEDD6F180" /* ContentView.swift */,
-				"TEMP_2968FD34-52D4-4389-BF23-671AF84678C5" /* DetectView.swift */,
+				"TEMP_F946BCA2-F978-488B-845A-3FD4D239BECF" /* EcholyraApp.swift */,
+				"TEMP_C36B8153-5984-44E9-8BAD-843ADCEF243B" /* ProbeRecorder.swift */,
+				"TEMP_767DB24A-B3DC-4973-8217-B3269A65F16A" /* RoomsView.swift */,
+				"TEMP_252B6180-6D86-4D53-8B4F-282206CA040A" /* Recorder.swift */,
+				"TEMP_B690D504-9718-44E3-B120-4663B70F670D" /* SettingsView.swift */,
+				"TEMP_1D932F84-6EE3-46F1-89DD-612CC2662F74" /* SoundUnderstanding.swift */,
+				"TEMP_91295E73-48AD-4F0C-AADB-DA54B817B0ED" /* APIClient.swift */,
+				"TEMP_E7AD666B-3F13-4FFF-BDCA-9E935AC60FAD" /* AppModel.swift */,
+				"TEMP_C094552D-9EEB-4C38-9C75-2D7698944D30" /* Assets.xcassets */,
+				"TEMP_6CC4887A-4AED-43BE-ADE5-DBDFA2DD4B1C" /* GeometryModels.swift */,
+				"TEMP_C40CC7B7-2464-4A63-887E-E072F05CF082" /* GeometryView.swift */,
+				"TEMP_44E9D796-37FA-452E-B494-7A466FF119B1" /* Models.swift */,
+				"TEMP_6D3B7A69-591D-4BE0-B863-49A7D87F2738" /* ProbeSweep.swift */,
+				"TEMP_F7AA17E5-295A-41C4-99AD-B98560381589" /* ContentView.swift */,
+				"TEMP_56152CD4-FEB7-4311-B5B8-19E71EA75723" /* DetectView.swift */,
 			);
 			name = .;
 			path = .;
@@ -142,7 +142,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				45E4367F277ED02038B54D44 /* Assets.xcassets in Resources */,
+				E5067344C43BA5C086610E64 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,20 +153,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DABE6726BA5EF2BB4EC21049 /* APIClient.swift in Sources */,
-				A6C2AB70B184C8967AFA73C0 /* AppModel.swift in Sources */,
-				4523FCA553653B7C2F5F33D3 /* ContentView.swift in Sources */,
-				E957E9ECE6F60FF6B487F711 /* DetectView.swift in Sources */,
-				344DBDD4D5DFF3BE5C91B0E6 /* EcholyraApp.swift in Sources */,
-				A47D38AEAF10CA70421545EF /* GeometryModels.swift in Sources */,
-				1FDE63629035CFF894307688 /* GeometryView.swift in Sources */,
-				FC3E16D4B7AA0EDD5B4719DB /* Models.swift in Sources */,
-				04558973731A70CA4C487BB8 /* ProbeRecorder.swift in Sources */,
-				8B06FC83D65CBF37D7F354C4 /* ProbeSweep.swift in Sources */,
-				65E9345EF61FBA590D0BEF16 /* Recorder.swift in Sources */,
-				965FC1EBB9FE8E041248E68D /* RoomsView.swift in Sources */,
-				4658FB818A42D93010E6B848 /* SettingsView.swift in Sources */,
-				68EB847F90AE05C90C18E165 /* SoundUnderstanding.swift in Sources */,
+				D9F42AABA309307222ACDD52 /* APIClient.swift in Sources */,
+				2D5BD07AF42A7224CB53CF95 /* AppModel.swift in Sources */,
+				BA5589839EE97F754962F5BA /* ContentView.swift in Sources */,
+				3AEB661E69A6ED91533C0D7B /* DetectView.swift in Sources */,
+				887FE34152D25DA1B71F8F9D /* EcholyraApp.swift in Sources */,
+				97001BE38ED61B779AC0C9AA /* GeometryModels.swift in Sources */,
+				7279D9C3105CBEAED88943FC /* GeometryView.swift in Sources */,
+				69DEDDADF7812675B242E461 /* Models.swift in Sources */,
+				F3A47B688C4AB8D037588EDC /* ProbeRecorder.swift in Sources */,
+				650B32B20624E8D99DF9E3EA /* ProbeSweep.swift in Sources */,
+				4931593BC74E31633F53E327 /* Recorder.swift in Sources */,
+				F528D567060B3F5D1150263D /* RoomsView.swift in Sources */,
+				55EC63524C035623D0899CEF /* SettingsView.swift in Sources */,
+				4CFC5EFDF79632A6B8C21C95 /* SoundUnderstanding.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -263,7 +263,10 @@ def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
     if relaxed and not clutter_guard_ok():
         diag['rejection_reason']='unexplained_early_echoes'
         relaxed=[]
-    relaxed_out=finalize(relaxed,"relaxed",.55,.78)
+    # A strong geometric fit (support/fit/unique) can still explain only half of the total
+    # early energy in a furnished room; do not throw that estimate away. Clutter is already
+    # guarded above, so the coverage floor is lower here.
+    relaxed_out=finalize(relaxed,"relaxed",.48,.65)
     if relaxed_out:
         diag['fit_tier']="relaxed"
         diag['distinct_supported_hypotheses']=len(relaxed_out)

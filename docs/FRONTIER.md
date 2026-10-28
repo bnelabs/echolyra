@@ -396,6 +396,18 @@ instructed not measured, 2D plane, no identity/size/height; ghosts possible with
 Honest dead-end fix from round 25 remains: single-position real rooms now return low-confidence
 layouts instead of an error.
 
+## Increment 27 — research-grounded real-room fix + measured walk path (round 27)
+
+Deep literature review (`docs/RESEARCH_GEOMETRY.md`) against dEchorate, RGI-Net, handheld
+acoustic SLAM, ZA-SLAM and device-directivity work. Immediate finding: the latest real room
+capture had support 90.5%, fit 0.016–0.093 ms and 18/21 matched predictions but was rejected by
+the 55% coverage floor; furnished rooms naturally explain less total energy. Clutter-guarded
+low-confidence acceptance now uses ≥48% single / 65% joint coverage, so that capture returns **3
+labelled layouts** instead of "couldn't map". Walk-scan poses now use **pedometer-measured step
+distance** where available and reject rotation-only scans (no baseline); backend assumptions
+updated. Roadmap: IMU trajectory/loop closure, dEchorate echo-detection benchmark, learned/robust
+inversion, directivity calibration, optional LiDAR ground truth.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

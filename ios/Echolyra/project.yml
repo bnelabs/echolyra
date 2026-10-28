@@ -42,6 +42,8 @@ targets:
         NSLocalNetworkUsageDescription: >-
           Echolyra sends recorded audio to your configured backend on the
           local network for acoustic analysis.
+        NSMotionUsageDescription: >-
+          Echolyra measures walking distance between scan positions to localize room reflections.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
     settings:

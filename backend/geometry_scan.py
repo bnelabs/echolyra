@@ -29,7 +29,7 @@ MAX_RANGE_M = 5.0
 MIN_POSE_SEPARATION_M = 0.15
 MAX_REFLECTORS = 6
 ASSUMPTIONS = [
-    "Phone moved along an approximate L-path with 0.6 m hand spacing (user instruction; not measured).",
+    "Walk positions are supplied by the app (step-sensor distance where available, otherwise instructed ~0.6 m); spacing accuracy is not verified by the backend.",
     "Reflectors are localized on a 2D horizontal plane; true height and identity are unknown.",
     "Echoes may come from furniture, walls, people or multipath; a reflector is not an object label.",
     "A moving reflector will usually have weak or inconsistent support across poses.",

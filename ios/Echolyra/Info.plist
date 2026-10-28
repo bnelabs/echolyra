@@ -29,6 +29,8 @@
 	<string>Echolyra sends recorded audio to your configured backend on the local network for acoustic analysis.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Echolyra listens for knocks and household sounds to learn each room's acoustic signature.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Echolyra measures walking distance between scan positions to localize room reflections.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

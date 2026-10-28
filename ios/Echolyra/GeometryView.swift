@@ -2,6 +2,7 @@ import SwiftUI
 import SceneKit
 import simd
 import Darwin
+import CoreMotion
 
 struct GeometryView: View {
     @EnvironmentObject private var model: AppModel
@@ -373,7 +374,7 @@ struct GeometryView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label("Walk scan · reflections from objects", systemImage: "figure.walk")
                 .font(.headline)
-            Text("Put the phone down and start. Move in an L, one sweep at each of four stops: start → step right ~0.6 m → step forward ~0.6 m → step right ~0.6 m. Keep the same height and facing. About 20 seconds.")
+            Text("Start at one spot, then walk an L with one sweep at each of four stops: start → step right → step forward → step right. The phone measures your step distance where available; keep the same height and facing. About 20 seconds. Turning the phone in place gives no baseline and is rejected.")
                 .font(.subheadline)
             Button { work = Task { await walkScan() } } label: {
                 Label("Start walk scan (4 sweeps)", systemImage: "waveform.path.ecg")
@@ -384,7 +385,7 @@ struct GeometryView: View {
             if !walkProgress.isEmpty {
                 HStack { ProgressView(); Text(walkProgress).font(.subheadline) }
             }
-            Text("The 0.6 m spacing is assumed, not measured. Reflections from furniture, walls and people are localized as candidates — not identified objects. Move slowly and avoid soft furnishings for clearer results.")
+            Text("Reflections from furniture, walls and people are localized as candidates — not identified objects. Move slowly and avoid soft furnishings for clearer results. Without step sensing, ~0.6 m spacing is assumed.")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
@@ -431,16 +432,33 @@ struct GeometryView: View {
         model.busy = true
         scan = nil
         defer { model.busy = false; walkProgress = "" }
-        let poses = [ScanPose(x: 0, y: 0, yaw: 0),
-                     ScanPose(x: 0.6, y: 0, yaw: 0),
-                     ScanPose(x: 0.6, y: 0.6, yaw: 0),
-                     ScanPose(x: 1.2, y: 0.6, yaw: 0)]
+        // Positions are measured with the step sensor when available (fallback: instructed 0.6 m).
+        let pedometer = CMPedometer()
+        let walkStart = Date()
+        var measuredDistance = 0.0
+        var poses = [ScanPose(x: 0, y: 0, yaw: 0)]
+        let directions: [(Double, Double)] = [(1, 0), (0, 1), (1, 0)]
+        let labels = ["start", "step right", "step forward", "step right"]
         do {
             let recorder = ProbeRecorder()
             var clips: [Data] = []
-            for (index, label) in ["start", "right 0.6 m", "forward 0.6 m", "right 0.6 m"].enumerated() {
+            for index in 0..<4 {
                 try Task.checkCancellation()
-                walkProgress = "Spot \(index + 1) of 4 · \(label) — hold still…"
+                if index > 0 {
+                    let total = await stepDistance(pedometer: pedometer, from: walkStart)
+                    let segment = total.map { max(0, $0 - measuredDistance) }
+                    if let segment, segment < 0.15 {
+                        throw NSError(domain: "Echolyra", code: 7, userInfo: [
+                            NSLocalizedDescriptionKey: "No walking detected between sweeps. Turning the phone in your hand gives no position baseline — take 1–2 steps between each sweep (right, forward, right)."])
+                    }
+                    let moved = min(max(segment ?? 0.6, 0.25), 2.5)
+                    measuredDistance += moved
+                    let direction = directions[index - 1]
+                    let previous = poses[poses.count - 1]
+                    poses.append(ScanPose(x: previous.x + direction.0 * moved,
+                                          y: previous.y + direction.1 * moved, yaw: 0))
+                }
+                walkProgress = "Spot \(index + 1) of 4 · \(labels[index]) — hold still…"
                 clips.append(try await recorder.measure())
             }
             try Task.checkCancellation()
@@ -452,6 +470,15 @@ struct GeometryView: View {
 #endif
         } catch is CancellationError {
         } catch { if !Task.isCancelled { model.errorText = error.localizedDescription } }
+    }
+
+    private func stepDistance(pedometer: CMPedometer, from start: Date) async -> Double? {
+        guard CMPedometer.isStepCountingAvailable() else { return nil }
+        return await withCheckedContinuation { continuation in
+            pedometer.queryPedometerData(from: start, to: Date()) { data, _ in
+                continuation.resume(returning: data?.distance?.doubleValue)
+            }
+        }
     }
 
     @MainActor private func measure() async {

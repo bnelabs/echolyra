@@ -97,6 +97,12 @@ Re-probing a learned room returns `stable / drift / changed` with a calibrated c
 (measured: 0.4% ΔT30 → stable 0.96; 11.8% → drift 0.71; 22–60% → changed 0.72–0.99) and a
 `transient_change` flag for door-open / movement-like fluctuations.
 
+## Research background
+
+The geometry feature is grounded in the acoustic room-inference literature (dEchorate annotated
+RIRs, RGI-Net, smartphone acoustic SLAM, ZA-SLAM) — what we use, what is missing and the honest
+roadmap are in [`docs/RESEARCH_GEOMETRY.md`](docs/RESEARCH_GEOMETRY.md).
+
 ## Verify the claims
 
 ```bash
