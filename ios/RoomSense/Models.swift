@@ -56,12 +56,21 @@ struct Situation: Codable {
     var _model: String?
 }
 
+struct Decision: Codable {
+    var decision: String?
+    var calibrated_confidence: Double?
+    var reason: String?
+    var alert_threshold: Double?
+    var snr_db: Double?
+}
+
 struct DetectResponse: Codable {
     var event: EventInfo
     var room: RoomMatch
     var situation: Situation
     var certainty: Double?
     var heard: [SoundLabel]?
+    var decision: Decision?
 }
 
 struct EnrollResponse: Codable {

@@ -9,8 +9,8 @@ prototype into a frontier acoustic-awareness system. Acceptance criteria:
    ISO-3382 EDT/T30 per octave — room identity becomes source-independent. **(backend done, iOS playback next)**
 3. **Change detection**: re-probing detects door/furniture/environmental change (and, later,
    presence anomalies). **(done in backend, verified on synthetic rooms)**
-4. Calibrated uncertainty (conformal / decision thresholds) so alerts are trustworthy. **(next)**
-5. Multi-node localization using old phones/Mac as extra sensors. **(stretch)**
+4. Calibrated uncertainty (conformal / decision thresholds) so alerts are trustworthy. **(done: ECE 0.039→0.016, operating point 0.25 @ 0.958 precision, zero wrong alerts; see CALIBRATION.md)**
+5. Multi-node localization using old phones/Mac as extra sensors. **(fusion backend + browser sensor node done; real two-node demo pending device)**
 6. Real-room evaluation numbers in docs, not just synthetic. **(blocked on device permissions)**
 7. Committed to the private repo with docs and demo script updated. **(continuous)**
 
@@ -42,7 +42,23 @@ happened to be tested.
 | door opened / less reverb | 38.9% | 0.55 | **yes** ✓ |
 | furniture added | 60.2% | 0.97 | **yes** ✓ |
 
-## Increment 2 — plan
+## Increment 2 — calibrated trust + multi-node (2026-10-28, done)
+
+**Calibration/decision layer** (`backend/calibration.py`, `POST /api/calibrate`): histogram
+reliability calibration + precision-targeted operating point + split-conformal threshold, and
+an alert/explain/silent policy. Measured: ECE **0.0394 → 0.0162**; operating point 0.25 at
+**0.958 precision**; zero wrong alerts across all SNR conditions; silent below 12 dB SNR.
+Each `/api/detect` response now includes `decision {decision, calibrated_confidence, reason}`.
+
+**Multi-node fusion** (`backend/fusion.py`, `POST/GET /api/fuse`): level + confidence +
+agreement fusion across nodes. Verified: 3 synthetic node reports → `glass_impact` in
+**Kitchen (0.79 posterior)**, confidence 0.66, agreement 0.67.
+**Browser sensor node** (`static/node.html`): any laptop becomes a second sensor — records
+3 s of audio in-browser, converts to WAV, posts to `/api/detect` with node id/room/level, and
+the Fusion button combines it with the phone's recent detections. This makes the multi-node
+story demo-able without a second iPhone.
+
+## Increment 3 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
    measurement), upload to `/api/probe/enroll`; show measured RT60 + "room learned"; add a

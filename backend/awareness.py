@@ -492,7 +492,12 @@ class Session:
                     "ranking": [{"room": names[0], "distance": 0.0, "p": 1.0}]}
         # Physical, noise-robust metric: early decay (room tail before noise dominates),
         # spectral brightness (wall low-pass), and cepstral cosine (coloration).
-        ev_dec = float(f.get("early_decay_db_s") or f.get("decay_db_s") or 30.0)
+        ev_dec = f.get("early_decay_db_s")
+        if ev_dec is None or not math.isfinite(float(ev_dec)) or float(ev_dec) <= 0:
+            ev_dec = f.get("decay_db_s")
+        if ev_dec is None or not math.isfinite(float(ev_dec)) or float(ev_dec) <= 0:
+            ev_dec = 30.0
+        ev_dec = float(ev_dec)
         ev_br = float(f["brightness_db"])
         ev_mf = np.array(f["mfcc"], dtype=float)
         d = []
@@ -504,7 +509,8 @@ class Session:
             r_mf = rv[:13]
             cos = float(np.dot(ev_mf, r_mf) /
                         (np.linalg.norm(ev_mf) * np.linalg.norm(r_mf) + 1e-9))
-            d.append(2.0 * abs(math.log((ev_dec + 1.0) / (r_dec + 1.0)))
+            log_ratio = abs(math.log(max(ev_dec + 1.0, 1e-3) / max(r_dec + 1.0, 1e-3)))
+            d.append(2.0 * log_ratio
                      + 0.5 * abs(ev_br - r_br) / 6.0
                      + 1.0 * (1.0 - cos))
         d = np.array(d)

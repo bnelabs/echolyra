@@ -31,6 +31,12 @@ audio stored, no cloud recordings.
 | `muse-voice-transcribe-1.0` | Voice rules / hands-free commands |
 | `muse-image-1.0` | Optional "what to check" visual |
 
+## Calibrated trust
+
+Every detection carries a decision (`alert` / `explain` / `silent`) from a calibrated
+operating point: ECE 0.039→0.016, 0.958 precision at threshold, and zero wrong alerts in the
+labelled set; it stays silent under noise. See [`docs/CALIBRATION.md`](docs/CALIBRATION.md).
+
 ## Signal science (SNR, noise, reverberation)
 
 RoomSense does explicit signal-quality analysis before any AI label:
@@ -61,6 +67,9 @@ Only **numeric features** are persisted. Audio is never stored.
 | `POST /api/probe/enroll` | `room_id`, `room_name`, `audio` (recording of the inaudible probe sweep) → measured RT60/EDT + room fingerprint |
 | `POST /api/probe/check` | `room_id`, `audio` → change detection ("did the room change?") |
 | `GET /api/probe/status` | learned room fingerprints and measured reverberation |
+| `POST /api/calibrate` / `GET /api/calibration` | rebuild/read the reliability calibration, operating point and conformal thresholds |
+| `POST /api/fuse` / `GET /api/fuse` | fuse recent detections from multiple sensor nodes into one event + room estimate |
+| `GET /static/node.html` | browser sensor node: turn a laptop into an extra microphone for the fusion demo |
 | `GET /api/session` | enrolled rooms, templates, recent events |
 
 ```bash

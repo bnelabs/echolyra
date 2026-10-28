@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RoomSense — sensor node</title>
+<style>
+ :root{--bg:#0d0f14;--card:#161a22;--line:#262c38;--fg:#e8ecf4;--dim:#94a0b5;--accent:#5ad1a5;--warn:#f2b45c}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif}
+ header{padding:20px 24px;border-bottom:1px solid var(--line)}
+ h1{font-size:18px;margin:0} h1 span{color:var(--accent)}
+ .sub{color:var(--dim);font-size:13px;margin-top:4px}
+ main{max-width:760px;margin:0 auto;padding:22px 24px 60px}
+ .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+ label{display:block;color:var(--dim);font-size:12px;margin:10px 0 4px}
+ input{width:100%;background:#0b0e13;border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:10px 12px;font-size:14px}
+ button{margin-top:14px;background:var(--accent);color:#06110c;border:0;border-radius:10px;padding:12px 18px;font-weight:650;font-size:14px;cursor:pointer}
+ button.secondary{background:transparent;color:var(--fg);border:1px solid var(--line)}
+ button:disabled{opacity:.5;cursor:default}
+ .big{font-size:28px;font-weight:700;margin:6px 0}
+ .dim{color:var(--dim);font-size:13px}
+ .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;background:#1f2a24;color:var(--accent);border:1px solid #29483a;margin-right:6px}
+ .pill.warn{background:#2a2318;color:var(--warn);border-color:#4a3a1f}
+ pre{white-space:pre-wrap;font-size:12px;color:var(--dim);background:#0b0e13;border:1px solid var(--line);border-radius:10px;padding:12px;max-height:260px;overflow:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>Room<span>Sense</span> — sensor node</h1>
+  <div class="sub">Turn this laptop into an extra acoustic sensor: record, detect, then fuse with the phone's detections.</div>
+</header>
+<main>
+  <section class="card">
+    <label>Node name</label><input id="nodeId" value="mac-node"/>
+    <label>Room this node is in</label><input id="room" value="Kitchen"/>
+    <label>Backend URL</label><input id="base" value=""/>
+    <button id="listen">Listen for 3 seconds</button>
+    <button id="fuse" class="secondary">Fuse recent node detections</button>
+    <div id="status" class="dim" style="margin-top:10px"></div>
+  </section>
+
+  <section class="card">
+    <div class="dim">Detection</div>
+    <div id="label" class="big">—</div>
+    <div id="meta" class="dim"></div>
+    <div id="situation" class="dim" style="margin-top:10px"></div>
+  </section>
+
+  <section class="card">
+    <div class="dim">Fusion across nodes</div>
+    <div id="fused" class="big">—</div>
+    <div id="fusedMeta" class="dim"></div>
+    <pre id="raw"></pre>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+$("base").value = location.origin;
+
+async function recordPCM(seconds = 3.2) {
+  const stream = await navigator.mediaDevices.getUserMedia({audio: {
+    channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false}});
+  const ctx = new AudioContext({sampleRate: 48000});
+  const src = ctx.createMediaStreamSource(stream);
+  const proc = ctx.createScriptProcessor(4096, 1, 1);
+  const chunks = [];
+  proc.onaudioprocess = e => { chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+  src.connect(proc); proc.connect(ctx.destination);
+  await new Promise(r => setTimeout(r, seconds * 1000));
+  proc.disconnect(); src.disconnect(); stream.getTracks().forEach(t => t.stop());
+  await ctx.close();
+  const n = chunks.reduce((a, c) => a + c.length, 0);
+  const x = new Float32Array(n); let o = 0;
+  for (const c of chunks) { x.set(c, o); o += c.length; }
+  let peak = 0, sum = 0;
+  for (const v of x) { peak = Math.max(peak, Math.abs(v)); sum += v * v; }
+  const level = 20 * Math.log10(Math.sqrt(sum / x.length) + 1e-9);
+  return {wav: encodeWav(x, ctx.sampleRate), level, peak};
+}
+
+function encodeWav(x, sr) {
+  const n = x.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVEfmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, "data"); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) {
+    const s = Math.max(-1, Math.min(1, x[i]));
+    v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return new Blob([buf], {type: "audio/wav"});
+}
+
+$("listen").onclick = async () => {
+  $("listen").disabled = true; $("status").textContent = "Recording…";
+  try {
+    const {wav, level, peak} = await recordPCM(3.2);
+    $("status").textContent = `Recorded ${(wav.size/1024).toFixed(0)} KB · level ${level.toFixed(1)} dBFS · peak ${(20*Math.log10(peak+1e-9)).toFixed(1)} dBFS`;
+    const fd = new FormData();
+    fd.append("audio", wav, "node.wav");
+    fd.append("node_id", $("nodeId").value);
+    fd.append("node_room", $("room").value);
+    fd.append("level_db", level.toFixed(1));
+    const r = await fetch($("base").value + "/api/detect", {method: "POST", body: fd});
+    const d = await r.json();
+    $("label").textContent = d.event?.label ?? "—";
+    $("meta").innerHTML = `<span class="pill">${d.event?.label ?? "?"} ${Math.round((d.event?.confidence??0)*100)}%</span>` +
+      `<span class="pill">room: ${d.room?.room_name ?? "?"} ${Math.round((d.room?.confidence??0)*100)}%</span>` +
+      `<span class="pill ${d.decision?.decision === 'silent' ? 'warn' : ''}">${d.decision?.decision ?? ""}</span>` +
+      `<span class="pill">SNR ${d.event?.snr_db ?? d.features?.snr_db ?? "?"} dB</span>`;
+    $("situation").textContent = d.situation?.headline ?? "";
+    $("raw").textContent = JSON.stringify({decision: d.decision, room: d.room}, null, 1).slice(0, 2000);
+  } catch (e) { $("status").textContent = "Error: " + e; }
+  $("listen").disabled = false;
+};
+
+$("fuse").onclick = async () => {
+  const r = await fetch($("base").value + "/api/fuse");
+  const d = await r.json();
+  $("fused").textContent = d.room_name ? `${d.event_label} — ${d.room_name}` : "no recent detections";
+  $("fusedMeta").textContent = `confidence ${d.confidence ?? 0} · nodes ${d.n_nodes ?? 0} · agreement ${d.agreement ?? 0}`;
+  $("raw").textContent = JSON.stringify(d, null, 1);
+};
+</script>
+</body>
+</html>

@@ -86,6 +86,14 @@ struct DetectView: View {
 struct ResultCard: View {
     let result: DetectResponse
 
+    private func decisionColor(_ decision: String?) -> Color {
+        switch (decision ?? "").lowercased() {
+        case "alert": return .green
+        case "explain": return .orange
+        default: return .gray
+        }
+    }
+
     private var uncertainMessage: String {
         switch result.room.reason {
         case "low_snr": return "Signal too close to the noise floor — room attribution withheld. Move nearer or wait for a quieter moment."
@@ -111,6 +119,22 @@ struct ResultCard: View {
                 Text("\((result.event.confidence * 100).formatted(.number.precision(.fractionLength(0))))%")
                     .font(.title3)
                     .foregroundStyle(.secondary)
+            }
+
+            if let decision = result.decision {
+                HStack(spacing: 8) {
+                    Text((decision.decision ?? "—").uppercased())
+                        .font(.caption.weight(.bold))
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .background(decisionColor(decision.decision).opacity(0.18), in: Capsule())
+                        .foregroundStyle(decisionColor(decision.decision))
+                    if let cal = decision.calibrated_confidence {
+                        Text("calibrated \(Int(cal * 100))%").font(.caption2).foregroundStyle(.secondary)
+                    }
+                    if let reason = decision.reason {
+                        Text(reason).font(.caption2).foregroundStyle(.tertiary)
+                    }
+                }
             }
 
             HStack(spacing: 12) {

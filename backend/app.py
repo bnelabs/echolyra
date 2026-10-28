@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import io
 import json
+import time
 import uuid
 import wave
 import os
@@ -28,6 +29,8 @@ from scipy.signal import resample_poly
 
 import acoustics as ac
 import awareness as aw
+import calibration
+import fusion
 import probe
 import meta_models as mm
 
@@ -41,6 +44,7 @@ app.mount("/static", StaticFiles(directory=str(ROOT / "static")), name="static")
 
 DEMO_CACHE: dict[str, dict] = {}
 SESSION = aw.Session()
+NODE_REPORTS: list[dict] = []
 
 
 # ------------------------------------------------------------------ helpers
@@ -198,7 +202,8 @@ async def teach(label: str = Form(...), audio: list[UploadFile] | None = File(No
 
 @app.post("/api/detect")
 async def detect(audio: UploadFile = File(...), node_room: str = Form(""),
-                 sound_labels: str = Form("[]")):
+                 sound_labels: str = Form("[]"), node_id: str = Form(""),
+                 level_db: float | None = Form(None)):
     raw = await audio.read()
     if os.environ.get("DEBUG_CAPTURE", "0") == "1":
         try:
@@ -219,6 +224,22 @@ async def detect(audio: UploadFile = File(...), node_room: str = Form(""),
     payload = {**rec, "node_room": node_room,
                "sensor_room": None, "heard": rec.get("heard", [])}
     payload["situation"] = mm.situation_report(payload)
+    payload["decision"] = calibration.decide(
+        float(rec["event"].get("confidence", 0.0)),
+        float(rec["room"].get("confidence", 0.0)),
+        float(rec["features"].get("snr_db", 30.0)))
+    NODE_REPORTS.append({
+        "node_id": node_id or node_room or "phone",
+        "room_name": rec["room"].get("room_name"),
+        "room_confidence": rec["room"].get("confidence", 0.0),
+        "event_label": rec["event"].get("label"),
+        "event_confidence": rec["event"].get("confidence", 0.0),
+        "level_db": float(level_db) if level_db is not None else float(rec["features"].get("peak_db", -60.0)),
+        "snr_db": float(rec["features"].get("snr_db", 0.0)),
+        "ts": time.time(),
+    })
+    del NODE_REPORTS[:-40]
+    payload["node_id"] = node_id or node_room or "phone"
     return payload
 
 
@@ -261,6 +282,32 @@ async def probe_check(room_id: str = Form(...), audio: UploadFile = File(...)):
 @app.get("/api/probe/status")
 def probe_status():
     return probe.status()
+
+
+# ------------------------------------------------------------------ calibration + fusion
+@app.get("/api/calibration")
+def calibration_status():
+    params = calibration.load_params()
+    return params or {"calibrated": False}
+
+
+@app.post("/api/calibrate")
+async def calibrate():
+    params = await asyncio.to_thread(calibration.run_calibration, 2)
+    return {"ok": True, "ece_before": params["ece_before"], "ece_after": params["ece_after"],
+            "n_samples": params["n_samples"], "conformal": params["conformal"],
+            "operating_point": params.get("operating_point"),
+            "decisions_by_snr": params["decisions_by_snr"]}
+
+
+@app.get("/api/fuse")
+def fuse_recent():
+    return fusion.fuse(NODE_REPORTS)
+
+
+@app.post("/api/fuse")
+async def fuse_reports(reports: list[dict]):
+    return fusion.fuse(reports)
 
 
 @app.get("/", response_class=HTMLResponse)
