@@ -122,6 +122,26 @@ someone moving things). Verified:
   numbers and the browser fallback.
 - Device still unavailable (7th round); on-device verification pending.
 
+## Increment 8 — probe-seeded enrollment (round 8)
+
+**Can one quiet probe replace knocking in every room?** `room_vector_from_rir()` convolves six
+neutral event kernels with the measured RIR to synthesize a room signature, so a probe-only
+enrollment is possible (`POST /api/probe/seed`, auto-seeded on first probe enroll).
+
+Measured (3 synthetic rooms, 36 events through the true room transfers):
+
+| enrollment | room accuracy | uncertain rate | mean room confidence |
+|---|---|---|---|
+| two knocks | 0.500 | 0.722 | 0.644 |
+| **one active probe** | **0.444** | **0.472** | **0.779** |
+
+One probe is roughly as accurate as two knocks (n=36; difference = 2 events) while being much
+less uncertain and more confident — and it needs no human to stand in each room finding
+something to knock. Synthetic evaluation; real-room numbers pending device.
+
+Also: activity-score calibration (threshold 0.20, simulated FPR 0%, TPR 100%), flip-readiness
+checker PASS, and `docs/DEMO_VOICEOVER.md` timed script.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

@@ -19,7 +19,7 @@ import wave
 from pathlib import Path
 
 import numpy as np
-from scipy.signal import butter, resample_poly, sosfiltfilt
+from scipy.signal import butter, resample_poly, sosfiltfilt, fftconvolve
 
 FEATURE_SR = 16000
 BANDS = np.array([125, 250, 500, 1000, 2000, 4000, 8000])
@@ -433,6 +433,77 @@ def _save_state(state: dict):
     STATE_PATH.write_text(json.dumps(state, indent=1))
 
 
+# ---------------------------------------------------------------- probe-seeded enrollment
+GENERIC_EVENT_KINDS = ("knock", "glass", "cry", "alarm", "speech", "water")
+
+
+def generic_kernel(kind: str, seed: int = 0, fs: int = FEATURE_SR) -> np.ndarray:
+    """A neutral, room-independent event waveform used to synthesize room templates."""
+    r = np.random.default_rng(seed)
+    n = int(2.0 * fs)
+    x = r.normal(0, 1e-4, n)
+    if kind == "knock":
+        k = np.zeros(int(0.28 * fs)); i = int(0.03 * fs)
+        k[i:i+40] += np.hanning(40) * 0.8
+        t = np.arange(int(0.2 * fs)) / fs
+        k[i:i+len(t)] += 0.35 * np.sin(2 * np.pi * 180 * t) * np.exp(-t / 0.02) * 0.8
+        x[int(0.4 * fs):int(0.4 * fs) + len(k)] += k
+    elif kind == "glass":
+        m = int(0.15 * fs); t = np.arange(m) / fs
+        b = r.normal(0, 1, m) * np.exp(-t / 0.02)
+        b = sosfiltfilt(butter(4, 3500, "high", fs=fs, output="sos"), b)
+        x[int(0.4 * fs):int(0.4 * fs) + m] += b * 0.7
+    elif kind == "cry":
+        m = int(1.4 * fs); t = np.arange(m) / fs
+        f = 420 + 90 * np.sin(2 * np.pi * 3.2 * t)
+        x[int(0.3 * fs):int(0.3 * fs) + m] += 0.5 * np.sin(2 * np.pi * np.cumsum(f) / fs)
+    elif kind == "alarm":
+        m = int(1.4 * fs); t = np.arange(m) / fs
+        x[int(0.3 * fs):int(0.3 * fs) + m] += 0.5 * np.sin(2 * np.pi * 1000 * t)
+    elif kind == "speech":
+        t = np.arange(n) / fs
+        env = 0.5 + 0.5 * np.sin(2 * np.pi * 4 * t)
+        x += 0.05 * sosfiltfilt(butter(4, [300, 3000], "bandpass", fs=fs, output="sos"),
+                                r.normal(0, 1, n)) * env
+    elif kind == "water":
+        x += 0.02 * sosfiltfilt(butter(4, [200, 4000], "bandpass", fs=fs, output="sos"),
+                                r.normal(0, 1, n))
+    return x
+
+
+def room_vector_from_rir(rir: np.ndarray, fs: int) -> dict:
+    """Synthesize room templates by convolving neutral event kernels with a measured RIR.
+
+    This is what makes a single active probe enough to enroll a room: the phone measures the
+    true impulse response once, and we can predict how any event would colour in that room.
+    """
+    from math import gcd
+    from scipy.signal import resample_poly
+    if fs != FEATURE_SR:
+        g = gcd(int(fs), FEATURE_SR)
+        rir = resample_poly(rir, FEATURE_SR // g, fs // g)
+    rir = np.asarray(rir, dtype=float)
+    peak = np.max(np.abs(rir))
+    if not np.isfinite(peak) or peak <= 0:
+        raise ValueError("unusable RIR")
+    rir = rir / peak
+    vecs, feats = [], []
+    for i, kind in enumerate(GENERIC_EVENT_KINDS):
+        y = fftconvolve(generic_kernel(kind, seed=i), rir)[: int(2.4 * FEATURE_SR)]
+        y = y + np.random.default_rng(100 + i).normal(0, 1e-3, len(y))
+        f = extract_features(y)
+        vecs.append(room_vector(f))
+        feats.append(f)
+    v = np.mean(np.stack(vecs), axis=0)
+    return {
+        "rvec": v.tolist(),
+        "decay_db_s": round(float(np.mean([f.get("decay_db_s") or 30 for f in feats])), 1),
+        "snr_db": 30.0,
+        "level_db": round(float(np.mean([f["peak_db"] for f in feats])), 1),
+        "n_events": len(vecs),
+    }
+
+
 class Session:
     def __init__(self):
         self.state = _load_state()
@@ -476,6 +547,19 @@ class Session:
         _save_state(self.state)
         return {"room_id": room_id, "probe_t30": room.get("probe_t30"),
                 "probe_rt60": room.get("probe_rt60")}
+
+    def enroll_from_probe(self, room_id: str, room_name: str,
+                          rir: np.ndarray, rir_fs: int) -> dict:
+        """Enroll a room from its measured impulse response alone (no knocks needed)."""
+        seeded = room_vector_from_rir(rir, rir_fs)
+        room = self.state["rooms"].get(room_id, {"id": room_id, "name": room_name, "n": 0})
+        room.update({"name": room_name, "rvec": seeded["rvec"],
+                     "decay_db_s": seeded["decay_db_s"],
+                     "snr_db": seeded["snr_db"], "level_db": seeded["level_db"],
+                     "probe_seeded": True})
+        self.state["rooms"][room_id] = room
+        _save_state(self.state)
+        return room
 
     def teach(self, label: str, clips: list[bytes]) -> dict:
         self.state["templates"].setdefault(label, [])

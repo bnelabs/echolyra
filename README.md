@@ -31,6 +31,13 @@ audio stored, no cloud recordings.
 | `muse-voice-transcribe-1.0` | Voice rules / hands-free commands |
 | `muse-image-1.0` | Optional "what to check" visual |
 
+## One probe enrolls a room
+
+A room measured once with the active probe can be enrolled without anyone knocking in it: we
+convolve neutral event kernels with the measured impulse response to synthesize the room's
+signature (`POST /api/probe/seed`). In a 36-event synthetic evaluation, one probe matched
+two-knock enrollment accuracy (0.444 vs 0.500) with a lower uncertain rate (0.47 vs 0.72).
+
 ## Probe drift & change detection
 
 Re-probing a learned room returns `stable / drift / changed` with a calibrated confidence

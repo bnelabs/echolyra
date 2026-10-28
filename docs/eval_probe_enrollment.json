@@ -1,0 +1,594 @@
+{
+ "summary": {
+  "probe": {
+   "room_accuracy": 0.444,
+   "uncertain_rate": 0.472,
+   "mean_confidence": 0.779,
+   "n": 36
+  },
+  "knock": {
+   "room_accuracy": 0.5,
+   "uncertain_rate": 0.722,
+   "mean_confidence": 0.644,
+   "n": 36
+  }
+ },
+ "rows": [
+  {
+   "session": "probe",
+   "event": "knock",
+   "true_room": "Living",
+   "predicted_room": "Kitchen",
+   "uncertain": false,
+   "confidence": 0.81
+  },
+  {
+   "session": "knock",
+   "event": "knock",
+   "true_room": "Living",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.85
+  },
+  {
+   "session": "probe",
+   "event": "knock",
+   "true_room": "Living",
+   "predicted_room": "Kitchen",
+   "uncertain": false,
+   "confidence": 0.81
+  },
+  {
+   "session": "knock",
+   "event": "knock",
+   "true_room": "Living",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.85
+  },
+  {
+   "session": "probe",
+   "event": "glass",
+   "true_room": "Living",
+   "predicted_room": "Kitchen",
+   "uncertain": false,
+   "confidence": 0.95
+  },
+  {
+   "session": "knock",
+   "event": "glass",
+   "true_room": "Living",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.76
+  },
+  {
+   "session": "probe",
+   "event": "glass",
+   "true_room": "Living",
+   "predicted_room": "Kitchen",
+   "uncertain": false,
+   "confidence": 0.97
+  },
+  {
+   "session": "knock",
+   "event": "glass",
+   "true_room": "Living",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.63
+  },
+  {
+   "session": "probe",
+   "event": "cry",
+   "true_room": "Living",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.65
+  },
+  {
+   "session": "knock",
+   "event": "cry",
+   "true_room": "Living",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.53
+  },
+  {
+   "session": "probe",
+   "event": "cry",
+   "true_room": "Living",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.65
+  },
+  {
+   "session": "knock",
+   "event": "cry",
+   "true_room": "Living",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.53
+  },
+  {
+   "session": "probe",
+   "event": "alarm",
+   "true_room": "Living",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.72
+  },
+  {
+   "session": "knock",
+   "event": "alarm",
+   "true_room": "Living",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.52
+  },
+  {
+   "session": "probe",
+   "event": "alarm",
+   "true_room": "Living",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.72
+  },
+  {
+   "session": "knock",
+   "event": "alarm",
+   "true_room": "Living",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.52
+  },
+  {
+   "session": "probe",
+   "event": "speech",
+   "true_room": "Living",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.85
+  },
+  {
+   "session": "knock",
+   "event": "speech",
+   "true_room": "Living",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.56
+  },
+  {
+   "session": "probe",
+   "event": "speech",
+   "true_room": "Living",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.85
+  },
+  {
+   "session": "knock",
+   "event": "speech",
+   "true_room": "Living",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.56
+  },
+  {
+   "session": "probe",
+   "event": "water",
+   "true_room": "Living",
+   "predicted_room": "Living",
+   "uncertain": true,
+   "confidence": 0.62
+  },
+  {
+   "session": "knock",
+   "event": "water",
+   "true_room": "Living",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.54
+  },
+  {
+   "session": "probe",
+   "event": "water",
+   "true_room": "Living",
+   "predicted_room": "Living",
+   "uncertain": true,
+   "confidence": 0.62
+  },
+  {
+   "session": "knock",
+   "event": "water",
+   "true_room": "Living",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.54
+  },
+  {
+   "session": "probe",
+   "event": "knock",
+   "true_room": "Kitchen",
+   "predicted_room": "Kitchen",
+   "uncertain": false,
+   "confidence": 0.99
+  },
+  {
+   "session": "knock",
+   "event": "knock",
+   "true_room": "Kitchen",
+   "predicted_room": "Kitchen",
+   "uncertain": false,
+   "confidence": 0.98
+  },
+  {
+   "session": "probe",
+   "event": "knock",
+   "true_room": "Kitchen",
+   "predicted_room": "Kitchen",
+   "uncertain": false,
+   "confidence": 0.99
+  },
+  {
+   "session": "knock",
+   "event": "knock",
+   "true_room": "Kitchen",
+   "predicted_room": "Kitchen",
+   "uncertain": false,
+   "confidence": 0.98
+  },
+  {
+   "session": "probe",
+   "event": "glass",
+   "true_room": "Kitchen",
+   "predicted_room": "Kitchen",
+   "uncertain": true,
+   "confidence": 0.97
+  },
+  {
+   "session": "knock",
+   "event": "glass",
+   "true_room": "Kitchen",
+   "predicted_room": "Kitchen",
+   "uncertain": true,
+   "confidence": 0.83
+  },
+  {
+   "session": "probe",
+   "event": "glass",
+   "true_room": "Kitchen",
+   "predicted_room": "Kitchen",
+   "uncertain": true,
+   "confidence": 0.97
+  },
+  {
+   "session": "knock",
+   "event": "glass",
+   "true_room": "Kitchen",
+   "predicted_room": "Kitchen",
+   "uncertain": true,
+   "confidence": 0.82
+  },
+  {
+   "session": "probe",
+   "event": "cry",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": false,
+   "confidence": 0.82
+  },
+  {
+   "session": "knock",
+   "event": "cry",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.53
+  },
+  {
+   "session": "probe",
+   "event": "cry",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": false,
+   "confidence": 0.82
+  },
+  {
+   "session": "knock",
+   "event": "cry",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.53
+  },
+  {
+   "session": "probe",
+   "event": "alarm",
+   "true_room": "Kitchen",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.71
+  },
+  {
+   "session": "knock",
+   "event": "alarm",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.53
+  },
+  {
+   "session": "probe",
+   "event": "alarm",
+   "true_room": "Kitchen",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.71
+  },
+  {
+   "session": "knock",
+   "event": "alarm",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.53
+  },
+  {
+   "session": "probe",
+   "event": "speech",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.84
+  },
+  {
+   "session": "knock",
+   "event": "speech",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.56
+  },
+  {
+   "session": "probe",
+   "event": "speech",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.84
+  },
+  {
+   "session": "knock",
+   "event": "speech",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.56
+  },
+  {
+   "session": "probe",
+   "event": "water",
+   "true_room": "Kitchen",
+   "predicted_room": "Kitchen",
+   "uncertain": true,
+   "confidence": 0.99
+  },
+  {
+   "session": "knock",
+   "event": "water",
+   "true_room": "Kitchen",
+   "predicted_room": "Kitchen",
+   "uncertain": true,
+   "confidence": 0.79
+  },
+  {
+   "session": "probe",
+   "event": "water",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.86
+  },
+  {
+   "session": "knock",
+   "event": "water",
+   "true_room": "Kitchen",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.55
+  },
+  {
+   "session": "probe",
+   "event": "knock",
+   "true_room": "Bedroom",
+   "predicted_room": "Living",
+   "uncertain": true,
+   "confidence": 0.48
+  },
+  {
+   "session": "knock",
+   "event": "knock",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": false,
+   "confidence": 0.85
+  },
+  {
+   "session": "probe",
+   "event": "knock",
+   "true_room": "Bedroom",
+   "predicted_room": "Living",
+   "uncertain": true,
+   "confidence": 0.48
+  },
+  {
+   "session": "knock",
+   "event": "knock",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": false,
+   "confidence": 0.85
+  },
+  {
+   "session": "probe",
+   "event": "glass",
+   "true_room": "Bedroom",
+   "predicted_room": "Living",
+   "uncertain": true,
+   "confidence": 0.53
+  },
+  {
+   "session": "knock",
+   "event": "glass",
+   "true_room": "Bedroom",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.8
+  },
+  {
+   "session": "probe",
+   "event": "glass",
+   "true_room": "Bedroom",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.64
+  },
+  {
+   "session": "knock",
+   "event": "glass",
+   "true_room": "Bedroom",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.7
+  },
+  {
+   "session": "probe",
+   "event": "cry",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": false,
+   "confidence": 0.85
+  },
+  {
+   "session": "knock",
+   "event": "cry",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.54
+  },
+  {
+   "session": "probe",
+   "event": "cry",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": false,
+   "confidence": 0.85
+  },
+  {
+   "session": "knock",
+   "event": "cry",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.54
+  },
+  {
+   "session": "probe",
+   "event": "alarm",
+   "true_room": "Bedroom",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.72
+  },
+  {
+   "session": "knock",
+   "event": "alarm",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.52
+  },
+  {
+   "session": "probe",
+   "event": "alarm",
+   "true_room": "Bedroom",
+   "predicted_room": "Living",
+   "uncertain": false,
+   "confidence": 0.72
+  },
+  {
+   "session": "knock",
+   "event": "alarm",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.52
+  },
+  {
+   "session": "probe",
+   "event": "speech",
+   "true_room": "Bedroom",
+   "predicted_room": "Living",
+   "uncertain": true,
+   "confidence": 0.53
+  },
+  {
+   "session": "knock",
+   "event": "speech",
+   "true_room": "Bedroom",
+   "predicted_room": "Living",
+   "uncertain": true,
+   "confidence": 0.63
+  },
+  {
+   "session": "probe",
+   "event": "speech",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.85
+  },
+  {
+   "session": "knock",
+   "event": "speech",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.56
+  },
+  {
+   "session": "probe",
+   "event": "water",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.86
+  },
+  {
+   "session": "knock",
+   "event": "water",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.55
+  },
+  {
+   "session": "probe",
+   "event": "water",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.82
+  },
+  {
+   "session": "knock",
+   "event": "water",
+   "true_room": "Bedroom",
+   "predicted_room": "Bedroom",
+   "uncertain": true,
+   "confidence": 0.55
+  }
+ ]
+}

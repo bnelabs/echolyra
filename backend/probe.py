@@ -24,6 +24,7 @@ FS = 48_000
 BANDS = np.array([250, 500, 1000, 2000, 4000, 8000])
 F1, F2, SWEEP_T = 250.0, 16_000.0, 3.0   # phone-speaker-friendly band
 STATE_PATH = Path(__file__).parent / "cache" / "probe_state.json"
+RIR_DIR = Path(__file__).parent / "cache" / "probe_rirs"
 
 
 # --------------------------------------------------------------------- signals
@@ -173,9 +174,22 @@ def enroll(room_id: str, room_name: str, recordings: list[np.ndarray]) -> dict:
         "n_probes": len(analyses),
         "enrolled_at": time.time(),
     }
+    # keep the measured impulse response so the room can be enrolled from the probe alone
+    rirs = [a["rir"] for a in analyses]
+    if rirs:
+        n = min(len(r) for r in rirs)
+        avg = np.mean(np.stack([r[:n] for r in rirs]), axis=0)
+        avg = avg / (np.max(np.abs(avg)) + 1e-12)
+        RIR_DIR.mkdir(parents=True, exist_ok=True)
+        np.save(RIR_DIR / f"{room_id}.npy", avg.astype(np.float32))
     state["rooms"][room_id] = room
     _save_state(state)
     return {"room": room, "analyses": [{k: v for k, v in a.items() if k != "rir"} for a in analyses]}
+
+
+def load_rir(room_id: str) -> np.ndarray | None:
+    path = RIR_DIR / f"{room_id}.npy"
+    return np.load(path) if path.exists() else None
 
 
 def check(room_id: str, recording: np.ndarray) -> dict:
