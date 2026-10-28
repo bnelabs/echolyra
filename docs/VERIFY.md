@@ -23,6 +23,7 @@ RoomSense claim verification
 [PASS] real-world event accuracy: 0.920 on 50 real recordings (expected 0.92)
 [PASS] external validation (unseen real clips): accuracy 0.9 on 60 unseen clips, ECE 0.1593→0.029, alert precision 0.893
 [PASS] documented numbers match measurements: PASS — every quoted number matches the cached measurements
+[PASS] doc links and image paths: PASS — all relative doc links and image paths resolve
 [PASS] repo flip-readiness: PASS — repo is flip-ready (warnings above are advisory)
 ==============================
 all runnable checks passed

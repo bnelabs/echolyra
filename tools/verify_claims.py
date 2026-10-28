@@ -159,6 +159,14 @@ def check_numbers():
           (out.stdout.strip().splitlines() or ["no output"])[-1])
 
 
+def check_links():
+    import subprocess
+    script = Path(__file__).resolve().parent / "check_links.py"
+    out = subprocess.run([sys.executable, str(script)], capture_output=True, text=True)
+    check("doc links and image paths", out.returncode == 0,
+          (out.stdout.strip().splitlines() or ["no output"])[-1])
+
+
 def check_hygiene():
     import subprocess
     script = Path(__file__).resolve().parent / "check_submission.py"
@@ -177,6 +185,7 @@ def main():
     check_real_world()
     check_external()
     check_numbers()
+    check_links()
     check_hygiene()
 
     print("\nRoomSense claim verification\n" + "=" * 30)
