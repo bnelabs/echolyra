@@ -115,11 +115,31 @@ def fit_operating_point(confs: list[float], corrects: list[int],
     return best
 
 
+def fit_operating_points_by_label(rows: list[dict], target_precision: float = 0.90,
+                                   min_n: int = 5) -> dict:
+    """Per-event-class precision thresholds, with the global operating point as fallback."""
+    by = {}
+    for r in rows:
+        if not r.get("event_claimed"):
+            continue
+        by.setdefault(r.get("label", "unknown"), []).append(r)
+    out = {}
+    for label, subset in by.items():
+        confs = [r["event_conf"] for r in subset]
+        corr = [r["event_correct"] for r in subset]
+        if len(subset) >= min_n:
+            out[label] = fit_operating_point(confs, corr, target_precision=target_precision,
+                                             min_n=min_n)
+    return out
+
+
 # --------------------------------------------------------------------- decision policy
-def decide(event_conf: float, room_conf: float, snr_db: float, params: dict | None = None) -> dict:
+def decide(event_conf: float, room_conf: float, snr_db: float, params: dict | None = None,
+           event_label: str = "") -> dict:
     params = params or load_params()
     cal = apply_binning(event_conf, params["binning"]) if params else event_conf
-    op = (params or {}).get("operating_point") or {}
+    by_label = (params or {}).get("operating_points_by_label") or {}
+    op = by_label.get(event_label) or (params or {}).get("operating_point") or {}
     conf_thr = float(op.get("threshold", 0.75))
     reasons = []
     if snr_db < 12.0:
@@ -237,6 +257,7 @@ def collect_labelled(n_trials: int = 2, snrs: list[float | None] = None) -> list
                         "event_conf": float(rec["event"].get("confidence", 0.0)),
                         "event_correct": int(label in expected),
                         "event_claimed": int(label not in (None, "unknown")),
+                        "event_label": label,
                         "room_conf": float(rec["room"].get("confidence", 0.0)),
                         "room_correct": int((not rec["room"].get("uncertain", True))
                                             and rec["room"].get("room_name") == room.capitalize()),
@@ -261,6 +282,10 @@ def run_calibration(n_trials: int = 2) -> dict:
     ece_claimed_before = expected_calibration_error(c_confs, c_correct)
     conformal = fit_conformal(c_confs, c_correct, alpha=ALPHA)
     operating = fit_operating_point(c_confs, c_correct, target_precision=0.90, min_n=10)
+    operating_by_label = fit_operating_points_by_label(
+        [{"event_conf": r["event_conf"], "event_correct": r["event_correct"],
+          "event_claimed": r.get("event_claimed"), "label": r.get("event_label", "unknown")}
+         for r in rows], target_precision=0.90, min_n=5)
 
     # decision-layer evaluation at each SNR (uses the calibrated operating point)
     decisions = {}
@@ -282,6 +307,7 @@ def run_calibration(n_trials: int = 2) -> dict:
                           "alert_precision": None if counts["alert"] == 0 else round(correct / counts["alert"], 2)}
     params = {"version": 1, "binning": binning, "conformal": conformal,
               "operating_point": operating,
+              "operating_points_by_label": operating_by_label,
               "ece_before": round(ece_before, 4), "ece_after": round(ece_after, 4),
               "ece_claimed_before": round(ece_claimed_before, 4),
               "claimed_rows": len(claimed), "rows": len(rows),

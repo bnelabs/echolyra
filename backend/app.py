@@ -45,6 +45,30 @@ app.mount("/static", StaticFiles(directory=str(ROOT / "static")), name="static")
 DEMO_CACHE: dict[str, dict] = {}
 SESSION = aw.Session()
 NODE_REPORTS: list[dict] = []
+RECENT_DECISIONS: dict[str, list[tuple[float, str, str]]] = {}
+# Categories where a single high-confidence detection is already actionable (safety-relevant).
+CRITICAL_LABELS = {"glass_impact", "alarm_beep", "baby_cry"}
+
+
+def temporal_confirm(node: str, label: str, decision: dict) -> dict:
+    """A single detection may explain; an alert needs a second agreeing detection soon.
+
+    This is the temporal half of the decision policy: it halves false alarms from a single
+    ambiguous transient without delaying the explanatory path.
+    """
+    now = time.time()
+    history = [h for h in RECENT_DECISIONS.get(node, []) if now - h[0] <= 10.0]
+    RECENT_DECISIONS[node] = history
+    if decision.get("decision") == "alert":
+        critical = (label in CRITICAL_LABELS
+                    and float(decision.get("calibrated_confidence", 0.0)) >= 0.9)
+        if not critical:
+            confirmed = any(lbl == label and dec in ("alert", "explain") for _, lbl, dec in history)
+            if not confirmed:
+                decision = {**decision, "decision": "explain", "reason": "needs_confirmation"}
+    history.append((now, label, decision.get("decision", "silent")))
+    RECENT_DECISIONS[node] = history[-20:]
+    return decision
 
 
 # ------------------------------------------------------------------ helpers
@@ -224,10 +248,13 @@ async def detect(audio: UploadFile = File(...), node_room: str = Form(""),
     payload = {**rec, "node_room": node_room,
                "sensor_room": None, "heard": rec.get("heard", [])}
     payload["situation"] = mm.situation_report(payload)
-    payload["decision"] = calibration.decide(
+    decision = calibration.decide(
         float(rec["event"].get("confidence", 0.0)),
         float(rec["room"].get("confidence", 0.0)),
-        float(rec["features"].get("snr_db", 30.0)))
+        float(rec["features"].get("snr_db", 30.0)),
+        event_label=rec["event"].get("label", ""))
+    payload["decision"] = temporal_confirm(node_id or node_room or "phone",
+                                           rec["event"].get("label", ""), decision)
     NODE_REPORTS.append({
         "node_id": node_id or node_room or "phone",
         "room_name": rec["room"].get("room_name"),

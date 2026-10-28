@@ -53,6 +53,19 @@ Measured decision behaviour on the labelled set (zero wrong alerts in every cond
 This is the desired safety profile: it alerts only when both the event *and* the room are
 trustworthy, explains when only the event is, and goes silent under noise.
 
+## 3.5 Temporal confirmation (two-tier)
+
+A single alert is easy to fake with an ambiguous transient, but a safety-critical event must not
+be delayed. Policy in `backend/app.py`:
+
+- critical + high confidence (`glass_impact`, `alarm_beep`, `baby_cry`, cal ≥ 0.9) → **alert immediately**
+- everything else → **explain** on the first detection, **alert** after a second agreeing
+  detection within 10 s (`needs_confirmation`)
+- low SNR / low confidence → **silent**
+
+Real-world check (ESC-50, see `EVAL_REAL.md`): immediate critical alerts precision **1.00**;
+deferred ambiguous detections precision **0.88** if confirmed.
+
 ## 4. Limitations / next
 
 - The calibration set is **synthetic**. Rebuild it on real device data as soon as the iPhone

@@ -31,6 +31,12 @@ audio stored, no cloud recordings.
 | `muse-voice-transcribe-1.0` | Voice rules / hands-free commands |
 | `muse-image-1.0` | Optional "what to check" visual |
 
+## Real-world accuracy
+
+On 50 real ESC-50 recordings the on-device pretrained model scores **92%** event accuracy
+(the earlier hand-written rules scored 16%), with immediate critical alerts at **1.00
+precision**. Details: [`docs/EVAL_REAL.md`](docs/EVAL_REAL.md).
+
 ## Calibrated trust
 
 Every detection carries a decision (`alert` / `explain` / `silent`) from a calibrated

@@ -11,7 +11,7 @@ prototype into a frontier acoustic-awareness system. Acceptance criteria:
    presence anomalies). **(done in backend, verified on synthetic rooms)**
 4. Calibrated uncertainty (conformal / decision thresholds) so alerts are trustworthy. **(done: ECE 0.039→0.016, operating point 0.25 @ 0.958 precision, zero wrong alerts; see CALIBRATION.md)**
 5. Multi-node localization using old phones/Mac as extra sensors. **(fusion backend + browser sensor node done; real two-node demo pending device)**
-6. Real-room evaluation numbers in docs, not just synthetic. **(blocked on device permissions)**
+6. Real-room evaluation numbers in docs, not just synthetic. **(partially done: real-world event evaluation in EVAL_REAL.md; real-room phone evaluation still blocked on device)**
 7. Committed to the private repo with docs and demo script updated. **(continuous)**
 
 ## Increment 1 — active acoustic probing (2026-10-28, done)
@@ -58,7 +58,16 @@ agreement fusion across nodes. Verified: 3 synthetic node reports → `glass_imp
 the Fusion button combines it with the phone's recent detections. This makes the multi-node
 story demo-able without a second iPhone.
 
-## Increment 3 — plan
+## Increment 3 — real-world validation + temporal policy (2026-10-28, done)
+
+- Real-world evaluation on 50 ESC-50 recordings: **92% event accuracy** with the on-device
+  model vs **16%** with the earlier rule classifier; rules are now fallback only.
+- Class-conditional operating points + two-tier temporal confirmation: immediate critical
+  alerts at **precision 1.00**, ambiguous events deferred to confirmation (0.88 if confirmed),
+  low-SNR recordings silent. See `EVAL_REAL.md` and `CALIBRATION.md`.
+- Apple label mapping expanded to 36 identifiers (alarms, water, liquid, smoke detector, sirens).
+
+## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
    measurement), upload to `/api/probe/enroll`; show measured RT60 + "room learned"; add a

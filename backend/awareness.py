@@ -317,15 +317,28 @@ def room_vector(f: dict) -> np.ndarray:
 # --------------------------------------------------------------------- Apple sound labels
 # Apple's SoundAnalysis classifier (303 classes) runs on-device; the app sends its top labels.
 APPLE_LABEL_MAP = {
+    # glass / breakage
     "glass_breaking": "glass_impact", "glass_clink": "glass_impact",
-    "knock": "knock", "door_slam": "impact_thud", "thump_thud": "impact_thud",
+    # knocks / doors / impacts
+    "knock": "knock", "door": "knock",
+    "thump_thud": "impact_thud", "door_slam": "impact_thud",
     "drawer_open_or_close": "impact_thud", "cupboard_open_or_close": "impact_thud",
+    # voices
     "baby_crying": "baby_cry", "crying_sobbing": "baby_cry",
-    "speech": "speech", "whispering": "speech", "conversation": "speech",
+    "speech": "speech", "conversation": "speech", "whispering": "speech",
+    # alarms / alerts
     "alarm_clock": "alarm_beep", "telephone_bell_ringing": "alarm_beep",
-    "reverse_beeps": "alarm_beep", "beep": "alarm_beep", "buzzer": "alarm_beep",
-    "water": "water", "water_tap_faucet": "water", "waterfall": "water",
-    "door": "knock", "door_bell": "alarm_beep",
+    "reverse_beeps": "alarm_beep", "beep": "alarm_beep",
+    "siren": "alarm_beep", "police_siren": "alarm_beep",
+    "ambulance_siren": "alarm_beep", "fire_engine_siren": "alarm_beep",
+    "civil_defense_siren": "alarm_beep", "smoke_detector": "alarm_beep",
+    "door_bell": "alarm_beep", "buzzer": "alarm_beep",
+    # water
+    "water": "water", "waterfall": "water", "water_tap_faucet": "water",
+    "liquid_dripping": "water", "liquid_pouring": "water",
+    "liquid_trickle_dribble": "water", "liquid_splashing": "water",
+    "liquid_sloshing": "water", "liquid_filling_container": "water",
+    "liquid_spraying": "water", "liquid_squishing": "water",
 }
 
 
@@ -539,7 +552,7 @@ class Session:
         f = extract_features(x)
         event = classify_event(f, self.state.get("templates"))
         heard_event = event_from_heard(heard or [])
-        if heard_event and (event["label"] == "unknown" or heard_event["confidence"] > event.get("confidence", 0.0)):
+        if heard_event:
             heard_event["snr_db"] = event.get("snr_db")
             heard_event["ranking"] = event.get("ranking", [])
             event = heard_event
