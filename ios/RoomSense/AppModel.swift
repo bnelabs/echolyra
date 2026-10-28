@@ -18,6 +18,27 @@ final class AppModel: ObservableObject {
     }
 
 #if DEBUG
+    /// Preload a sample detection card for screenshots (launch with `-sampleResult`).
+    func loadSampleResult() {
+        lastResult = DetectResponse(
+            event: EventInfo(label: "glass_impact", confidence: 0.96, snr_db: 34.2,
+                             reason: "on_device_classifier", ranking: nil),
+            room: RoomMatch(room_id: "kitchen", room_name: "Kitchen", confidence: 0.97,
+                            uncertain: false, reason: "match", snr_db: 34.2, ranking: nil),
+            situation: Situation(
+                urgency: "high",
+                headline: "Glass break in the Kitchen",
+                explanation: "A short, high-frequency impact was detected from the kitchen direction.",
+                suggested_action: "Check for broken glass in the kitchen before walking through.",
+                false_alarm_check: "A dropped mug or dish also sounds like this. Confirm before alarming anyone.",
+                _model: "muse-spark-1.3-contributor"),
+            certainty: 0.94,
+            heard: [SoundLabel(label: "glass_breaking", confidence: 0.91),
+                    SoundLabel(label: "glass_clink", confidence: 0.62)],
+            decision: Decision(decision: "alert", calibrated_confidence: 0.96,
+                               reason: "conformal_pass", alert_threshold: 0.23, snr_db: 34.2))
+    }
+
     /// Headless end-to-end check (launch with `-autotest`): record → enroll → detect → log.
     private func log(_ message: String) { print(message); fflush(stdout) }
 

@@ -20,6 +20,12 @@ struct ContentView: View {
         .task {
             await model.refresh()
 #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-sampleResult") {
+                model.loadSampleResult()
+                selectedTab = 1
+            } else if ProcessInfo.processInfo.arguments.contains("-tabListen") {
+                selectedTab = 1
+            }
             if ProcessInfo.processInfo.arguments.contains("-autotest") {
                 await model.runSelfTest()
                 selectedTab = 1

@@ -207,6 +207,14 @@ enrollment). Documentation corrected here and in README.
   real-world accuracy, repo hygiene). Output archived in `docs/VERIFY.md`, linked from README.
 - Device still unavailable (14th round).
 
+## Increment 15 — result-card screenshot + freeze (round 15)
+
+- Added `-sampleResult` debug launch mode so the Listen/result UI can be captured headlessly;
+  screenshot `docs/screenshots/listen_v2.png` shows the full card (Glass Impact 96%, **ALERT**
+  calibrated 96%, conformal_pass, SNR 34 dB, Kitchen 97%, on-device hearing chips, urgency,
+  explanation, suggested action, false-alarm check) — now in the README.
+- Device still unavailable (15th round); verification + submission checklists frozen.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

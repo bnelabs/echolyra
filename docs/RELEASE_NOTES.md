@@ -22,6 +22,9 @@ knows when it doesn't know.
 - **Sensor-node page:** `/static/node.html` — any laptop joins as a second microphone.
 - **iOS app:** `ios/RoomSense/` — `sprint/ios/install_device.sh` builds/installs; device run
   pending iPhone reconnection.
+- **Verification:** `tools/verify_claims.py` (all 8 checks pass, output in `docs/VERIFY.md`)
+  and `tools/check_submission.py` (flip-readiness PASS).
+- **On-device path:** `docs/DEVICE_VERIFICATION.md` (10-step checklist + expected outputs).
 - **Docs:** `HACKATHON.md` (runbook, demo script), `docs/SUBMISSION.md` (submission pack),
   `docs/DEMO_RUNSHEET.md`, `docs/DEMO_VOICEOVER.md`, `docs/FRONTIER.md`, `docs/CALIBRATION.md`,
   `docs/EVAL_REAL.md`.

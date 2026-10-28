@@ -14,7 +14,8 @@ audio stored, no cloud recordings.
 | Learn rooms | Detect + Muse Spark situation |
 |---|---|
 | ![Rooms](docs/screenshots/rooms.png)
-![Rooms with active probe](docs/screenshots/rooms_v2.png) | ![Listen](docs/screenshots/listen.png) |
+![Rooms with active probe](docs/screenshots/rooms_v2.png)
+![Detection result with calibrated alert](docs/screenshots/listen_v2.png) | ![Listen](docs/screenshots/listen.png) |
 
 ## The 3-act demo
 
