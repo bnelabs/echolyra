@@ -238,6 +238,65 @@ def solve_echoes(echoes: list[dict]) -> tuple[list[dict],dict]:
     return [row[1] for row in distinct],diag
 
 
+
+def _candidate_wall_delays(candidate: dict) -> np.ndarray:
+    """All first- and second-order arrival times predicted by one rectangular candidate."""
+    dims = candidate["dimensions_m"]
+    sensor = candidate["sensor_position_m"]
+    first = []
+    for axis in range(3):
+        d, p = float(dims[axis]), float(sensor[axis])
+        first.extend([2 * p / SOUND_SPEED * 1000.0, 2 * (d - p) / SOUND_SPEED * 1000.0])
+    first = np.asarray(first, dtype=float)
+    second = []
+    for i in range(3):
+        second.append(first[2 * i] + first[2 * i + 1])  # opposing face pair
+    for i in range(6):
+        for j in range(i + 1, 6):
+            second.append(math.hypot(first[i], first[j]))
+    return np.concatenate([first, np.asarray(second, dtype=float)])
+
+
+def object_candidates(echoes: list[dict], candidate: dict,
+                      tolerance_ms: float = 0.9) -> list[dict]:
+    """Strong early echoes not explained by the fitted shell -> distance-only scatterers.
+
+    A single monostatic capture cannot give a direction, so these are NOT mapped objects:
+    a scatterer is a surface/edge echo at an estimated distance. Every entry is labelled
+    distance-only and low/medium confidence; identity and position stay unresolved.
+    """
+    predicted = _candidate_wall_delays(candidate)
+    unexplained: list[dict] = []
+    for echo in echoes:
+        delay = float(echo.get("delay_ms", 0)); strength = float(echo.get("strength", 0))
+        if not (math.isfinite(delay) and math.isfinite(strength)) or strength < 0.18:
+            continue
+        if np.min(np.abs(predicted - delay)) > tolerance_ms:
+            unexplained.append({"delay_ms": delay, "strength": strength})
+    groups: list[list[dict]] = []
+    for item in sorted(unexplained, key=lambda e: e["delay_ms"]):
+        if groups and item["delay_ms"] - np.median([e["delay_ms"] for e in groups[-1]]) <= 2 * tolerance_ms:
+            groups[-1].append(item)
+        else:
+            groups.append([item])
+    objects = []
+    for group in groups:
+        delay = float(np.median([e["delay_ms"] for e in group]))
+        strength = float(np.median([e["strength"] for e in group]))
+        if delay <= 0:
+            continue
+        objects.append({
+            "id": f"object-{len(objects) + 1}",
+            "distance_m": round(delay / 1000.0 * SOUND_SPEED / 2.0, 2),
+            "delay_ms": round(delay, 3),
+            "strength": round(strength, 3),
+            "confidence": "medium" if strength >= 0.4 else "low",
+            "note": "Reflective-surface echo at this distance. Direction, identity, size and shape are not resolved.",
+            "support": len(group),
+        })
+    return sorted(objects, key=lambda o: -o["strength"])[:8]
+
+
 def reconstruct(recordings: list[np.ndarray], fs: int = probe.FS) -> dict:
     """Return supported room candidates or an explicit refusal; no state is written."""
     if not 1<=len(recordings)<=3:
@@ -256,6 +315,9 @@ def reconstruct(recordings: list[np.ndarray], fs: int = probe.FS) -> dict:
     out['diagnostics']['repeatable_echoes']=len(echoes)
     candidates,diag=solve_echoes(echoes)
     out['diagnostics'].update(diag)
+    for cand in candidates:
+        cand['objects']=object_candidates(echoes, cand)
+    out['objects']=candidates[0]['objects'] if candidates else []
     out['candidates']=candidates
     if not candidates:
         out['message']='Couldn’t map this room yet. Keep the phone still, away from nearby objects, and try another recording.'

@@ -49,8 +49,9 @@ practice, so the "ears" are Apple's on-device 303-class classifier and Meta hand
 
 ## Experimental addition: sound-only 3D room
 
-A **3D Room** tab estimates a rectangular room shell from repeated probe echoes, with no camera
-or LiDAR. Synthetic demonstration recovers 5.70 × 4.30 × 2.90 m from 21 echoes; real-room
+A **3D Room** tab estimates a rectangular room shell from repeated probe echoes, flags strong
+unexplained echoes as distance-only object candidates, and offers a clearly-labelled
+illustrative staging layer (Meta-composed numerics or procedural), with no camera or LiDAR. Synthetic demonstration recovers 5.70 × 4.30 × 2.90 m from 21 echoes; real-room
 recordings currently return an honest "couldn't map this room yet" rather than invented
 dimensions. See `docs/ACOUSTIC_RECONSTRUCTION.md` for assumptions and limits.
 

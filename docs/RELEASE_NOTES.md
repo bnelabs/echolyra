@@ -50,7 +50,18 @@ probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
 
-## Experimental: sound-only 3D room
+## Experimental: sound-only 3D room (rich presentation)
+
+Richer 3D scene: measured shell + **distance-only acoustic object candidates** (cyan rings) +
+clearly-labelled **illustrative staging** (Meta-composed numeric spec or procedural fallback)
+with stylized furniture meshes, measured/illustrative badges and banner. Staged objects are not
+measurements; a single-position recording cannot resolve object direction/identity. Backend does
+noise-to-signal filtering (matched filter, ≥24 dB probe match, cross-capture repeatability,
+2–8 kHz envelope, bounded upserts); optional staging sends numeric diagnostics only and cannot
+change the acoustic fit. Verified with 46 tests, live staging fallback, and simulator/device
+builds.
+
+## Experimental: sound-only 3D room (baseline)
 
 New **3D Room** tab estimates a rectangular shell from repeated probe echoes — no camera,
 LiDAR, supplied dimensions, or model-generated geometry. Backend `/api/geometry/*` routes never

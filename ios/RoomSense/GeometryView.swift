@@ -10,7 +10,9 @@ struct GeometryView: View {
     @State private var sceneZoom = 1.0
     @State private var progress = ""
     @State private var review: GeometryReview?
+    @State private var staging: GeometryStaging?
     @State private var reviewConsent = false
+    @State private var stagingConsent = false
     @State private var work: Task<Void, Never>?
 
     private var candidate: GeometryCandidate? {
@@ -35,6 +37,15 @@ struct GeometryView: View {
                         if let candidate, candidate.hasValidScene {
                             sceneCard(candidate, result: result)
                         }
+                        if result.status != "insufficient_evidence" {
+                            acousticObjectsCard(result)
+                            stagingCard
+                            Button { stagingConsent = true } label: {
+                                Label("Generate illustrative scene", systemImage: "wand.and.stars")
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(model.busy || result.candidates.isEmpty)
+                        }
                         captureActions
                         Button { reviewConsent = true } label: {
                             Label("Ask Meta to review", systemImage: "sparkles")
@@ -55,6 +66,9 @@ struct GeometryView: View {
                 if ProcessInfo.processInfo.arguments.contains("-geometryDemo"), result == nil {
                     await loadDemo()
                 }
+                if ProcessInfo.processInfo.arguments.contains("-geometryStage"), staging == nil {
+                    await askStage()
+                }
 #endif
             }
             .onDisappear { work?.cancel() }
@@ -67,6 +81,15 @@ struct GeometryView: View {
             } message: {
                 Text("This sends the estimated layout, echo timings and measurement details to Meta. No recording is sent to Meta. If your backend uses Contributor mode, Meta may use this content for training. The review cannot verify the room’s true shape.")
             }
+            .confirmationDialog("Generate an illustrative scene from numeric estimates?", isPresented: $stagingConsent,
+                                titleVisibility: .visible) {
+                Button("Send room estimates to Meta") {
+                    work = Task { await askStage() }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Sends the estimated dimensions and distance-only echo candidates to Meta to compose a styled visualisation. No audio and no room name are sent. If the backend uses Contributor mode, Meta may use this content for training. These objects are an illustration and are not measured furniture.")
+            }
         }
     }
 
@@ -75,7 +98,7 @@ struct GeometryView: View {
             Label("Experimental · sound only", systemImage: "waveform")
                 .font(.subheadline.weight(.semibold)).foregroundStyle(.orange)
             Text("Hear the room’s shape").font(.title2.weight(.bold))
-            Text("Echo timings can suggest a rectangular room shell. This is an estimate. Furniture and doors aren’t mapped, and the room’s orientation is unknown.")
+            Text("Echo timings can suggest a rectangular shell. Strong echoes the shell can’t explain appear as distance-only object candidates. Styled furniture is an illustrative composition, not measured, and the room’s orientation is unknown.")
                 .font(.subheadline).foregroundStyle(.secondary)
         }
     }
@@ -100,7 +123,7 @@ struct GeometryView: View {
             }
             .buttonStyle(.bordered)
             .disabled(model.busy)
-            Text("Recordings are sent to your configured backend for reconstruction. This feature makes no cloud call unless you choose Ask Meta.")
+            Text("Recordings go to your configured backend for noise filtering and reconstruction — the heavy computation runs there, not on the phone. No cloud call happens unless you choose Ask Meta or Generate illustrative scene.")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
@@ -139,13 +162,27 @@ struct GeometryView: View {
                 Text("More than one layout fits. Try another recording to narrow it down.")
                     .font(.caption).foregroundStyle(.orange)
             }
-            AcousticRoomScene(candidate: candidate, angle: sceneAngle, zoom: sceneZoom)
-                .frame(height: 360)
+            HStack(spacing: 8) {
+                Label("Measured shell", systemImage: "ruler")
+                    .font(.caption2.weight(.semibold))
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .background(Color.cyan.opacity(0.14), in: Capsule())
+                if staging?.isIllustrative == true {
+                    Label("Illustrative staging · not measured", systemImage: "paintpalette")
+                        .font(.caption2.weight(.semibold))
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Color.orange.opacity(0.16), in: Capsule())
+                }
+                Spacer(minLength: 0)
+            }
+            AcousticRoomScene(candidate: candidate, objects: sceneObjects(for: result),
+                              staging: staging, angle: sceneAngle, zoom: sceneZoom)
+                .frame(height: 420)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .accessibilityLabel("Estimated rectangular room, axes \(dimensionDescription(candidate)) metres")
                 .accessibilityHint("Use the controls below to rotate and zoom the room.")
             cameraControls
-            Text("Rotate and zoom with the controls · marker = estimated phone position")
+            Text("Marker = estimated phone position · cyan rings = distance-only echo candidates · styled objects = illustrative only")
                 .font(.caption).foregroundStyle(.secondary)
             HStack {
                 ForEach(0..<3) { axis in
@@ -156,7 +193,7 @@ struct GeometryView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            Text("Cutaway orientation and finishes are illustrative. The measurements do not identify materials, furniture, floor or ceiling.")
+            Text("Cutaway orientation and finishes are illustrative. Styled objects are a generated illustration, not measured furniture. The acoustic shell itself is the only measured geometry.")
                 .font(.caption).foregroundStyle(.secondary)
             Text(String(format: "Echo fit error %.3f ms · %d/%d predicted echoes matched", candidate.fit_error_ms,
                         candidate.matched_echoes, candidate.total_predicted_echoes))
@@ -165,6 +202,65 @@ struct GeometryView: View {
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func sceneObjects(for result: GeometryResult) -> [GeometryObject] {
+#if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-geometryStageSample") {
+            return [GeometryObject(id: "object-1", distance_m: 1.3, delay_ms: 7.6, strength: 0.52,
+                                   confidence: "medium",
+                                   note: "Reflective-surface echo at this distance.", support: 2),
+                    GeometryObject(id: "object-2", distance_m: 2.6, delay_ms: 15.2, strength: 0.31,
+                                   confidence: "low",
+                                   note: "Reflective-surface echo at this distance.", support: 1)]
+        }
+#endif
+        return result.objects ?? []
+    }
+
+    private func acousticObjectsCard(_ result: GeometryResult) -> some View {
+        let objects = result.objects ?? []
+        return Group {
+            if !objects.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Acoustic object candidates · distance only", systemImage: "dot.radiowaves.left.and.right")
+                        .font(.headline)
+                    ForEach(objects.prefix(5)) { object in
+                        HStack {
+                            Text(object.id.uppercased()).font(.caption.monospaced())
+                            Spacer()
+                            Text(String(format: "≈ %.1f m", object.distance_m)).font(.subheadline.weight(.semibold))
+                            Text("\(object.confidence) · strength \(Int(object.strength * 100))%")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    Text("Unexplained reflective echoes at these distances. A single-position recording cannot tell direction, identity, size or shape — these are not mapped objects.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+            }
+        }
+    }
+
+    private var stagingCard: some View {
+        Group {
+            if let staging {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label(staging.isIllustrative ? "Illustrative scene" : "Illustrative scene unavailable",
+                          systemImage: "paintpalette")
+                        .font(.headline)
+                    if staging.isIllustrative {
+                        Text("Style: \(staging.style) · \(staging.objects.count) staged objects").font(.subheadline)
+                    }
+                    Text(staging.note).font(.caption).foregroundStyle(.secondary)
+                    if let name = staging.model {
+                        Text("Generated with \(name)" + (staging.training_use ? " · Contributor mode (may be used for training)" : ""))
+                            .font(.caption2).foregroundStyle(staging.training_use ? .orange : .secondary)
+                    }
+                }
+                .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+            }
+        }
     }
 
     private var cameraControls: some View {
@@ -243,7 +339,7 @@ struct GeometryView: View {
     @MainActor private func measure() async {
         guard !model.busy else { return }
         model.busy = true
-        result = nil; review = nil
+        result = nil; review = nil; staging = nil
         defer { model.busy = false; progress = "" }
         do {
             let recorder = ProbeRecorder()
@@ -260,6 +356,9 @@ struct GeometryView: View {
             result = received
             selectedCandidate = received.candidates.first?.id ?? ""
             resetCamera()
+            if ProcessInfo.processInfo.arguments.contains("-geometryStage") {
+                await askStage()
+            }
         } catch is CancellationError {
             // Navigating away cancels capture; ProbeRecorder releases audio resources.
         } catch { if !Task.isCancelled { model.errorText = error.localizedDescription } }
@@ -268,7 +367,7 @@ struct GeometryView: View {
     @MainActor private func loadDemo() async {
         guard !model.busy else { return }
         model.busy = true
-        result = nil; review = nil
+        result = nil; review = nil; staging = nil
         progress = "Reconstructing simulated probe recordings…"
         defer { model.busy = false; progress = "" }
         do {
@@ -277,7 +376,40 @@ struct GeometryView: View {
             result = received
             selectedCandidate = received.candidates.first?.id ?? ""
             resetCamera()
+            if ProcessInfo.processInfo.arguments.contains("-geometryStageSample") {
+                staging = sampleStaging()
+            }
         } catch is CancellationError {} catch { if !Task.isCancelled { model.errorText = error.localizedDescription } }
+    }
+
+#if DEBUG
+    private func sampleStaging() -> GeometryStaging {
+        GeometryStaging(available: true, source: "procedural", model: nil, training_use: false,
+                        style: "Warm minimal (sample)", palette: ["#d8c3a5", "#8d7b68"],
+                        objects: [
+                            StagingObject(kind: "rug", x: 2.85, z: 2.15, w: 2.4, d: 1.3, h: 0.05, color: "#d8c3a5"),
+                            StagingObject(kind: "sofa", x: 1.82, z: 0.86, w: 1.9, d: 0.8, h: 0.72, color: "#6b705c"),
+                            StagingObject(kind: "table", x: 2.9, z: 2.2, w: 1.1, d: 0.7, h: 0.42, color: "#8d7b68"),
+                            StagingObject(kind: "lamp", x: 4.9, z: 3.6, w: 0.4, d: 0.4, h: 1.5, color: "#a4907c"),
+                            StagingObject(kind: "plant", x: 0.7, z: 3.5, w: 0.5, d: 0.5, h: 1.0, color: "#c8b6a6"),
+                            StagingObject(kind: "shelf", x: 4.6, z: 0.7, w: 1.2, d: 0.35, h: 1.4, color: "#b7b7a4"),
+                        ],
+                        note: "Sample illustrative staging for screenshot; not measured.")
+    }
+#endif
+
+    @MainActor private func askStage() async {
+        guard let result, !model.busy else { return }
+        model.busy = true
+        progress = "Composing an illustrative scene from the estimates…"
+        defer { model.busy = false; progress = "" }
+        do {
+            staging = try await model.client.stageGeometry(result)
+#if DEBUG
+            print("GEOMSTAGE received source=\(staging?.source ?? "nil") objects=\(staging?.objects.count ?? -1)")
+#endif
+        }
+        catch is CancellationError {} catch { if !Task.isCancelled { model.errorText = error.localizedDescription } }
     }
 
     @MainActor private func askMeta() async {
@@ -292,6 +424,8 @@ struct GeometryView: View {
 
 private struct AcousticRoomScene: UIViewRepresentable {
     let candidate: GeometryCandidate
+    let objects: [GeometryObject]
+    let staging: GeometryStaging?
     let angle: Double
     let zoom: Double
 
@@ -317,7 +451,10 @@ private struct AcousticRoomScene: UIViewRepresentable {
     }
 
     func updateUIView(_ view: SCNView, context: Context) {
-        let key = candidate.id + candidate.dimensions_m.description + candidate.sensor_position_m.description
+        let key = candidate.id + candidate.dimensions_m.description
+            + candidate.sensor_position_m.description
+            + (objects.map { $0.id + $0.distance_m.description }).joined()
+            + (staging.map { "stage-" + $0.source + "-" + $0.objects.map(\.kind).joined() } ?? "")
         guard candidate.hasValidScene else { return }
         let coordinator = context.coordinator
         if coordinator.key != key {
@@ -427,6 +564,14 @@ private struct AcousticRoomScene: UIViewRepresentable {
         scene.lightingEnvironment.contents = studioEnvironment()
         scene.lightingEnvironment.intensity = 0.6
 
+        addAcousticObjectRings(to: room, sensor: sensor.position, objects: objects,
+                               length: length, depth: depth, extent: extent)
+        if let staging, !staging.objects.isEmpty {
+            addStaging(to: room, staging: staging, length: length, depth: depth, extent: extent)
+#if DEBUG
+            print("GEOMSTAGE scene staged objects=\(staging.objects.count)")
+#endif
+        }
         addDimensions(to: scene.rootNode, length: length, depth: depth, height: height, extent: extent)
         let camera = SCNNode()
         camera.camera = SCNCamera()
@@ -449,6 +594,174 @@ private struct AcousticRoomScene: UIViewRepresentable {
         coordinator.camera = camera
         coordinator.angle = nil
         coordinator.zoom = nil
+    }
+
+
+    private func hexColor(_ hex: String, fallback: UIColor) -> UIColor {
+        var value = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        if value.hasPrefix("#") { value.removeFirst() }
+        guard value.count == 6, let number = UInt64(value, radix: 16) else { return fallback }
+        return UIColor(red: CGFloat((number >> 16) & 0xff) / 255,
+                       green: CGFloat((number >> 8) & 0xff) / 255,
+                       blue: CGFloat(number & 0xff) / 255, alpha: 1)
+    }
+
+    private func addAcousticObjectRings(to parent: SCNNode, sensor: SCNVector3,
+                                        objects: [GeometryObject], length: Double,
+                                        depth: Double, extent: Double) {
+        guard !objects.isEmpty else { return }
+        let cyan = UIColor(red: 0.36, green: 0.83, blue: 0.92, alpha: 1)
+        let maxRadius = max(length, depth) * 1.25
+        for object in objects.prefix(5) {
+            let radius = min(max(object.distance_m, 0.2), maxRadius)
+            let ring = SCNTorus(ringRadius: CGFloat(radius), pipeRadius: CGFloat(extent * 0.0022))
+            let material = matte(cyan.withAlphaComponent(0.72), roughness: 0.35)
+            material.emission.contents = cyan.withAlphaComponent(0.55)
+            material.emission.intensity = 0.8
+            ring.materials = [material]
+            let node = SCNNode(geometry: ring)
+            node.position = SCNVector3(sensor.x, 0.012, sensor.z)
+            node.eulerAngles.x = -.pi / 2
+            parent.addChildNode(node)
+            if let label = textNode(String(format: "≈ %.1f m", object.distance_m),
+                                    size: CGFloat(extent * 0.030), color: cyan) {
+                label.position = SCNVector3(sensor.x + Float(radius), 0.22, sensor.z)
+                parent.addChildNode(label)
+            }
+        }
+    }
+
+    private func addStaging(to parent: SCNNode, staging: GeometryStaging,
+                            length: Double, depth: Double, extent: Double) {
+        for object in staging.objects.prefix(8) {
+            let node = stagingNode(for: object, length: length, depth: depth, extent: extent)
+            node.position = SCNVector3(Float(object.x - length / 2), Float(object.h / 2),
+                                       Float(object.z - depth / 2))
+            parent.addChildNode(node)
+        }
+        // A billboard keeps the illustration label legible from any orbit angle.
+        let orange = UIColor(red: 0.95, green: 0.64, blue: 0.28, alpha: 1)
+        if let banner = textNode("ILLUSTRATIVE · NOT MEASURED",
+                                 size: CGFloat(extent * 0.026), color: orange) {
+            banner.position = SCNVector3(0, Float(extent * 0.46), 0)
+            parent.addChildNode(banner)
+        }
+    }
+
+    private func stagingNode(for object: StagingObject, length: Double, depth: Double,
+                             extent: Double) -> SCNNode {
+        let node = SCNNode()
+        let color = hexColor(object.color, fallback: UIColor(red: 0.72, green: 0.66, blue: 0.58, alpha: 1))
+        let material = matte(color, roughness: 0.72)
+        func box(_ w: Double, _ h: Double, _ d: Double, x: Double = 0, y: Double = 0, z: Double = 0,
+                 material override: SCNMaterial? = nil) -> SCNNode {
+            let geometry = SCNBox(width: CGFloat(w), height: CGFloat(h), length: CGFloat(d),
+                                  chamferRadius: CGFloat(min(w, min(h, d)) * 0.06))
+            geometry.materials = [override ?? material]
+            let child = SCNNode(geometry: geometry)
+            child.position = SCNVector3(Float(x), Float(y), Float(z))
+            return child
+        }
+        switch object.kind {
+        case "rug":
+            node.addChildNode(box(object.w, max(0.012, object.h), object.d, y: -object.h / 2 + 0.006,
+                                  material: matte(color.withAlphaComponent(0.92), roughness: 1)))
+        case "table", "desk":
+            let top = box(object.w, object.h * 0.10, object.d, y: object.h / 2 - object.h * 0.05)
+            node.addChildNode(top)
+            for dx in [-1.0, 1.0] {
+                for dz in [-1.0, 1.0] {
+                    let leg = SCNCylinder(radius: CGFloat(min(object.w, object.d) * 0.035),
+                                          height: CGFloat(object.h * 0.9))
+                    leg.materials = [material]
+                    let legNode = SCNNode(geometry: leg)
+                    legNode.position = SCNVector3(Float(dx * (object.w / 2 - object.w * 0.08)),
+                                                  Float(-object.h * 0.05),
+                                                  Float(dz * (object.d / 2 - object.d * 0.08)))
+                    node.addChildNode(legNode)
+                }
+            }
+        case "sofa", "armchair", "chair":
+            node.addChildNode(box(object.w, object.h * 0.5, object.d, y: -object.h * 0.2))
+            node.addChildNode(box(object.w, object.h * 0.55, object.d * 0.22,
+                                  y: object.h * 0.16, z: -object.d / 2 + object.d * 0.11))
+            if object.kind != "chair" {
+                for dx in [-1.0, 1.0] {
+                    node.addChildNode(box(object.w * 0.09, object.h * 0.4, object.d,
+                                          x: dx * (object.w / 2 - object.w * 0.045), y: -object.h * 0.1))
+                }
+            } else {
+                for dx in [-1.0, 1.0] {
+                    for dz in [-1.0, 1.0] {
+                        node.addChildNode(box(object.w * 0.07, object.h * 0.45, object.d * 0.07,
+                                              x: dx * (object.w / 2 - object.w * 0.06),
+                                              y: -object.h * 0.28,
+                                              z: dz * (object.d / 2 - object.d * 0.08)))
+                    }
+                }
+            }
+        case "bed":
+            node.addChildNode(box(object.w, object.h * 0.35, object.d, y: -object.h * 0.32))
+            node.addChildNode(box(object.w, object.h * 0.22, object.d,
+                                  y: object.h * 0.02, material: matte(UIColor.white.withAlphaComponent(0.85), roughness: 0.95)))
+            node.addChildNode(box(object.w * 0.9, object.h * 0.3, object.d * 0.05,
+                                  y: object.h * 0.25, z: -object.d / 2 + object.d * 0.05))
+        case "shelf":
+            node.addChildNode(box(object.w, object.h, object.d, y: 0,
+                                  material: matte(color.withAlphaComponent(0.55), roughness: 0.8)))
+            for fraction in [0.25, 0.5, 0.75] {
+                node.addChildNode(box(object.w * 0.94, object.h * 0.03, object.d * 0.9,
+                                      y: -object.h / 2 + object.h * fraction))
+            }
+        case "plant":
+            let pot = SCNCylinder(radius: CGFloat(object.w * 0.32), height: CGFloat(object.h * 0.28))
+            pot.materials = [matte(color, roughness: 0.9)]
+            let potNode = SCNNode(geometry: pot)
+            potNode.position = SCNVector3(0, -object.h / 2 + object.h * 0.14, 0)
+            node.addChildNode(potNode)
+            for i in 0..<3 {
+                let leaf = SCNSphere(radius: CGFloat(object.w * (0.34 - Double(i) * 0.07)))
+                leaf.materials = [matte(UIColor(red: 0.32, green: 0.46, blue: 0.31, alpha: 1), roughness: 0.9)]
+                let leafNode = SCNNode(geometry: leaf)
+                leafNode.position = SCNVector3(Float((Double(i) - 1) * object.w * 0.16),
+                                               Float(-object.h / 2 + object.h * (0.45 + Double(i) * 0.12)),
+                                               Float((Double(i) - 1) * object.d * 0.1))
+                node.addChildNode(leafNode)
+            }
+        case "lamp":
+            node.addChildNode(box(object.w * 0.45, max(0.03, object.h * 0.04), object.d * 0.45,
+                                  y: -object.h / 2 + object.h * 0.02,
+                                  material: matte(UIColor(white: 0.2, alpha: 1), roughness: 0.5)))
+            let stem = SCNCylinder(radius: CGFloat(object.w * 0.035), height: CGFloat(object.h * 0.85))
+            stem.materials = [matte(UIColor(white: 0.25, alpha: 1), roughness: 0.4)]
+            let stemNode = SCNNode(geometry: stem)
+            stemNode.position = SCNVector3(0, 0, 0)
+            node.addChildNode(stemNode)
+            let shade = SCNSphere(radius: CGFloat(object.w * 0.3))
+            let shadeMaterial = matte(color.withAlphaComponent(0.9), roughness: 0.5)
+            shadeMaterial.emission.contents = color.withAlphaComponent(0.35)
+            shade.materials = [shadeMaterial]
+            let shadeNode = SCNNode(geometry: shade)
+            shadeNode.position = SCNVector3(0, Float(object.h * 0.42), 0)
+            node.addChildNode(shadeNode)
+        default:
+            node.addChildNode(box(object.w, object.h, object.d))
+        }
+        return node
+    }
+
+    private func textNode(_ text: String, size: CGFloat, color: UIColor) -> SCNNode? {
+        let geometry = SCNText(string: text, extrusionDepth: 0)
+        geometry.font = UIFont.systemFont(ofSize: 1, weight: .semibold)
+        geometry.flatness = 0.02
+        let material = SCNMaterial()
+        material.lightingModel = .constant
+        material.diffuse.contents = color
+        geometry.materials = [material]
+        let node = SCNNode(geometry: geometry)
+        node.scale = SCNVector3(Float(size), Float(size), Float(size))   // size in metres
+        node.constraints = [SCNBillboardConstraint()]
+        return node
     }
 
     private func matte(_ color: UIColor, roughness: CGFloat) -> SCNMaterial {

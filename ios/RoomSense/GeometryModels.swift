@@ -1,5 +1,39 @@
 import Foundation
 
+struct GeometryObject: Codable, Identifiable {
+    var id: String
+    var distance_m: Double
+    var delay_ms: Double
+    var strength: Double
+    var confidence: String
+    var note: String
+    var support: Int
+}
+
+struct StagingObject: Codable, Identifiable {
+    var kind: String
+    var x: Double
+    var z: Double
+    var w: Double
+    var d: Double
+    var h: Double
+    var color: String
+    var id: String { "\(kind)-\(x)-\(z)-\(w)" }
+}
+
+struct GeometryStaging: Codable {
+    var available: Bool
+    var source: String
+    var model: String?
+    var training_use: Bool
+    var style: String
+    var palette: [String]
+    var objects: [StagingObject]
+    var note: String
+
+    var isIllustrative: Bool { available && !objects.isEmpty }
+}
+
 struct GeometryResult: Codable {
     var status: String
     var message: String
@@ -8,6 +42,7 @@ struct GeometryResult: Codable {
     var candidates: [GeometryCandidate]
     var echoes: [GeometryEcho]
     var diagnostics: GeometryDiagnostics
+    var objects: [GeometryObject]?
 
     var isSynthetic: Bool { source == "synthetic_demo" }
 }
@@ -67,6 +102,17 @@ extension APIClient {
         let (data, response) = try await URLSession.shared.data(for: request)
         try Self.check(response, data)
         return try JSONDecoder().decode(GeometryResult.self, from: data)
+    }
+
+    func stageGeometry(_ result: GeometryResult) async throws -> GeometryStaging {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/geometry/stage"))
+        request.httpMethod = "POST"
+        request.timeoutInterval = 45
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(result)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try Self.check(response, data)
+        return try JSONDecoder().decode(GeometryStaging.self, from: data)
     }
 
     func reviewGeometry(_ result: GeometryResult) async throws -> GeometryReview {

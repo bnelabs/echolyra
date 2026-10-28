@@ -36,6 +36,7 @@ import probe
 import meta_models as mm
 import geometry
 import geometry_advisor
+import geometry_stage
 import geometry_upload
 
 ROOT = Path(__file__).parent
@@ -392,6 +393,23 @@ async def geometry_demo():
         if "geometry" not in DEMO_CACHE:
             DEMO_CACHE["geometry"] = await asyncio.to_thread(geometry.demo)
         return DEMO_CACHE["geometry"]
+
+
+@app.post("/api/geometry/stage")
+async def geometry_stage_route(request: Request):
+    chunks, size = [], 0
+    async for chunk in request.stream():
+        size += len(chunk)
+        if size > GEOMETRY_MAX_REVIEW_BYTES:
+            return JSONResponse(status_code=413, content={"error": "Geometry staging request exceeds 64 KB."})
+        chunks.append(chunk)
+    try:
+        result = json.loads(b"".join(chunks))
+        if not isinstance(result, dict):
+            raise ValueError
+    except (ValueError, UnicodeError):
+        return JSONResponse(status_code=400, content={"error": "Send a geometry result as JSON."})
+    return await asyncio.to_thread(geometry_stage.stage, result)
 
 
 @app.post("/api/geometry/review")

@@ -345,6 +345,27 @@ Limits: no real-room dimensional accuracy is established; a single position cann
 orientation/mirrors; phone speaker/mic separation biases delays; optional Meta review sends
 only allowlisted numeric diagnostics and cannot alter the fit.
 
+## Increment 24 — rich staged scene + distance-only object candidates (round 24)
+
+Built on the external geometry contribution after review:
+
+- **Measured shell + acoustic object candidates**: unexplained strong echoes are grouped and
+  attached as distance-only candidates (`geometry.object_candidates`), rendered as cyan distance
+  rings with labels around the estimated phone position. No invented direction/identity/size.
+- **Rich, labelled 3D presentation**: iOS scene now renders cutaway room shell, floor/wall
+  materials, sensor marker, dimension lines, distance rings and **clearly-labelled illustrative
+  staging** (sofa/table/rug/plant/lamp/shelf/bed proxies) with a banner, measured/illustrative
+  badges, and a legend. Camera orbit/zoom retained.
+- **Optional Meta staging** (`/api/geometry/stage`, `geometry_stage.py`): explicit-consent,
+  allowlisted numeric payload; strict JSON schema; clamped inside the shell; deterministic
+  procedural fallback when Meta is unavailable or malformed; model cannot alter the fit.
+- **Verified**: 46/46 geometry tests pass; live staging returns 6 procedural objects with the
+  expected bounds; 12 MB body rejected 413; demo still recovers 5.699×4.298×2.898 m from 21
+  echoes; iOS simulator + device builds succeed; scene screenshot `geometry_staged.png`.
+- **Honest limit**: staged objects are illustration; single-position acoustic candidates are
+  distance-only. Measured object mapping requires multi-position/IMU or receiver-array capture —
+  the next frontier step.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located

@@ -10,21 +10,27 @@ on the phone. See the privacy section below for cloud and debug-capture behavior
 ## Experimental sound-only 3D room
 
 Open the **3D Room** tab → **Measure with 3 sweeps**, holding the phone stationary in a quiet
-room. The backend searches repeatable echo arrival times for possible rectangular layouts;
-the app shows an interactive 3D shell when an estimated layout fits the acoustic model. No
-camera, LiDAR, room dimensions, or language-model geometry generation is used.
+room. The backend searches repeatable echo arrival times for possible rectangular layouts,
+reports strong echoes the shell cannot explain as **distance-only object candidates**, and shows
+an interactive 3D scene: the measured shell, cyan distance rings for acoustic candidates, and an
+optional **clearly-labelled illustrative staging** (Meta or procedural) with furniture-like
+meshes. Staged objects are a visualisation, **not measured furniture**; no camera, LiDAR, supplied
+dimensions or geometry generation is used.
 
 ![3D room demo](docs/screenshots/geometry_demo.png)
+![Staged 3D scene](docs/screenshots/geometry_staged.png)
 
 This is an experimental feature: it may say **Couldn’t map this room yet** or show more than
-one possible layout. Axes are arbitrary; it does not identify furniture, the floor direction, or an
-arbitrary room layout. Fit error is not calibrated confidence. Actual-room dimension
-accuracy has not been established. **Explore synthetic example** runs the same pipeline on
-simulated probe recordings and labels that scene as synthetic.
+one possible layout. Axes are arbitrary; acoustic object candidates carry only a distance
+(direction, identity, size and shape are unresolved), and staged furniture is illustrative, not
+detected. Fit error is not calibrated confidence. Actual-room dimension accuracy has not been
+established. **Explore synthetic example** runs the same pipeline on simulated probe recordings
+and labels that scene as synthetic.
 
-**Ask Meta to review** is optional and requires an explicit confirmation. It sends only
-bounded numeric echo/shape diagnostics, never the recording, to the server-configured
-model. Contributor mode permits training use. Model suggestions cannot change or validate
+**Ask Meta to review** and **Generate illustrative scene** are optional and require explicit
+confirmation. They send only bounded numeric echo/shape diagnostics (and, for staging, the
+distance-only candidates + estimated dimensions), never the recording, to the server-configured
+model. If Meta is unavailable, staging falls back to a deterministic procedural scene. Contributor mode permits training use. Model suggestions cannot change or validate
 the fitted geometry. See [capture protocol, assumptions, and tests](docs/ACOUSTIC_RECONSTRUCTION.md).
 
 **Try it in 30 seconds:** open `/static/demo.html` on the backend (three demo rooms + probe
@@ -114,8 +120,8 @@ Apple's SoundAnalysis classifier runs on-device. The app also uploads recordings
 configured backend for acoustic processing. Awareness/probe routes normally persist derived
 features and impulse responses; `DEBUG_CAPTURE=1` explicitly saves audio recordings. Legacy
 analysis routes generate audio previews. The new geometry routes do not persist captures or
-change enrolled rooms. Muse Spark receives event context (and optional numeric geometry
-review), rather than raw recordings, through these workflows. Contributor mode permits Meta
+change enrolled rooms. Muse Spark receives event context (and optional numeric geometry review or staging
+spec), rather than raw recordings, through these workflows. Contributor mode permits Meta
 to use submitted context and responses for training. `.env` and `cache/` stay gitignored.
 
 ## Signal science (SNR, noise, reverberation)

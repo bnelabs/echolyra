@@ -51,6 +51,18 @@ class GeometryAPITests(unittest.TestCase):
         self.assertEqual(before, json.dumps(api.SESSION.state, sort_keys=True))
         self.assertEqual(probe_before, probe_path.read_bytes() if probe_path.exists() else None)
 
+    def test_stage_is_separate_bounded_and_illustrative(self):
+        result = {"status": "candidate", "candidates": [{"dimensions_m": [5, 4, 3]}],
+                  "objects": [{"distance_m": 1.2, "strength": 0.4}]}
+        response = self.client.post("/api/geometry/stage", json=result)
+        self.assertEqual(response.status_code, 200, response.text)
+        body = response.json()
+        self.assertIn(body["source"], {"meta", "procedural"})
+        self.assertTrue(any(t in json.dumps(body["note"]).lower() for t in ("not measured", "not a measurement")))
+        self.assertLessEqual(len(body["objects"]), 8)
+        self.assertEqual([], body["objects"]) if body["source"] == "none" else None
+        self.assertEqual(self.client.post("/api/geometry/stage", content=b"not json").status_code, 400)
+
     def test_review_is_separate_and_bounded(self):
         with patch.object(api.geometry_advisor, "review", return_value={
                 "available": False, "text": "Not configured", "training_use": False}) as review:
