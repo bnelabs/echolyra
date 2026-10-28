@@ -15,6 +15,10 @@ struct GeometryView: View {
     @State private var staging: GeometryStaging?
     @State private var scan: ReflectionScan?
     @State private var walkProgress = ""
+    @State private var lidarResult: LiDARResult?
+    @State private var lidarConsent = false
+    @State private var showLiDARCapture = false
+    @State private var lidarMessage = ""
     @State private var reviewConsent = false
     @State private var stagingConsent = false
     @State private var work: Task<Void, Never>?
@@ -68,6 +72,8 @@ struct GeometryView: View {
                     }
                     walkScanSection
                     if let scan { reflectionCard(scan) }
+                    lidarSection
+                    if let lidarResult { lidarCard(lidarResult) }
                 }
                 .padding()
             }
@@ -106,6 +112,25 @@ struct GeometryView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("Sends the estimated dimensions and distance-only echo candidates to Meta to compose a styled visualisation. No audio and no room name are sent. If the backend uses Contributor mode, Meta may use this content for training. These objects are an illustration and are not measured furniture.")
+            }
+            .confirmationDialog("Start LiDAR precision scan?", isPresented: $lidarConsent,
+                                titleVisibility: .visible) {
+                Button("Start on-device scan") { showLiDARCapture = true }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("The camera and depth sensor are used only during this scan and processed on this iPhone. Nothing is uploaded. You will walk around the room once.")
+            }
+            .fullScreenCover(isPresented: $showLiDARCapture) {
+                LiDARCaptureScreen { room in
+                    if let url = exportLiDARModel(room) {
+                        if let old = lidarResult?.modelURL { try? FileManager.default.removeItem(at: old) }
+                        lidarResult = LiDARResult(room: room, modelURL: url)
+                        lidarMessage = "LiDAR model captured · on-device only"
+                    } else {
+                        lidarMessage = "LiDAR captured the room but could not export the model."
+                    }
+                    showLiDARCapture = false
+                }
             }
         }
     }
@@ -386,6 +411,55 @@ struct GeometryView: View {
                 HStack { ProgressView(); Text(walkProgress).font(.subheadline) }
             }
             Text("Reflections from furniture, walls and people are localized as candidates — not identified objects. The last stop must be back at the start for loop closure. Walk slowly; keep the phone at the same height.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
+        .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var lidarSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Precision scan · LiDAR (optional)", systemImage: "lidar.scanner")
+                .font(.headline)
+            Text("For a real room + furniture model, walk around the room once with the LiDAR precision scan. It runs fully on this iPhone; nothing is uploaded. Sound-only modes stay the private default.")
+                .font(.subheadline)
+            Button { lidarConsent = true } label: {
+                Label(liDARScanningSupported ? "Scan room with LiDAR" : "LiDAR needs a physical iPhone with a depth sensor",
+                      systemImage: "camera.metering.matrix")
+                    .frame(maxWidth: .infinity).padding(.vertical, 6)
+            }
+            .buttonStyle(.bordered)
+            .disabled(model.busy || !liDARScanningSupported)
+            if !lidarMessage.isEmpty {
+                Text(lidarMessage).font(.caption).foregroundStyle(.secondary)
+            }
+            Text("Camera + depth sensor are used only during this scan, on-device. The 3D model is stored temporarily in the app; it is never sent to Meta or any cloud service.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
+        .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func lidarCard(_ result: LiDARResult) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("LiDAR precision model", systemImage: "cube.transparent")
+                .font(.headline)
+            if let url = result.modelURL {
+                LiDARSceneView(modelURL: url)
+                    .frame(height: 380)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                ShareLink(item: url) {
+                    Label("Export 3D model (USDZ)", systemImage: "square.and.arrow.up")
+                        .font(.subheadline)
+                }
+            } else {
+                Text("LiDAR captured the room, but the 3D model export failed on this device.")
+                    .font(.subheadline).foregroundStyle(.secondary)
+            }
+            Text("\(result.wallCount) walls · \(result.doorCount) doors · \(result.windowCount) windows · \(result.objectCount) objects")
+                .font(.caption.monospacedDigit())
+            if !result.objectSummary.isEmpty {
+                Text(result.objectSummary).font(.caption).foregroundStyle(.secondary)
+            }
+            Text("LiDAR measures real geometry on this device. It is a precision setup aid; the sound-only pipeline remains independent. Nothing was uploaded.")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding().background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))

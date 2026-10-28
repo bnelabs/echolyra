@@ -42,6 +42,8 @@ targets:
         NSLocalNetworkUsageDescription: >-
           Echolyra sends recorded audio to your configured backend on the
           local network for acoustic analysis.
+        NSCameraUsageDescription: >-
+          Echolyra's optional LiDAR precision scan uses the camera and depth sensor. Frames are processed on-device and are never uploaded.
         NSMotionUsageDescription: >-
           Echolyra measures walking distance between scan positions to localize room reflections.
         NSAppTransportSecurity:

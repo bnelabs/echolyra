@@ -25,6 +25,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Echolyra's optional LiDAR precision scan uses the camera and depth sensor. Frames are processed on-device and are never uploaded.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Echolyra sends recorded audio to your configured backend on the local network for acoustic analysis.</string>
 	<key>NSMicrophoneUsageDescription</key>

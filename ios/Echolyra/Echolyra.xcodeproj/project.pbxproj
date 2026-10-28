@@ -7,40 +7,42 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D5BD07AF42A7224CB53CF95 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_E7AD666B-3F13-4FFF-BDCA-9E935AC60FAD" /* AppModel.swift */; };
-		3AEB661E69A6ED91533C0D7B /* DetectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_56152CD4-FEB7-4311-B5B8-19E71EA75723" /* DetectView.swift */; };
-		4931593BC74E31633F53E327 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_252B6180-6D86-4D53-8B4F-282206CA040A" /* Recorder.swift */; };
-		4CFC5EFDF79632A6B8C21C95 /* SoundUnderstanding.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_1D932F84-6EE3-46F1-89DD-612CC2662F74" /* SoundUnderstanding.swift */; };
-		55EC63524C035623D0899CEF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_B690D504-9718-44E3-B120-4663B70F670D" /* SettingsView.swift */; };
-		650B32B20624E8D99DF9E3EA /* ProbeSweep.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_6D3B7A69-591D-4BE0-B863-49A7D87F2738" /* ProbeSweep.swift */; };
-		69DEDDADF7812675B242E461 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_44E9D796-37FA-452E-B494-7A466FF119B1" /* Models.swift */; };
-		7279D9C3105CBEAED88943FC /* GeometryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_C40CC7B7-2464-4A63-887E-E072F05CF082" /* GeometryView.swift */; };
-		887FE34152D25DA1B71F8F9D /* EcholyraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_F946BCA2-F978-488B-845A-3FD4D239BECF" /* EcholyraApp.swift */; };
-		97001BE38ED61B779AC0C9AA /* GeometryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_6CC4887A-4AED-43BE-ADE5-DBDFA2DD4B1C" /* GeometryModels.swift */; };
-		BA5589839EE97F754962F5BA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_F7AA17E5-295A-41C4-99AD-B98560381589" /* ContentView.swift */; };
-		D9F42AABA309307222ACDD52 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_91295E73-48AD-4F0C-AADB-DA54B817B0ED" /* APIClient.swift */; };
-		E5067344C43BA5C086610E64 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = "TEMP_C094552D-9EEB-4C38-9C75-2D7698944D30" /* Assets.xcassets */; };
-		F3A47B688C4AB8D037588EDC /* ProbeRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_C36B8153-5984-44E9-8BAD-843ADCEF243B" /* ProbeRecorder.swift */; };
-		F528D567060B3F5D1150263D /* RoomsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_767DB24A-B3DC-4973-8217-B3269A65F16A" /* RoomsView.swift */; };
+		0F644C69128FBD72BEA1B28D /* DetectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_35AF8F0D-1201-49BF-9ACC-F539771B367E" /* DetectView.swift */; };
+		325A83D19B5473DCAFC25456 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_9AB81443-91D0-40D1-904E-8B1BE64D7E9E" /* Models.swift */; };
+		3F90FC66D704573CA4B11D82 /* ProbeRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_2FC204E8-8D15-4D15-B465-20FC2837BD2B" /* ProbeRecorder.swift */; };
+		3FC7D1704B24F532DD9879F5 /* ProbeSweep.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_A14ED986-BEE5-4576-9745-28DAFD80B482" /* ProbeSweep.swift */; };
+		6AF01AC605C0798DE6FA9F4A /* GeometryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_63649F99-A94A-4CAA-9E94-6A948161377F" /* GeometryView.swift */; };
+		8595265ED4E8CE60F573644E /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_F39267AD-A682-4AE1-983F-4176603C466C" /* APIClient.swift */; };
+		88A11836A787A85433883E3C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_E7DD2C25-88F2-464D-BC9C-995E1B4AC726" /* SettingsView.swift */; };
+		8D8162CC69892CDCA75B2CC1 /* SoundUnderstanding.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_3D4C7E1F-A7B7-413E-8C4D-87FA87E6F401" /* SoundUnderstanding.swift */; };
+		A45EB28A74EE5212F617F576 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_5F03B426-D7AF-4F88-A2E3-9A71A2970F23" /* Recorder.swift */; };
+		AAF7EB5C691F25D109CDC7DE /* LiDARScan.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_125FC76C-1089-4040-AFDB-350AC5D1E924" /* LiDARScan.swift */; };
+		B93AECB0A3C9020E44F12F90 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_B5FD9267-84D8-4D82-A5D7-1554B598EEAA" /* AppModel.swift */; };
+		BF6B724839B0446EF6A46115 /* RoomsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_A0B86B70-95E2-4167-8173-55E49C860089" /* RoomsView.swift */; };
+		C71AE175079EE98D2B553EC6 /* GeometryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_870D3759-5B1F-4512-9521-D28BFC38154B" /* GeometryModels.swift */; };
+		E0F1A119374A5DEA64CBFE6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = "TEMP_7591FC1F-B9DA-4D6F-9250-C58BFB1EA3FE" /* Assets.xcassets */; };
+		E8962E17C611250C2949EBEE /* EcholyraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_E0EEA6BD-4AC9-4905-9992-E0BDF908680F" /* EcholyraApp.swift */; };
+		F7CC5C8B4F34E1287FC65F17 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = "TEMP_F89C6858-1015-4FC4-AD3A-B1EA3289700A" /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A4C163281F8AEB68460A1F75 /* Echolyra.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Echolyra.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		"TEMP_1D932F84-6EE3-46F1-89DD-612CC2662F74" /* SoundUnderstanding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundUnderstanding.swift; sourceTree = "<group>"; };
-		"TEMP_252B6180-6D86-4D53-8B4F-282206CA040A" /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
-		"TEMP_44E9D796-37FA-452E-B494-7A466FF119B1" /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		"TEMP_56152CD4-FEB7-4311-B5B8-19E71EA75723" /* DetectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectView.swift; sourceTree = "<group>"; };
-		"TEMP_6CC4887A-4AED-43BE-ADE5-DBDFA2DD4B1C" /* GeometryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryModels.swift; sourceTree = "<group>"; };
-		"TEMP_6D3B7A69-591D-4BE0-B863-49A7D87F2738" /* ProbeSweep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSweep.swift; sourceTree = "<group>"; };
-		"TEMP_767DB24A-B3DC-4973-8217-B3269A65F16A" /* RoomsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomsView.swift; sourceTree = "<group>"; };
-		"TEMP_91295E73-48AD-4F0C-AADB-DA54B817B0ED" /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
-		"TEMP_B690D504-9718-44E3-B120-4663B70F670D" /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		"TEMP_C094552D-9EEB-4C38-9C75-2D7698944D30" /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		"TEMP_C36B8153-5984-44E9-8BAD-843ADCEF243B" /* ProbeRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeRecorder.swift; sourceTree = "<group>"; };
-		"TEMP_C40CC7B7-2464-4A63-887E-E072F05CF082" /* GeometryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryView.swift; sourceTree = "<group>"; };
-		"TEMP_E7AD666B-3F13-4FFF-BDCA-9E935AC60FAD" /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
-		"TEMP_F7AA17E5-295A-41C4-99AD-B98560381589" /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		"TEMP_F946BCA2-F978-488B-845A-3FD4D239BECF" /* EcholyraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcholyraApp.swift; sourceTree = "<group>"; };
+		"TEMP_125FC76C-1089-4040-AFDB-350AC5D1E924" /* LiDARScan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiDARScan.swift; sourceTree = "<group>"; };
+		"TEMP_2FC204E8-8D15-4D15-B465-20FC2837BD2B" /* ProbeRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeRecorder.swift; sourceTree = "<group>"; };
+		"TEMP_35AF8F0D-1201-49BF-9ACC-F539771B367E" /* DetectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectView.swift; sourceTree = "<group>"; };
+		"TEMP_3D4C7E1F-A7B7-413E-8C4D-87FA87E6F401" /* SoundUnderstanding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundUnderstanding.swift; sourceTree = "<group>"; };
+		"TEMP_5F03B426-D7AF-4F88-A2E3-9A71A2970F23" /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
+		"TEMP_63649F99-A94A-4CAA-9E94-6A948161377F" /* GeometryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryView.swift; sourceTree = "<group>"; };
+		"TEMP_7591FC1F-B9DA-4D6F-9250-C58BFB1EA3FE" /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		"TEMP_870D3759-5B1F-4512-9521-D28BFC38154B" /* GeometryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryModels.swift; sourceTree = "<group>"; };
+		"TEMP_9AB81443-91D0-40D1-904E-8B1BE64D7E9E" /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		"TEMP_A0B86B70-95E2-4167-8173-55E49C860089" /* RoomsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomsView.swift; sourceTree = "<group>"; };
+		"TEMP_A14ED986-BEE5-4576-9745-28DAFD80B482" /* ProbeSweep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSweep.swift; sourceTree = "<group>"; };
+		"TEMP_B5FD9267-84D8-4D82-A5D7-1554B598EEAA" /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		"TEMP_E0EEA6BD-4AC9-4905-9992-E0BDF908680F" /* EcholyraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcholyraApp.swift; sourceTree = "<group>"; };
+		"TEMP_E7DD2C25-88F2-464D-BC9C-995E1B4AC726" /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		"TEMP_F39267AD-A682-4AE1-983F-4176603C466C" /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		"TEMP_F89C6858-1015-4FC4-AD3A-B1EA3289700A" /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -59,24 +61,25 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		"TEMP_F5B9AFE9-6BA6-4DAF-A669-7E4570F0EACF" /* . */ = {
+		"TEMP_D4FC2FD8-0DC3-4F4B-8BB9-F42FF53317DD" /* . */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_F946BCA2-F978-488B-845A-3FD4D239BECF" /* EcholyraApp.swift */,
-				"TEMP_C36B8153-5984-44E9-8BAD-843ADCEF243B" /* ProbeRecorder.swift */,
-				"TEMP_767DB24A-B3DC-4973-8217-B3269A65F16A" /* RoomsView.swift */,
-				"TEMP_252B6180-6D86-4D53-8B4F-282206CA040A" /* Recorder.swift */,
-				"TEMP_B690D504-9718-44E3-B120-4663B70F670D" /* SettingsView.swift */,
-				"TEMP_1D932F84-6EE3-46F1-89DD-612CC2662F74" /* SoundUnderstanding.swift */,
-				"TEMP_91295E73-48AD-4F0C-AADB-DA54B817B0ED" /* APIClient.swift */,
-				"TEMP_E7AD666B-3F13-4FFF-BDCA-9E935AC60FAD" /* AppModel.swift */,
-				"TEMP_C094552D-9EEB-4C38-9C75-2D7698944D30" /* Assets.xcassets */,
-				"TEMP_6CC4887A-4AED-43BE-ADE5-DBDFA2DD4B1C" /* GeometryModels.swift */,
-				"TEMP_C40CC7B7-2464-4A63-887E-E072F05CF082" /* GeometryView.swift */,
-				"TEMP_44E9D796-37FA-452E-B494-7A466FF119B1" /* Models.swift */,
-				"TEMP_6D3B7A69-591D-4BE0-B863-49A7D87F2738" /* ProbeSweep.swift */,
-				"TEMP_F7AA17E5-295A-41C4-99AD-B98560381589" /* ContentView.swift */,
-				"TEMP_56152CD4-FEB7-4311-B5B8-19E71EA75723" /* DetectView.swift */,
+				"TEMP_E0EEA6BD-4AC9-4905-9992-E0BDF908680F" /* EcholyraApp.swift */,
+				"TEMP_2FC204E8-8D15-4D15-B465-20FC2837BD2B" /* ProbeRecorder.swift */,
+				"TEMP_A0B86B70-95E2-4167-8173-55E49C860089" /* RoomsView.swift */,
+				"TEMP_5F03B426-D7AF-4F88-A2E3-9A71A2970F23" /* Recorder.swift */,
+				"TEMP_E7DD2C25-88F2-464D-BC9C-995E1B4AC726" /* SettingsView.swift */,
+				"TEMP_3D4C7E1F-A7B7-413E-8C4D-87FA87E6F401" /* SoundUnderstanding.swift */,
+				"TEMP_F39267AD-A682-4AE1-983F-4176603C466C" /* APIClient.swift */,
+				"TEMP_B5FD9267-84D8-4D82-A5D7-1554B598EEAA" /* AppModel.swift */,
+				"TEMP_7591FC1F-B9DA-4D6F-9250-C58BFB1EA3FE" /* Assets.xcassets */,
+				"TEMP_125FC76C-1089-4040-AFDB-350AC5D1E924" /* LiDARScan.swift */,
+				"TEMP_870D3759-5B1F-4512-9521-D28BFC38154B" /* GeometryModels.swift */,
+				"TEMP_63649F99-A94A-4CAA-9E94-6A948161377F" /* GeometryView.swift */,
+				"TEMP_9AB81443-91D0-40D1-904E-8B1BE64D7E9E" /* Models.swift */,
+				"TEMP_A14ED986-BEE5-4576-9745-28DAFD80B482" /* ProbeSweep.swift */,
+				"TEMP_F89C6858-1015-4FC4-AD3A-B1EA3289700A" /* ContentView.swift */,
+				"TEMP_35AF8F0D-1201-49BF-9ACC-F539771B367E" /* DetectView.swift */,
 			);
 			name = .;
 			path = .;
@@ -142,7 +145,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E5067344C43BA5C086610E64 /* Assets.xcassets in Resources */,
+				E0F1A119374A5DEA64CBFE6C /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,20 +156,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D9F42AABA309307222ACDD52 /* APIClient.swift in Sources */,
-				2D5BD07AF42A7224CB53CF95 /* AppModel.swift in Sources */,
-				BA5589839EE97F754962F5BA /* ContentView.swift in Sources */,
-				3AEB661E69A6ED91533C0D7B /* DetectView.swift in Sources */,
-				887FE34152D25DA1B71F8F9D /* EcholyraApp.swift in Sources */,
-				97001BE38ED61B779AC0C9AA /* GeometryModels.swift in Sources */,
-				7279D9C3105CBEAED88943FC /* GeometryView.swift in Sources */,
-				69DEDDADF7812675B242E461 /* Models.swift in Sources */,
-				F3A47B688C4AB8D037588EDC /* ProbeRecorder.swift in Sources */,
-				650B32B20624E8D99DF9E3EA /* ProbeSweep.swift in Sources */,
-				4931593BC74E31633F53E327 /* Recorder.swift in Sources */,
-				F528D567060B3F5D1150263D /* RoomsView.swift in Sources */,
-				55EC63524C035623D0899CEF /* SettingsView.swift in Sources */,
-				4CFC5EFDF79632A6B8C21C95 /* SoundUnderstanding.swift in Sources */,
+				8595265ED4E8CE60F573644E /* APIClient.swift in Sources */,
+				B93AECB0A3C9020E44F12F90 /* AppModel.swift in Sources */,
+				F7CC5C8B4F34E1287FC65F17 /* ContentView.swift in Sources */,
+				0F644C69128FBD72BEA1B28D /* DetectView.swift in Sources */,
+				E8962E17C611250C2949EBEE /* EcholyraApp.swift in Sources */,
+				C71AE175079EE98D2B553EC6 /* GeometryModels.swift in Sources */,
+				6AF01AC605C0798DE6FA9F4A /* GeometryView.swift in Sources */,
+				AAF7EB5C691F25D109CDC7DE /* LiDARScan.swift in Sources */,
+				325A83D19B5473DCAFC25456 /* Models.swift in Sources */,
+				3F90FC66D704573CA4B11D82 /* ProbeRecorder.swift in Sources */,
+				3FC7D1704B24F532DD9879F5 /* ProbeSweep.swift in Sources */,
+				A45EB28A74EE5212F617F576 /* Recorder.swift in Sources */,
+				BF6B724839B0446EF6A46115 /* RoomsView.swift in Sources */,
+				88A11836A787A85433883E3C /* SettingsView.swift in Sources */,
+				8D8162CC69892CDCA75B2CC1 /* SoundUnderstanding.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

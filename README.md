@@ -1,9 +1,10 @@
-# Echolyra — camera-free home awareness
+# Echolyra — privacy-first home awareness (sound-only default · optional LiDAR precision)
 
 **Meta Global AI Developer Hackathon · Indie Developer · "Push the Frontier"**
 
 A phone that **measures each room's acoustic fingerprint**, hears what happens in it, says which
-room it happened in — with explicit uncertainty. No camera is needed. Recordings are
+room it happened in — with explicit uncertainty. Sound is the default and needs no camera. An
+optional, on-device LiDAR precision scan can capture the full room and furniture geometry locally.
 uploaded to your configured backend for acoustic processing; event classification also runs
 on the phone. See the privacy section below for cloud and debug-capture behavior.
 
@@ -71,7 +72,7 @@ Demo video cards: [`docs/media/`](docs/media/).
    immediate). A knock is ambiguous: **EXPLAIN · needs_confirmation**, escalating to **ALERT**
    on a second agreeing detection. Muse Spark writes the situation (urgency, explanation,
    what to check, false-alarm check).
-4. **Privacy + multi-node** — no camera, no audio sent to Meta; recordings go only to your own backend. A laptop with `/static/node.html`
+4. **Privacy + multi-node** — no camera in the default path, no audio sent to Meta; recordings go only to your own backend. A laptop with `/static/node.html`
    joins as a second sensor and fusion reports **Living 0.81 / Kitchen 0.19**.
 
 ## Meta models in the live path
@@ -140,13 +141,21 @@ Every detection carries a decision (`alert` / `explain` / `silent`) from a calib
 operating point: ECE 0.039→0.016, 0.958 precision at threshold, and zero wrong alerts in the
 labelled set; it stays silent under noise. See [`docs/CALIBRATION.md`](docs/CALIBRATION.md).
 
+## Hybrid precision scan (optional)
+
+On LiDAR iPhones (12 Pro+), **3D Room → Precision scan · LiDAR** lets the user walk around once and
+gets a real room + furniture model via Apple **RoomPlan**. It runs on-device, writes only a
+local USDZ, and never uploads. Sound-only modes remain the private default. Details and honest
+limits: [`docs/HYBRID_LIDAR.md`](docs/HYBRID_LIDAR.md).
+
 ## Privacy
 
 Apple's SoundAnalysis classifier runs on-device. The app also uploads recordings to the
 configured backend for acoustic processing. Awareness/probe routes normally persist derived
 features and impulse responses; `DEBUG_CAPTURE=1` explicitly saves audio recordings. Legacy
 analysis routes generate audio previews. The new geometry routes do not persist captures or
-change enrolled rooms. Muse Spark receives event context (and optional numeric geometry review or staging
+change enrolled rooms. The optional LiDAR precision scan uses the camera + depth sensor only
+during the scan, processes on-device, and stores a temporary USDZ locally; it is never uploaded. Muse Spark receives event context (and optional numeric geometry review or staging
 spec), rather than raw recordings, through these workflows. Contributor mode permits Meta
 to use submitted context and responses for training. `.env` and `cache/` stay gitignored.
 

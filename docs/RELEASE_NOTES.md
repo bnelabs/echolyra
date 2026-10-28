@@ -57,6 +57,13 @@ probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
 
+## Hybrid LiDAR precision scan (optional)
+
+New **Precision scan · LiDAR** uses Apple RoomPlan on LiDAR iPhones: one continuous walk-around
+produces real room + furniture geometry, rendered from a local USDZ with wall/door/window/object
+counts and USDZ export. Camera/depth processing is on-device only; the model is temporary/local and
+never uploaded. Sound-only features remain the default.
+
 ## IMU pose graph + loop closure
 
 Walk scan now captures five stops: four measured segments (pedometer distance + device heading)

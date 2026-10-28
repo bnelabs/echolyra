@@ -438,6 +438,15 @@ tests pass. Frontier review updated with Echoscan (TASLP 2024), complex-geometry
 sparse measure recovery (2025), RGI-Net, ZA-SLAM: public drop-in code/weights are scarce; the path
 is a self-trained learned echo detector on dEchorate (downloaded) + this pose graph.
 
+## Increment 31 — hybrid LiDAR precision scan (round 31)
+
+Implemented the recommended hybrid: sound-only stays default; new optional **Precision scan ·
+LiDAR** uses Apple RoomPlan on LiDAR iPhones to capture real room + furniture geometry in one
+walk-around, exports a local USDZ, renders it in SceneKit (orbit/zoom), shows walls/doors/
+windows/objects and object categories with export. Fully on-device; no uploads; explicit camera
+permission text; unsupported on simulator/non-LiDAR. Built and installed on the iPhone 12 Pro Max
+(launch verified). Docs: `docs/HYBRID_LIDAR.md`.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
