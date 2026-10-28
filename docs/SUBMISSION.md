@@ -26,13 +26,16 @@ for critical events. No cameras. No audio sent to Meta.
 | Model | Role | Evidence |
 |---|---|---|
 | `muse-spark-1.3-contributor` | Situation report: urgency, explanation, what to check | every `/api/detect` response shows `_model: muse-spark-1.3-contributor`; defaults in `.env` |
+| `muse-wonder-1.0` | Numeric geometry review: explains acoustic ambiguity and next measurement | live `/api/geometry/review` (numeric allowlist only; verified on a real room capture) |
 | `sam-3.1` | Room photos → surface/object context for the map | `backend/meta_models.py`, live-tested (boxes + masks) |
 | `muse-voice-transcribe-1.0` | Voice rules ("only alert me for the baby or glass") | `backend/meta_models.py`, live-tested transcript |
 | `muse-image-1.0` | Illustrative "what to check" render (optional, cut from demo) | live-tested edits |
 | Muse Spark Open | Open-weights option (documented) | Baseten/Modal path in docs |
 
-Meta audio limitation (tested exhaustively): Muse Spark audio input is transcription-only in
-practice, so the "ears" are Apple's on-device 303-class classifier and Meta handles reasoning.
+Meta audio limitation (live capability audit): audio input is transcription-only; non-speech
+recordings return NO_AUDIO_ACCESS and Voice Transcribe has no sound-event detection, so the
+"ears" are Apple's on-device 303-class classifier and Meta handles numeric reasoning and
+situation reports only. See `docs/META_CAPABILITY_AUDIT.md`.
 
 ## What was built during the hackathon
 

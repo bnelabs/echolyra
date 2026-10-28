@@ -8,12 +8,18 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
 from urllib.parse import urlsplit
 
 import httpx
 
 import meta_models as mm
+
+# Geometry review can use the strongest reasoning model (e.g. Muse Wonder); only
+# allowlisted numeric diagnostics are sent. Tests patch mm.MODEL_SPARK as fallback.
+def _review_model() -> str:
+    return os.environ.get("META_GEOMETRY_REVIEW_MODEL", mm.MODEL_SPARK)
 
 TIMEOUT = httpx.Timeout(connect=3.0, read=20.0, write=5.0, pool=3.0)
 SYSTEM = """You help a person understand an experimental room estimate from sound.
@@ -113,7 +119,7 @@ def sanitize(result: dict) -> dict:
 
 def review(result: dict) -> dict:
     """Request a bounded advisory opinion; return no provider exception details."""
-    model = mm.MODEL_SPARK
+    model = _review_model()
     training = isinstance(model, str) and model.endswith("-contributor")
     base = {"available": False, "model": model, "training_use": training}
     if not mm.KEY:

@@ -57,6 +57,14 @@ probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
 
+## Meta capability audit + Wonder review
+
+Audio is not sendable to Meta for acoustic analysis: live tests returned "NO_AUDIO_ACCESS" for
+knocks/glass/silence and the docs confirm transcription-only audio with no sound-event detection
+(`docs/META_CAPABILITY_AUDIT.md`). We did not add a misleading audio-upload path. Numeric
+geometry review now uses **muse-wonder-1.0** and works live (verified on the latest room capture;
+it correctly reports layout ambiguity and recommends a measured-distance re-measurement).
+
 ## Branding + measurement diagnostics
 
 - **Echolyra app icon**: gold "E" crossed by cyan echo arcs on a midnight gradient

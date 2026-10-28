@@ -97,6 +97,15 @@ Re-probing a learned room returns `stable / drift / changed` with a calibrated c
 (measured: 0.4% ΔT30 → stable 0.96; 11.8% → drift 0.71; 22–60% → changed 0.72–0.99) and a
 `transient_change` flag for door-open / movement-like fluctuations.
 
+## Meta audio finding
+
+Meta's API cannot analyze non-speech audio today: audio input is transcription-only, and Voice
+Transcribe has no sound-event detection (tested live; see
+[`docs/META_CAPABILITY_AUDIT.md`](docs/META_CAPABILITY_AUDIT.md)). Echolyra therefore never sends
+probe/event recordings to Meta. Cloud assistance is used where it demonstrably works: **Muse
+Wonder reviews the numeric geometry diagnostics** and explains what to measure next; Muse Spark
+writes situation reports.
+
 ## Research background
 
 The geometry feature is grounded in the acoustic room-inference literature (dEchorate annotated

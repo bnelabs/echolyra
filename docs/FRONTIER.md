@@ -408,6 +408,16 @@ distance** where available and reject rotation-only scans (no baseline); backend
 updated. Roadmap: IMU trajectory/loop closure, dEchorate echo-detection benchmark, learned/robust
 inversion, directivity calibration, optional LiDAR ground truth.
 
+## Increment 28 — Meta audio capability audit + Wonder numeric review (round 28)
+
+Live capability audit (`docs/META_CAPABILITY_AUDIT.md`): Meta Model API cannot understand
+non-speech audio — Muse Wonder/Spark accept `input_audio` but return `NO_AUDIO_ACCESS` for
+knocks/glass/silence (prompt tokens 66–91, audio not tokenized); docs confirm transcription-only
+and no sound-event detection. No audio-upload path was added (would be useless and a privacy
+cost). The useful cloud path was wired instead: geometry review now prefers **Muse Wonder**
+(numeric allowlist only, no audio) and the live review correctly stated the 3 layouts are
+ambiguous and recommended a measured-distance repeat measurement.
+
 ## Increment 4 — plan
 
 1. **iOS probe flow** (Oct 29): play the sweep through the phone speaker while recording (co-located
