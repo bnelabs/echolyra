@@ -79,6 +79,41 @@ final class AppModel: ObservableObject {
         catch { errorText = error.localizedDescription }
     }
 
+    @Published var probeMessage: String?
+
+    func probe(roomName: String) async {
+        busy = true
+        defer { busy = false }
+        let id = roomName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: " ", with: "-")
+        do {
+            let recorder = ProbeRecorder()
+            let clip = try await recorder.measure()
+            let resp = try await client.probeEnroll(roomID: id, roomName: roomName, clip: clip)
+            let rt = resp.probe?.room?.rt60_mid_s ?? resp.probe?.analyses?.first?.rt60_mid_s
+            probeMessage = rt.map { String(format: "Room measured: RT60 %.2f s — acoustic fingerprint stored", $0) }
+                ?? "Probe uploaded"
+            session = try await client.session()
+        } catch { errorText = error.localizedDescription }
+    }
+
+    func probeCheck(roomName: String) async {
+        busy = true
+        defer { busy = false }
+        let id = roomName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: " ", with: "-")
+        do {
+            let recorder = ProbeRecorder()
+            let clip = try await recorder.measure()
+            let resp = try await client.probeCheck(roomID: id, clip: clip)
+            if resp.change_detected == true {
+                probeMessage = String(format: "Room changed since enrollment (max ΔT30 %.0f%%)", resp.max_t30_change_pct ?? 0)
+            } else {
+                probeMessage = "Room unchanged (fingerprint matches baseline)"
+            }
+        } catch { errorText = error.localizedDescription }
+    }
+
     func reset() async {
         busy = true
         defer { busy = false }

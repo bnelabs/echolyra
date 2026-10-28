@@ -82,3 +82,49 @@ enum EventLabels {
         raw.replacingOccurrences(of: "_", with: " ").capitalized
     }
 }
+
+
+// MARK: - Active acoustic probe
+
+struct ProbeAnalysis: Codable {
+    var rt60_mid_s: Double?
+    var t30_s: [Double?]?
+    var edt_s: [Double?]?
+    var snr_db: Double?
+    var valid: Bool?
+    var valid_bands: Int?
+}
+
+struct ProbeRoom: Codable {
+    var id: String?
+    var name: String?
+    var rt60_mid_s: Double?
+    var t30_mid_s: Double?
+    var t30_s: [Double?]?
+    var valid: Bool?
+    var n_probes: Int?
+}
+
+struct ProbeEnvelope: Codable {
+    var room: ProbeRoom?
+    var analyses: [ProbeAnalysis]?
+}
+
+struct LinkedProbe: Codable {
+    var room_id: String?
+    var probe_t30: Double?
+    var probe_rt60: Double?
+}
+
+struct ProbeEnrollResponse: Codable {
+    var probe: ProbeEnvelope?
+    var linked_session: LinkedProbe?
+}
+
+struct ProbeCheckResponse: Codable {
+    var change_detected: Bool?
+    var max_t30_change_pct: Double?
+    var fingerprint_distance: Double?
+    var baseline_rt60_mid_s: Double?
+    var current: ProbeAnalysis?
+}

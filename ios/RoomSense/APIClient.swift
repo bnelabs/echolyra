@@ -83,6 +83,32 @@ struct APIClient {
         return try JSONDecoder().decode(TeachResponse.self, from: data).session
     }
 
+    func probeEnroll(roomID: String, roomName: String, clip: Data) async throws -> ProbeEnrollResponse {
+        let body = Self.multipart(
+            fields: ["room_id": roomID, "room_name": roomName],
+            files: [(name: "audio", filename: "probe.wav", mime: "audio/wav", data: clip)]
+        )
+        var upload = request("api/probe/enroll", method: "POST")
+        upload.setValue("multipart/form-data; boundary=\(Self.boundary)", forHTTPHeaderField: "Content-Type")
+        upload.httpBody = body
+        let (data, response) = try await URLSession.shared.data(for: upload)
+        try Self.check(response, data)
+        return try JSONDecoder().decode(ProbeEnrollResponse.self, from: data)
+    }
+
+    func probeCheck(roomID: String, clip: Data) async throws -> ProbeCheckResponse {
+        let body = Self.multipart(
+            fields: ["room_id": roomID],
+            files: [(name: "audio", filename: "probe.wav", mime: "audio/wav", data: clip)]
+        )
+        var upload = request("api/probe/check", method: "POST")
+        upload.setValue("multipart/form-data; boundary=\(Self.boundary)", forHTTPHeaderField: "Content-Type")
+        upload.httpBody = body
+        let (data, response) = try await URLSession.shared.data(for: upload)
+        try Self.check(response, data)
+        return try JSONDecoder().decode(ProbeCheckResponse.self, from: data)
+    }
+
     // MARK: - Helpers
 
     static let boundary = "RoomSense-\(UUID().uuidString)"

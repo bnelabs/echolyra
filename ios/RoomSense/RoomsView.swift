@@ -22,9 +22,18 @@ struct RoomsView: View {
                         }
                     }
                     .disabled(recorder.isRecording || roomName.trimmingCharacters(in: .whitespaces).isEmpty)
-                    Text("Put the phone where it will normally sit, then have someone knock once in this room. Repeat for each room.")
+                    Button {
+                        Task { await model.probe(roomName: roomName.trimmingCharacters(in: .whitespaces)) }
+                    } label: {
+                        Label("Measure acoustics (active probe)", systemImage: "waveform.path.ecg")
+                    }
+                    .disabled(model.busy || roomName.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Text("Knock = fast signature. Active probe = the phone emits a quiet 3 s sweep and measures the room's true impulse response (RT60, per-band decay) — this is what detects a room changing later.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    if let message = model.probeMessage {
+                        Text(message).font(.caption).foregroundStyle(.green)
+                    }
                 } header: {
                     Text("Learn a room")
                 }
@@ -37,6 +46,12 @@ struct RoomsView: View {
                                 Spacer()
                                 Text("\(room.examples ?? 0) sample\(room.examples == 1 ? "" : "s")")
                                     .foregroundStyle(.secondary)
+                                Button("Re-probe") {
+                                    Task { await model.probeCheck(roomName: room.name) }
+                                }
+                                .buttonStyle(.borderless)
+                                .font(.caption)
+                                .disabled(model.busy)
                             }
                         }
                     } else {
