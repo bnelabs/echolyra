@@ -52,7 +52,21 @@ PYTHON=../prototype/.venv/bin/python ./run_backend.sh     # prints your LAN IP
 4. Wrong room? Record another sample in that room (adds to the room signature).
 5. Wrong event label? Use **Teach this sound** and pick the right label.
 
-## 5. What each file does
+## 5. Installing on a physical iPhone (one-time)
+
+Team detected on this Mac: **QGPX7JPUL4 — "Baris Naci Erzeren (Personal Team)"**
+(iPhone 12 Pro Max, iOS 27.0.1, Developer Mode enabled, profile valid until Nov 4).
+
+```bash
+./sprint/ios/install_device.sh     # builds with provisioning, installs, launches
+```
+
+iOS requires a one-time **Trust** for the developer certificate before a dev-signed app
+can launch. On the iPhone: tap the RoomSense icon → *Untrusted Developer* → **Settings →
+General → VPN & Device Management → Developer App → "Baris Naci Erzeren" → Trust**, then
+allow the microphone prompt. After that, `install_device.sh` launches the app directly.
+
+## 6. What each file does
 
 | File | Role |
 |---|---|

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Build + install + launch RoomSense on a connected iPhone.
-# Requires: Xcode signed in with an Apple ID (Settings > Accounts) and a Personal Team selected.
+# Requires: Xcode signed in with an Apple ID + Personal Team, and the iPhone trusted once
+# (Settings > General > VPN & Device Management > Developer App > Trust).
 set -euo pipefail
 cd "$(dirname "$0")/RoomSense"
 
@@ -25,9 +26,11 @@ if [ -z "$DEVICE_ID" ]; then
 fi
 echo "device: $DEVICE_ID"
 
-TEAM="$(security find-identity -v -p codesigning 2>/dev/null | grep -oE 'Apple Development: .*\(([A-Z0-9]{10})\)' | grep -oE '[A-Z0-9]{10}\)' | tr -d ')' | head -1 || true)"
+# Prefer the team from Xcode's provisioning store (Personal Team works), then fall back
+# to the codesigning identity's team.
+TEAM="$(defaults read com.apple.dt.Xcode IDEProvisioningTeamByIdentifier 2>/dev/null | grep -oE 'teamID = [A-Z0-9]{10}' | head -1 | awk '{print $3}')"
 if [ -z "$TEAM" ]; then
-  TEAM="$(defaults read com.apple.dt.Xcode IDEProvisioningTeams 2>/dev/null | grep -oE '^ *[A-Z0-9]{10} =' | grep -oE '[A-Z0-9]{10}' | head -1 || true)"
+  TEAM="$(security find-identity -v -p codesigning 2>/dev/null | grep -oE 'Apple Development: .*\(([A-Z0-9]{10})\)' | grep -oE '[A-Z0-9]{10}\)' | tr -d ')' | head -1 || true)"
 fi
 if [ -z "$TEAM" ]; then
   echo
