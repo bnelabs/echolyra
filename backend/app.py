@@ -371,21 +371,38 @@ def decode_geometry_recording(raw: bytes) -> np.ndarray:
     return resample(samples, fs, probe.FS)
 
 
+def _save_geometry_debug(kind: str, uploads: list[bytes], meta: dict, result: dict) -> None:
+    """DEBUG_CAPTURE=1 only: persist probe audio + result for offline diagnosis."""
+    if os.environ.get("DEBUG_CAPTURE") != "1":
+        return
+    import pathlib as _pathlib
+    base = _pathlib.Path(__file__).parent / "cache" / "geometry_debug" / f"{kind}_{int(time.time() * 1000)}"
+    base.mkdir(parents=True, exist_ok=True)
+    for index, raw in enumerate(uploads):
+        (base / f"clip{index}.wav").write_bytes(raw)
+    (base / "meta.json").write_text(json.dumps(meta, indent=1))
+    (base / "result.json").write_text(json.dumps(result, indent=1))
+
+
 @app.post("/api/geometry/reconstruct")
 async def geometry_reconstruct(audio: list[UploadFile] | None = File(None)):
     if not audio or not 1 <= len(audio) <= 3:
         return JSONResponse(status_code=400, content={"error": "Send one to three probe WAV recordings from the same stationary position."})
     recordings = []
+    raws = []
     for upload in audio:
         raw = await upload.read(GEOMETRY_MAX_FILE_BYTES + 1)
         if len(raw) > GEOMETRY_MAX_FILE_BYTES:
             return JSONResponse(status_code=413, content={"error": "Each probe WAV must be smaller than 2 MB."})
+        raws.append(raw)
         try:
             recordings.append(decode_geometry_recording(raw))
         except ValueError as error:
             return JSONResponse(status_code=400, content={"error": str(error)})
     async with GEOMETRY_WORKERS:
-        return await asyncio.to_thread(geometry.reconstruct, recordings, probe.FS)
+        result = await asyncio.to_thread(geometry.reconstruct, recordings, probe.FS)
+    _save_geometry_debug("reconstruct", raws, {}, result)
+    return result
 
 
 @app.get("/api/geometry/demo")
@@ -410,16 +427,20 @@ async def geometry_scan_route(audio: list[UploadFile] | None = File(None),
         return JSONResponse(status_code=400,
                             content={"error": "Send one valid walk position per recording (4–8 separated positions)."})
     recordings = []
+    raws = []
     for upload in audio:
         raw = await upload.read(GEOMETRY_MAX_FILE_BYTES + 1)
         if len(raw) > GEOMETRY_MAX_FILE_BYTES:
             return JSONResponse(status_code=413, content={"error": "Each probe WAV must be smaller than 2 MB."})
+        raws.append(raw)
         try:
             recordings.append(decode_geometry_recording(raw))
         except ValueError as error:
             return JSONResponse(status_code=400, content={"error": str(error)})
     async with GEOMETRY_WORKERS:
-        return await asyncio.to_thread(geometry_scan.scan, recordings, clean_poses, probe.FS)
+        result = await asyncio.to_thread(geometry_scan.scan, recordings, clean_poses, probe.FS)
+    _save_geometry_debug("scan", raws, {"poses": clean_poses}, result)
+    return result
 
 
 @app.post("/api/geometry/stage")

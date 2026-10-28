@@ -57,6 +57,15 @@ probe-only enrollment       0.444 accuracy vs 0.500 knocks (uncertain 0.47 vs 0.
 two-node fusion             glass_impact · Living, posteriors Living 1.00
 ```
 
+## Branding + measurement diagnostics
+
+- **Echolyra app icon**: gold "E" crossed by cyan echo arcs on a midnight gradient
+  (`docs/media/app_icon.png`, reproducible via `tools/make_app_icon.py`), installed on the
+  iPhone 12 Pro Max.
+- Geometry probes are still not persisted by default; with `DEBUG_CAPTURE=1` the backend now
+  saves geometry capture audio + poses + result under `cache/geometry_debug/` so a failed or
+  low-confidence measurement can be inspected offline.
+
 ## Experimental: walk-scan reflection map
 
 New **Walk scan** captures probes at four hand positions along an approximate L-path and
