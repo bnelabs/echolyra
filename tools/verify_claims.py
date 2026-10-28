@@ -123,7 +123,15 @@ def check_fusion():
 
 def check_real_world():
     if not os.path.exists(REAL_JSON):
-        check("real-world event accuracy", None, f"{REAL_JSON} not present (evaluation-only ESC-50 dump)")
+        summary_path = Path(__file__).resolve().parents[1] / "docs" / "eval_real_summary.json"
+        if summary_path.exists():
+            d = json.load(open(summary_path))
+            check("real-world event accuracy", d.get("accuracy", 0) >= 0.85,
+                  f"{d.get('accuracy')} on {d.get('n')} real recordings "
+                  f"(committed aggregate; raw CC BY-NC dump not present)")
+        else:
+            check("real-world event accuracy", None,
+                  f"{REAL_JSON} not present (evaluation-only ESC-50 dump)")
         return
     rows = json.load(open(REAL_JSON))
     acc = sum(1 for r in rows if r.get("correct")) / max(1, len(rows))
